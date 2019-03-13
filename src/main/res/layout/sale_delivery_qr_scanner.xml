@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/saledelivery_productcode_scanner_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="产品码:" />
+
+        <scut.carson_ho.diy_view.SuperEditText
+            android:id="@+id/saledelivery_productcode_scanner"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:inputType="textNoSuggestions"
+            app:delete_height="40"
+            app:delete_width="40"
+            app:delete_x="0"
+            app:delete_y="0"
+            app:ic_delete="@drawable/delete"
+            app:ic_left_click="@drawable/ic_left_click"
+            app:ic_left_unclick="@drawable/ic_left_unclick"
+            app:left_height="0"
+            app:left_width="0"
+            app:left_x="0"
+            app:left_y="0" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/saledelivery_boxcode_scanner_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="箱码:" />
+
+        <scut.carson_ho.diy_view.SuperEditText
+            android:id="@+id/saledelivery_boxcode_scanner"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="33dp"
+            android:inputType="textNoSuggestions"
+            app:delete_height="40"
+            app:delete_width="40"
+            app:delete_x="0"
+            app:delete_y="0"
+            app:ic_delete="@drawable/delete"
+            app:ic_left_click="@drawable/ic_left_click"
+            app:ic_left_unclick="@drawable/ic_left_unclick"
+            app:left_height="0"
+            app:left_width="0"
+            app:left_x="0"
+            app:left_y="0"/>
+        <TextView
+            android:id="@+id/qrcode_xm_saledelivery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="二维箱码：0"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/saledelivery_platecode_scanner_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="托盘码:" />
+
+        <scut.carson_ho.diy_view.SuperEditText
+            android:id="@+id/saledelivery_platecode_scanner"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:inputType="textNoSuggestions"
+            app:delete_height="40"
+            app:delete_width="40"
+            app:delete_x="0"
+            app:delete_y="0"
+            app:ic_delete="@drawable/delete"
+            app:ic_left_click="@drawable/ic_left_click"
+            app:ic_left_unclick="@drawable/ic_left_unclick"
+            app:left_height="0"
+            app:left_width="0"
+            app:left_x="0"
+            app:left_y="0"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/saledelivery_cwarehouse_scanner_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="15dp"
+            android:text="仓库:" />
+
+        <Spinner
+            android:id="@+id/saledelivery_spinner_scanner_text"
+            android:layout_width="220dp"
+            android:layout_height="20dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="15dp"></Spinner>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/saledelivery_ok_scanner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="240dp"
+            android:layout_marginTop="10dp"
+            android:text="确定" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/saledelivery_scannednum_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            android:text="已扫码数量：" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dip"
+        android:layout_marginTop="10dp"
+        android:background="#A7A5A5" />
+
+    <include
+        android:id="@+id/table_title_saledelivery_qrscanner"
+        layout="@layout/list_item_saledelivery_qr_scanner" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1.5dip"
+        android:background="#686867" />
+
+    <ListView
+        android:id="@+id/list_body_saledelivery_qrdetail_scanner"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/listview_bg"
+        android:cacheColorHint="@android:color/transparent"
+        android:divider="#B4B3B3"
+        android:dividerHeight="1.0dip"
+        android:fadingEdge="none"
+        android:scrollbars="none"></ListView>
+
+</LinearLayout>

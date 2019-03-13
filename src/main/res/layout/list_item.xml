@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" >
+    <View
+        android:layout_width="1.5dip"
+        android:layout_height="fill_parent"
+        android:background="#B4B3B3"/>
+    <RadioButton
+        android:id="@+id/radiobutton_upload"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.5"
+        android:gravity="center"
+        android:paddingBottom="10dip"
+        android:paddingTop="10dip"
+        android:textColor="#000000"
+        android:visibility="invisible"
+        android:textSize="10dp"
+        android:focusable="false"/>
+    <View
+        android:layout_width="1.5dip"
+        android:layout_height="fill_parent"
+        android:background="#B4B3B3"/>
+    <TextView
+        android:id="@+id/text_id"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:paddingBottom="10dip"
+        android:paddingTop="10dip"
+        android:textColor="#000000"
+        android:textSize="12dp"
+        android:text="出库单号" />
+    
+    <View 
+        android:layout_width="1.5dip"
+        android:layout_height="fill_parent"
+        android:background="#B4B3B3"/>
+
+    <TextView
+        android:id="@+id/text_goods_name"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:paddingBottom="10dip"
+        android:paddingTop="10dip"
+        android:textColor="#000000"
+        android:textSize="12dp"
+        android:gravity="center"
+        android:text="出库仓库名字" />
+    
+     <View 
+        android:layout_width="1.5dip"
+        android:layout_height="fill_parent"
+        android:background="#B4B3B3"/>
+
+     <TextView
+        android:id="@+id/text_codeBar"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.8"
+        android:paddingBottom="10dip"
+        android:textColor="#000000"
+        android:paddingTop="10dip"
+        android:textSize="12dp"
+        android:gravity="center"
+        android:text="出库仓库编号" />
+    <View
+        android:layout_width="1.5dip"
+        android:layout_height="fill_parent"
+        android:background="#B4B3B3"/>
+
+    <TextView
+        android:id="@+id/text_dr"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.5"
+        android:paddingBottom="10dip"
+        android:textColor="#000000"
+        android:paddingTop="10dip"
+        android:textSize="12dp"
+        android:gravity="center"
+        android:text="dr标志" />
+    <View
+        android:layout_width="1.5dip"
+        android:layout_height="fill_parent"
+        android:background="#B4B3B3"/>
+
+    <TextView
+        android:id="@+id/text_dbilldate"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:paddingBottom="10dip"
+        android:textColor="#000000"
+        android:paddingTop="10dip"
+        android:textSize="12dp"
+        android:gravity="center"
+        android:text="单据日期" />
+     
+     <View 
+        android:layout_width="1.5dip"
+        android:layout_height="fill_parent"
+        android:background="#B4B3B3"/>
+    <Button
+        android:id="@+id/text_detail"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.8"
+        android:textColor="#000000"
+        android:textSize="12dp"
+        android:gravity="center"
+        android:text="详细信息"
+        android:focusable="false"
+        style="?android:attr/borderlessButtonStyle" />
+
+</LinearLayout>

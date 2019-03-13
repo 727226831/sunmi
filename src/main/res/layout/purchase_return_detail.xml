@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:weightSum="1">
+    <LinearLayout
+        android:layout_width="153dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+            <TextView
+                android:id="@+id/vbillcode_purchaseReturn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:text="退货单号:"/>
+            <TextView
+                android:id="@+id/dbilldate_purchaseReturn"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="单据日期:"/>
+        <TextView
+            android:id="@+id/expressCode_text_purchase_return"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="物流单号:"/>
+
+        <EditText
+            android:id="@+id/expressCode_edit_text_purchase_return"
+            android:layout_width="264dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="0dp"
+            android:inputType="textNoSuggestions" />
+
+        <Spinner
+            android:id="@+id/spinner_logistics_company_purchase_return"
+            android:layout_width="266dp"
+            android:layout_height="20dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginTop="15dp"></Spinner>
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="84dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_weight="0.66">
+        <Button
+            android:id="@+id/scan_purchaseReturn"
+            android:layout_marginTop="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="扫码出库"/>
+        <Button
+            android:id="@+id/upload_purchaseReturn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="提交"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="1">
+        <Button
+            android:id="@+id/uploadall_purchaseReturn"
+            android:layout_width="match_parent"
+            android:layout_height="95dp"
+            android:layout_marginTop="10dp"
+            android:text="全部提交"
+            />
+
+    </LinearLayout>
+
+</LinearLayout>
+
+    <View
+        android:layout_marginTop="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="1dip"
+        android:background="#A7A5A5"/>
+
+    <include
+        layout="@layout/list_item_purchase_return_detail"
+        android:id="@+id/table_title"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1.5dip"
+        android:background="#686867"/>
+
+    <ListView
+        android:id="@+id/list_body_purchase_return_detail"
+        android:divider="#B4B3B3"
+        android:dividerHeight="1.0dip"
+        android:scrollbars="none"
+        android:background="@drawable/listview_bg"
+        android:cacheColorHint="@android:color/transparent"
+        android:choiceMode="singleChoice"
+        android:fadingEdge="none"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+    </ListView>
+
+</LinearLayout>

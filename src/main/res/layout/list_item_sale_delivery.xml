@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" >
+    <View
+        android:layout_width="1.5dip"
+        android:layout_height="fill_parent"
+        android:background="#B4B3B3"/>
+    <RadioButton
+        android:id="@+id/radiobutton_upload_sale_delivery"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.3"
+        android:gravity="center"
+        android:paddingBottom="10dip"
+        android:paddingTop="10dip"
+        android:textColor="#000000"
+        android:visibility="invisible"
+        android:textSize="5dp"
+        android:focusable="false"/>
+     <View 
+        android:layout_width="1.5dip"
+        android:layout_height="fill_parent"
+        android:background="#B4B3B3"/>
+    <Button
+        android:id="@+id/vbillcode_sale_delivery"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="#000000"
+        android:textSize="12dp"
+        android:gravity="center"
+        android:text="单据号"
+        android:focusable="false"
+        style="?android:attr/borderlessButtonStyle" />
+    <View
+        android:layout_width="1.5dip"
+        android:layout_height="fill_parent"
+        android:background="#B4B3B3"/>
+    <Button
+        android:id="@+id/dbilldate_sale_delivery"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="#000000"
+        android:textSize="12dp"
+        android:gravity="center"
+        android:text="单据日期"
+        android:focusable="false"
+        style="?android:attr/borderlessButtonStyle" />
+    <View
+        android:layout_width="1.5dip"
+        android:layout_height="fill_parent"
+        android:background="#B4B3B3"/>
+    <Button
+        android:id="@+id/dr_sale_delivery"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.6"
+        android:textColor="#000000"
+        android:textSize="12dp"
+        android:gravity="center"
+        android:text="dr标志"
+        android:focusable="false"
+        style="?android:attr/borderlessButtonStyle" />
+
+    <View
+        android:layout_width="1.5dip"
+        android:layout_height="fill_parent"
+        android:background="#B4B3B3"/>
+    <Button
+        android:id="@+id/text_detail_sale_delivery"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.6"
+        android:textColor="#000000"
+        android:textSize="12dp"
+        android:gravity="center"
+        android:text="详细信息"
+        android:focusable="false"
+        style="?android:attr/borderlessButtonStyle" />
+
+</LinearLayout>

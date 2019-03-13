@@ -1,0 +1,496 @@
+-- Merging decision tree log ---
+manifest
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:2:1-138:12
+INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:2:1-138:12
+INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:2:1-138:12
+INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:2:1-138:12
+MERGED from [com.carson_ho:Super_EditText:1.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\Super_EditText-1.0.0.aar\7ef139cebf70fbca531d6ea49ce03a6b\AndroidManifest.xml:2:1-17:12
+MERGED from [com.android.support:appcompat-v7:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\appcompat-v7-28.0.0.aar\f06ccc15c3792a3b33d93c94b6f1d82e\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support.constraint:constraint-layout:1.1.3] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\constraint-layout-1.1.3.aar\789f4b2495a0df9bf0d142b1d5eaf077\AndroidManifest.xml:2:1-11:12
+MERGED from [com.github.huangyanbin:SmartTable:2.2.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\SmartTable-2.2.0.aar\ecaaf5747ae58082745518bb5c76b587\AndroidManifest.xml:2:1-11:12
+MERGED from [com.zyao89:zloading:1.1.2] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\zloading-1.1.2.aar\7597896985fc4fc44583f42e17a7399a\AndroidManifest.xml:2:1-17:12
+MERGED from [com.facebook.stetho:stetho:1.5.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\stetho-1.5.0.aar\2e55ed1e91086027e952a823a75590ee\AndroidManifest.xml:2:1-13:12
+MERGED from [com.android.support:support-fragment:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-fragment-28.0.0.aar\0dba0983de2dfe5f26b084f8e0ae3f71\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:animated-vector-drawable:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\animated-vector-drawable-28.0.0.aar\5c514418b815e3e183b4e1ba492e7af7\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:support-core-ui:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-core-ui-28.0.0.aar\42c4cca0ca48d3a3e17c85666b15712c\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:support-core-utils:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-core-utils-28.0.0.aar\019261f44adadc6e84b5fb1ba9e104dd\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:support-vector-drawable:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-vector-drawable-28.0.0.aar\ee0f7a2c083c54e5323296daa2e19482\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:loader:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\loader-28.0.0.aar\d14bcfac9d04d44ceb0dfcb11ed0a4cc\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:viewpager:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\viewpager-28.0.0.aar\30042e7048bb75bf381e02751d96262a\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:coordinatorlayout:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\coordinatorlayout-28.0.0.aar\5a62f0d1376680fd17a3eb2547f6195c\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:drawerlayout:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\drawerlayout-28.0.0.aar\b594d879b7e9d6d40e20fc1e1148d14d\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:slidingpanelayout:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\slidingpanelayout-28.0.0.aar\e9adc1c0d7dbd822f666cd1882770f37\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:customview:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\customview-28.0.0.aar\ad53826a86682eeb3b2ee89fe370a766\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:swiperefreshlayout:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\swiperefreshlayout-28.0.0.aar\c371dfaca8e735e520dc27c9e3b88e56\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:asynclayoutinflater:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\asynclayoutinflater-28.0.0.aar\482b3b89b2b6c82b1eb474ffc8b8f298\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:support-compat:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\c07527374f5674d79fd846154d05228f\AndroidManifest.xml:17:1-24:12
+MERGED from [com.android.support:versionedparcelable:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\versionedparcelable-28.0.0.aar\d5e0a727f012c3942be99c4850344677\AndroidManifest.xml:17:1-25:12
+MERGED from [com.android.support:cursoradapter:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\cursoradapter-28.0.0.aar\d4b3ad52b9058359ce4f78ceb61a10a5\AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.lifecycle:runtime:1.1.1] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\9d0b84b57a42370edc8eac024b9e5ba0\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:documentfile:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\documentfile-28.0.0.aar\1c9646b7734235d5183b104ce9035a76\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:localbroadcastmanager:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\localbroadcastmanager-28.0.0.aar\d0b6bdc0eeab3e2d3f969cfeb666938a\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:print:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\print-28.0.0.aar\26ddec81b237eb0f9f980ba66b580621\AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.lifecycle:viewmodel:1.1.1] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\viewmodel-1.1.1.aar\03bfa4ac2f958c39799ffc28a44a0dc7\AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.lifecycle:livedata:1.1.1] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\livedata-1.1.1.aar\617745bdcbc8da785bac50946c07ce27\AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.lifecycle:livedata-core:1.1.1] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\livedata-core-1.1.1.aar\6eaa66bc481cc48bf086bd14e70cf11a\AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.core:runtime:1.1.1] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\9143d74731da29832980a67ba2804439\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:interpolator:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\interpolator-28.0.0.aar\c592f32f52831c54811a4e084ab58193\AndroidManifest.xml:17:1-22:12
+INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:2:1-138:12
+INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:2:1-138:12
+INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:2:1-138:12
+	package
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:3:5-47
+		INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
+	android:versionName
+		INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:2:1-138:12
+		INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
+	android:versionCode
+		INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:2:1-138:12
+		INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:2:11-69
+uses-permission#android.permission.INTERNET
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:4:5-67
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:4:22-64
+uses-permission#android.permission.ACCESS_WIFI_STATE
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:5:5-76
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:5:22-73
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:6:5-79
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:6:22-76
+uses-permission#android.permission.READ_EXTERNAL_STORAGE
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:7:5-80
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:7:22-77
+uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:8:5-81
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:8:22-78
+uses-permission#android.permission.CHANGE_NETWORK_STATE
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:9:5-79
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:9:22-76
+uses-permission#android.permission.CHANGE_WIFI_STATE
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:10:5-75
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:10:22-73
+application
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:11:5-136:19
+MERGED from [com.carson_ho:Super_EditText:1.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\Super_EditText-1.0.0.aar\7ef139cebf70fbca531d6ea49ce03a6b\AndroidManifest.xml:11:5-15:19
+MERGED from [com.carson_ho:Super_EditText:1.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\Super_EditText-1.0.0.aar\7ef139cebf70fbca531d6ea49ce03a6b\AndroidManifest.xml:11:5-15:19
+MERGED from [com.android.support.constraint:constraint-layout:1.1.3] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\constraint-layout-1.1.3.aar\789f4b2495a0df9bf0d142b1d5eaf077\AndroidManifest.xml:9:5-20
+MERGED from [com.android.support.constraint:constraint-layout:1.1.3] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\constraint-layout-1.1.3.aar\789f4b2495a0df9bf0d142b1d5eaf077\AndroidManifest.xml:9:5-20
+MERGED from [com.zyao89:zloading:1.1.2] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\zloading-1.1.2.aar\7597896985fc4fc44583f42e17a7399a\AndroidManifest.xml:11:5-15:19
+MERGED from [com.zyao89:zloading:1.1.2] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\zloading-1.1.2.aar\7597896985fc4fc44583f42e17a7399a\AndroidManifest.xml:11:5-15:19
+MERGED from [com.facebook.stetho:stetho:1.5.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\stetho-1.5.0.aar\2e55ed1e91086027e952a823a75590ee\AndroidManifest.xml:11:5-20
+MERGED from [com.facebook.stetho:stetho:1.5.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\stetho-1.5.0.aar\2e55ed1e91086027e952a823a75590ee\AndroidManifest.xml:11:5-20
+MERGED from [com.android.support:support-compat:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\c07527374f5674d79fd846154d05228f\AndroidManifest.xml:22:5-94
+MERGED from [com.android.support:support-compat:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\c07527374f5674d79fd846154d05228f\AndroidManifest.xml:22:5-94
+MERGED from [com.android.support:versionedparcelable:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\versionedparcelable-28.0.0.aar\d5e0a727f012c3942be99c4850344677\AndroidManifest.xml:22:5-23:19
+MERGED from [com.android.support:versionedparcelable:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\versionedparcelable-28.0.0.aar\d5e0a727f012c3942be99c4850344677\AndroidManifest.xml:22:5-23:19
+	android:appComponentFactory
+		ADDED from [com.android.support:support-compat:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\c07527374f5674d79fd846154d05228f\AndroidManifest.xml:22:18-91
+	android:supportsRtl
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:17:9-35
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:16:9-41
+	android:icon
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:15:9-43
+	android:allowBackup
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:14:9-35
+	android:theme
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:18:9-40
+	android:networkSecurityConfig
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:12:9-69
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:13:9-55
+activity#com.example.shanggmiqr.MainActivity
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:19:9-26:20
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:20:13-49
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:19:19-69
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:22:13-25:29
+action#android.intent.action.MAIN
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:23:17-69
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:23:25-66
+category#android.intent.category.LAUNCHER
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:24:17-77
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:24:27-74
+activity#com.example.shanggmiqr.TopMenu
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:27:9-28:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:28:13-49
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:27:19-64
+activity#com.example.shanggmiqr.transaction.DataManage
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:29:9-31:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:31:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:30:13-35
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:29:19-79
+activity#com.example.shanggmiqr.transaction.BusinessOperation
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:32:9-34:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:34:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:33:13-35
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:32:19-86
+activity#com.example.shanggmiqr.transaction.SaleDelivery
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:35:9-37:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:37:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:36:13-33
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:35:19-81
+activity#com.example.shanggmiqr.transaction.ProductEntry
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:38:9-40:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:40:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:39:13-34
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:38:19-81
+activity#com.example.shanggmiqr.transaction.AllocateTransfer
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:41:9-43:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:43:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:42:13-33
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:41:19-85
+activity#com.example.shanggmiqr.transaction.PurchaseReturn
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:44:9-46:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:46:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:45:13-33
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:44:19-83
+activity#com.example.shanggmiqr.transaction.PurchaseReturnDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:47:9-48:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:48:13-49
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:47:19-89
+activity#com.example.shanggmiqr.transaction.AllocateTransferDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:49:9-51:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:51:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:50:13-35
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:49:19-91
+activity#com.example.shanggmiqr.transaction.LoanBill
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:52:9-54:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:54:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:53:13-32
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:52:19-77
+activity#com.example.shanggmiqr.transaction.OtherOutgoing
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:55:9-57:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:57:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:56:13-33
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:55:19-82
+activity#com.example.shanggmiqr.transaction.OtherEntry
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:58:9-60:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:60:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:59:13-33
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:58:19-79
+activity#com.example.shanggmiqr.transaction.PurchaseArrival
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:61:9-63:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:63:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:62:13-33
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:61:19-84
+activity#com.example.shanggmiqr.transaction.OtherOutgoingDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:64:9-66:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:66:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:65:13-35
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:64:19-88
+activity#com.example.shanggmiqr.transaction.OtherEntryDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:67:9-69:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:69:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:68:13-35
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:67:19-85
+activity#com.example.shanggmiqr.transaction.OtherOutgoingQRDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:70:9-72:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:72:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:71:13-35
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:70:19-90
+activity#com.example.shanggmiqr.transaction.OtherEntryQRDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:73:9-75:62
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:75:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:74:13-35
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:73:19-87
+activity#com.example.shanggmiqr.transaction.UserDBDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:76:9-78:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:78:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:77:13-33
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:76:19-81
+activity#com.example.shanggmiqr.transaction.WarhouseDBDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:79:9-81:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:81:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:80:13-33
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:79:19-85
+activity#com.example.shanggmiqr.transaction.CustomerDBDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:82:9-84:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:84:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:83:13-33
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:82:19-85
+activity#com.example.shanggmiqr.transaction.MaterialDBDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:85:9-87:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:87:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:86:13-33
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:85:19-85
+activity#com.example.shanggmiqr.transaction.SupplierDBDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:88:9-90:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:90:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:89:13-34
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:88:19-85
+activity#com.example.shanggmiqr.transaction.LogisticsCompanyDBDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:91:9-93:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:93:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:92:13-35
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:91:19-93
+activity#com.example.shanggmiqr.transaction.OtherOutgoingQrScanner
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:94:9-96:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:96:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:95:13-33
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:94:19-91
+activity#com.example.shanggmiqr.transaction.OtherEntryQrScanner
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:97:9-99:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:99:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:98:13-33
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:97:19-88
+activity#com.example.shanggmiqr.transaction.SaleDeliveryDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:100:9-102:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:102:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:101:13-34
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:100:19-87
+activity#com.example.shanggmiqr.transaction.LoanDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:103:9-105:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:105:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:104:13-34
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:103:19-79
+activity#com.example.shanggmiqr.transaction.LoanQRDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:106:9-108:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:108:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:107:13-36
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:106:19-81
+activity#com.example.shanggmiqr.transaction.SaleDeliveryQRDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:109:9-111:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:111:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:110:13-36
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:109:19-89
+activity#com.example.shanggmiqr.transaction.ProductEntryDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:112:9-114:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:114:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:113:13-37
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:112:19-87
+activity#com.example.shanggmiqr.transaction.ProductEntryQRDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:115:9-117:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:117:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:116:13-39
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:115:19-89
+activity#com.example.shanggmiqr.transaction.LoanQrScanner
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:118:9-120:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:120:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:119:13-34
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:118:19-82
+activity#com.example.shanggmiqr.transaction.ProductEntryQrScanner
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:121:9-123:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:123:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:122:13-36
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:121:19-90
+activity#com.example.shanggmiqr.transaction.AllocateTransferQRDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:124:9-126:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:126:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:125:13-38
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:124:19-93
+activity#com.example.shanggmiqr.transaction.AllocateTransferQrScanner
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:127:9-129:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:129:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:128:13-36
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:127:19-94
+activity#com.example.shanggmiqr.transaction.SaleDeliveryQrScanner
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:130:9-132:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:132:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:131:13-33
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:130:19-90
+activity#com.example.shanggmiqr.transaction.QrcodeRuleDBDetail
+ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:133:9-135:61
+	android:screenOrientation
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:135:13-49
+	android:label
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:134:13-33
+	android:name
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml:133:19-87
+uses-sdk
+INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
+INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
+MERGED from [com.carson_ho:Super_EditText:1.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\Super_EditText-1.0.0.aar\7ef139cebf70fbca531d6ea49ce03a6b\AndroidManifest.xml:7:5-9:41
+MERGED from [com.carson_ho:Super_EditText:1.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\Super_EditText-1.0.0.aar\7ef139cebf70fbca531d6ea49ce03a6b\AndroidManifest.xml:7:5-9:41
+MERGED from [com.android.support:appcompat-v7:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\appcompat-v7-28.0.0.aar\f06ccc15c3792a3b33d93c94b6f1d82e\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:appcompat-v7:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\appcompat-v7-28.0.0.aar\f06ccc15c3792a3b33d93c94b6f1d82e\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support.constraint:constraint-layout:1.1.3] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\constraint-layout-1.1.3.aar\789f4b2495a0df9bf0d142b1d5eaf077\AndroidManifest.xml:5:5-7:41
+MERGED from [com.android.support.constraint:constraint-layout:1.1.3] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\constraint-layout-1.1.3.aar\789f4b2495a0df9bf0d142b1d5eaf077\AndroidManifest.xml:5:5-7:41
+MERGED from [com.github.huangyanbin:SmartTable:2.2.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\SmartTable-2.2.0.aar\ecaaf5747ae58082745518bb5c76b587\AndroidManifest.xml:7:5-9:41
+MERGED from [com.github.huangyanbin:SmartTable:2.2.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\SmartTable-2.2.0.aar\ecaaf5747ae58082745518bb5c76b587\AndroidManifest.xml:7:5-9:41
+MERGED from [com.zyao89:zloading:1.1.2] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\zloading-1.1.2.aar\7597896985fc4fc44583f42e17a7399a\AndroidManifest.xml:7:5-9:41
+MERGED from [com.zyao89:zloading:1.1.2] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\zloading-1.1.2.aar\7597896985fc4fc44583f42e17a7399a\AndroidManifest.xml:7:5-9:41
+MERGED from [com.facebook.stetho:stetho:1.5.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\stetho-1.5.0.aar\2e55ed1e91086027e952a823a75590ee\AndroidManifest.xml:7:5-9:41
+MERGED from [com.facebook.stetho:stetho:1.5.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\stetho-1.5.0.aar\2e55ed1e91086027e952a823a75590ee\AndroidManifest.xml:7:5-9:41
+MERGED from [com.android.support:support-fragment:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-fragment-28.0.0.aar\0dba0983de2dfe5f26b084f8e0ae3f71\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-fragment:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-fragment-28.0.0.aar\0dba0983de2dfe5f26b084f8e0ae3f71\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:animated-vector-drawable:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\animated-vector-drawable-28.0.0.aar\5c514418b815e3e183b4e1ba492e7af7\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:animated-vector-drawable:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\animated-vector-drawable-28.0.0.aar\5c514418b815e3e183b4e1ba492e7af7\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-core-ui:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-core-ui-28.0.0.aar\42c4cca0ca48d3a3e17c85666b15712c\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-core-ui:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-core-ui-28.0.0.aar\42c4cca0ca48d3a3e17c85666b15712c\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-core-utils:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-core-utils-28.0.0.aar\019261f44adadc6e84b5fb1ba9e104dd\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-core-utils:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-core-utils-28.0.0.aar\019261f44adadc6e84b5fb1ba9e104dd\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-vector-drawable:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-vector-drawable-28.0.0.aar\ee0f7a2c083c54e5323296daa2e19482\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-vector-drawable:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-vector-drawable-28.0.0.aar\ee0f7a2c083c54e5323296daa2e19482\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:loader:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\loader-28.0.0.aar\d14bcfac9d04d44ceb0dfcb11ed0a4cc\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:loader:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\loader-28.0.0.aar\d14bcfac9d04d44ceb0dfcb11ed0a4cc\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:viewpager:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\viewpager-28.0.0.aar\30042e7048bb75bf381e02751d96262a\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:viewpager:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\viewpager-28.0.0.aar\30042e7048bb75bf381e02751d96262a\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:coordinatorlayout:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\coordinatorlayout-28.0.0.aar\5a62f0d1376680fd17a3eb2547f6195c\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:coordinatorlayout:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\coordinatorlayout-28.0.0.aar\5a62f0d1376680fd17a3eb2547f6195c\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:drawerlayout:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\drawerlayout-28.0.0.aar\b594d879b7e9d6d40e20fc1e1148d14d\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:drawerlayout:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\drawerlayout-28.0.0.aar\b594d879b7e9d6d40e20fc1e1148d14d\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:slidingpanelayout:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\slidingpanelayout-28.0.0.aar\e9adc1c0d7dbd822f666cd1882770f37\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:slidingpanelayout:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\slidingpanelayout-28.0.0.aar\e9adc1c0d7dbd822f666cd1882770f37\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:customview:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\customview-28.0.0.aar\ad53826a86682eeb3b2ee89fe370a766\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:customview:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\customview-28.0.0.aar\ad53826a86682eeb3b2ee89fe370a766\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:swiperefreshlayout:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\swiperefreshlayout-28.0.0.aar\c371dfaca8e735e520dc27c9e3b88e56\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:swiperefreshlayout:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\swiperefreshlayout-28.0.0.aar\c371dfaca8e735e520dc27c9e3b88e56\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:asynclayoutinflater:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\asynclayoutinflater-28.0.0.aar\482b3b89b2b6c82b1eb474ffc8b8f298\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:asynclayoutinflater:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\asynclayoutinflater-28.0.0.aar\482b3b89b2b6c82b1eb474ffc8b8f298\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-compat:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\c07527374f5674d79fd846154d05228f\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-compat:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\c07527374f5674d79fd846154d05228f\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:versionedparcelable:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\versionedparcelable-28.0.0.aar\d5e0a727f012c3942be99c4850344677\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:versionedparcelable:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\versionedparcelable-28.0.0.aar\d5e0a727f012c3942be99c4850344677\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:cursoradapter:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\cursoradapter-28.0.0.aar\d4b3ad52b9058359ce4f78ceb61a10a5\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:cursoradapter:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\cursoradapter-28.0.0.aar\d4b3ad52b9058359ce4f78ceb61a10a5\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:runtime:1.1.1] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\9d0b84b57a42370edc8eac024b9e5ba0\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:runtime:1.1.1] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\9d0b84b57a42370edc8eac024b9e5ba0\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:documentfile:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\documentfile-28.0.0.aar\1c9646b7734235d5183b104ce9035a76\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:documentfile:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\documentfile-28.0.0.aar\1c9646b7734235d5183b104ce9035a76\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:localbroadcastmanager:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\localbroadcastmanager-28.0.0.aar\d0b6bdc0eeab3e2d3f969cfeb666938a\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:localbroadcastmanager:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\localbroadcastmanager-28.0.0.aar\d0b6bdc0eeab3e2d3f969cfeb666938a\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:print:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\print-28.0.0.aar\26ddec81b237eb0f9f980ba66b580621\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:print:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\print-28.0.0.aar\26ddec81b237eb0f9f980ba66b580621\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:viewmodel:1.1.1] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\viewmodel-1.1.1.aar\03bfa4ac2f958c39799ffc28a44a0dc7\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:viewmodel:1.1.1] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\viewmodel-1.1.1.aar\03bfa4ac2f958c39799ffc28a44a0dc7\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:livedata:1.1.1] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\livedata-1.1.1.aar\617745bdcbc8da785bac50946c07ce27\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:livedata:1.1.1] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\livedata-1.1.1.aar\617745bdcbc8da785bac50946c07ce27\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:livedata-core:1.1.1] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\livedata-core-1.1.1.aar\6eaa66bc481cc48bf086bd14e70cf11a\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:livedata-core:1.1.1] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\livedata-core-1.1.1.aar\6eaa66bc481cc48bf086bd14e70cf11a\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.core:runtime:1.1.1] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\9143d74731da29832980a67ba2804439\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.core:runtime:1.1.1] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\9143d74731da29832980a67ba2804439\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:interpolator:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\interpolator-28.0.0.aar\c592f32f52831c54811a4e084ab58193\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:interpolator:28.0.0] C:\Users\teemo\.gradle\caches\transforms-1\files-1.1\interpolator-28.0.0.aar\c592f32f52831c54811a4e084ab58193\AndroidManifest.xml:20:5-44
+INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
+INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\teemo\MyApplication\app\src\main\AndroidManifest.xml
