@@ -90,7 +90,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
 
     private ZLoadingDialog dialog;
     //用临时变量count计数下载成功的基础数据个数，满6 dialog消失
-    private int count = 0;
+
     @Override
     protected void onCreate( Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -137,10 +137,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         Toast.makeText(TopMenu.this, "请检查网络连接并到基础信息界面手动更新基础数据", Toast.LENGTH_LONG).show();
                         break;
                     case 0x11:
-                        count++;
-                        if (count ==6){
+
                             dialog.dismiss();
-                        }
+
                         String latest_warhouse_ts = getCurrentDataTime();
                         SharedPreferences latestDBTimeInfo1= getSharedPreferences("LatestDBTimeInfo", 0);
                         SharedPreferences.Editor editor1 = latestDBTimeInfo1.edit();
@@ -149,10 +148,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
 
                         break;
                     case 0x12:
-                        count++;
-                        if (count ==6){
+
                             dialog.dismiss();
-                        }
+
                         String latest_material_ts = getCurrentDataTime();
                         SharedPreferences latestDBTimeInfo2 = getSharedPreferences("LatestDBTimeInfo", 0);
                         SharedPreferences.Editor editor2 = latestDBTimeInfo2.edit();
@@ -161,10 +159,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
 
                         break;
                     case 0x13:
-                        count++;
-                        if (count ==6){
+
                             dialog.dismiss();
-                        }
+
                         String latest_user_ts = getCurrentDataTime();
                         SharedPreferences latestDBTimeInfo3 = getSharedPreferences("LatestDBTimeInfo", 0);
                         SharedPreferences.Editor editor3 = latestDBTimeInfo3.edit();
@@ -173,10 +170,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
 
                         break;
                     case 0x14:
-                        count++;
-                        if (count ==6){
+
                             dialog.dismiss();
-                        }
+
                         String latest_customer_ts = getCurrentDataTime();
                         SharedPreferences latestDBTimeInfo4 = getSharedPreferences("LatestDBTimeInfo", 0);
                         SharedPreferences.Editor editor4 = latestDBTimeInfo4.edit();
@@ -185,10 +181,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
 
                         break;
                     case 0x15:
-                        count++;
-                        if (count ==6){
+
                             dialog.dismiss();
-                        }
+
                         String latest_qr_ts = getCurrentDataTime();
                         SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestDBTimeInfo", 0);
                         SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
@@ -197,10 +192,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
 
                         break;
                     case 0x16:
-                        count++;
-                        if (count ==6){
+
                             dialog.dismiss();
-                        }
+
                         String latest_supplier_ts = getCurrentDataTime();
                         SharedPreferences latestDBTimeInfo6 = getSharedPreferences("LatestDBTimeInfo", 0);
                         SharedPreferences.Editor editor6 = latestDBTimeInfo6.edit();
@@ -250,10 +244,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         Toast.makeText(TopMenu.this, "物流公司信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
                         break;
                     case 0x26:
-                        count++;
-                        if (count ==6){
+
                             dialog.dismiss();
-                        }
+
                         String latest_logistics_company_ts = getCurrentDataTime();
                         SharedPreferences latestDBTimeInfo26 = getSharedPreferences("LatestDBTimeInfo", 0);
                         SharedPreferences.Editor editor26 = latestDBTimeInfo26.edit();
@@ -341,10 +334,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                                 @Override
                                 public void run() {
 
-                                    count++;
-                                    if (count ==6){
+
                                         dialog.dismiss();
-                                    }
+
                                 }
                             });
                             return;
@@ -404,10 +396,8 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                                 @Override
                                 public void run() {
 
-                                    count++;
-                                    if (count ==6){
                                         dialog.dismiss();
-                                    }
+
                                 }
                             });
                             return;
@@ -468,10 +458,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                                 @Override
                                 public void run() {
 
-                                    count++;
-                                    if (count ==6){
+
                                         dialog.dismiss();
-                                    }
+
                                 }
                             });
                             return;
@@ -531,10 +520,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                                 @Override
                                 public void run() {
 
-                                    count++;
-                                    if (count ==6){
+
                                         dialog.dismiss();
-                                    }
+
                                 }
                             });
                             return;
@@ -594,10 +582,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                                 @Override
                                 public void run() {
 
-                                    count++;
-                                    if (count ==6){
+
                                         dialog.dismiss();
-                                    }
+
                                 }
                             });
                             return;
@@ -657,10 +644,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                                 @Override
                                 public void run() {
 
-                                    count++;
-                                    if (count ==6){
+
                                         dialog.dismiss();
-                                    }
+
                                 }
                             });
                             return;
@@ -720,10 +706,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                                 @Override
                                 public void run() {
 
-                                    count++;
-                                    if (count ==6){
+
                                         dialog.dismiss();
-                                    }
+
                                 }
                             });
                             return;
