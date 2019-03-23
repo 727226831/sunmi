@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,6 +33,7 @@ import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -113,6 +115,9 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。
         db5 = helper5.getWritableDatabase();//获取到了 SQLiteDatabase 对象
+
+        boxCodeEditText.setOnKeyListener(onKeyListener);
+
         tableBodyListView = (ListView) findViewById(R.id.list_body_saledelivery_qrdetail_scanner);
         scannnumText.setText("已扫码数量：" + countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv));
         spinner = findViewById(R.id.saledelivery_spinner_scanner_text);
@@ -125,23 +130,8 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //截取产品码的第五位到第九位，查看是否与物料大类匹配
-                count = countSum();
-                //    if((productCodeEditText.getText().toString().length() == 13) &&productCodeEditText.getText().toString().substring(4,9).equals(current_maccode_qrRecv) && count<current_nnum_qrRecv ){
-                if ((!isAlreadyScanned(productCodeEditText.getText().toString()) && !isEditTextEmpty() && (productCodeEditText.getText().toString().length() == getLengthInQrRule())) && count < Math.abs(current_nnum_qrRecv) && isValidQr() && !isCwarenameEmpty())
-                {
-                    InsertintoTempQrDBForSaleDelivery();
-                    //scanStatus = true;
-                } else if (count >= Math.abs(current_nnum_qrRecv)) {
-                    Toast.makeText(SaleDeliveryQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
-                } else if (isEditTextEmpty()) {
-                    Toast.makeText(SaleDeliveryQrScanner.this, "二维码区域不可以为空", Toast.LENGTH_LONG).show();
-                } else if (isAlreadyScanned(productCodeEditText.getText().toString())) {
-                    Toast.makeText(SaleDeliveryQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
-                } else if (isCwarenameEmpty()) {
-                    Toast.makeText(SaleDeliveryQrScanner.this, "请选择仓库信息", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(SaleDeliveryQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
-                }
+                getData();
+
             }
         });
         productCodeEditText.setOnEditorActionListener(new TextView.OnEditorActionListener()
@@ -241,6 +231,47 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                 }
             }
         };
+    }
+    View.OnKeyListener onKeyListener=new View.OnKeyListener() {
+        @Override
+        public boolean onKey(View v, int keyCode, KeyEvent event) {
+            if(keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
+                switch (v.getId()) {
+                    case R.id.saledelivery_boxcode_scanner:
+                        getData();
+                     break;
+                }
+            }
+
+            return false;
+        }
+    };
+
+    private void getData() {
+        boxCodeEditTextContent= Arrays.asList(boxCodeEditText.getText().toString().split("\\s+"));
+        qrcode_xm_Text.setText("二维箱码："+boxCodeEditTextContent.size());
+        for (int i = 0; i <boxCodeEditTextContent.size() ; i++) {
+            Log.i(" boxCodeEditTextConten",boxCodeEditTextContent.get(i));
+            productCodeEditText.setText(boxCodeEditTextContent.get(i));
+
+            count = countSum();
+            //    if((productCodeEditText.getText().toString().length() == 13) &&productCodeEditText.getText().toString().substring(4,9).equals(current_maccode_qrRecv) && count<current_nnum_qrRecv ){
+            if ((!isAlreadyScanned(productCodeEditText.getText().toString()) && !isEditTextEmpty() && (productCodeEditText.getText().toString().length() == getLengthInQrRule())) && count < Math.abs(current_nnum_qrRecv) && isValidQr() && !isCwarenameEmpty()) {
+                InsertintoTempQrDBForSaleDelivery(productCodeEditText.getText().toString());
+                boxCodeEditText.setText("");
+                //scanStatus = true;
+            } else if (count >= Math.abs(current_nnum_qrRecv)) {
+                Toast.makeText(SaleDeliveryQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
+            } else if (isEditTextEmpty()) {
+                Toast.makeText(SaleDeliveryQrScanner.this, "二维码区域不可以为空", Toast.LENGTH_LONG).show();
+            } else if (isAlreadyScanned(productCodeEditText.getText().toString())) {
+                Toast.makeText(SaleDeliveryQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
+            } else if (isCwarenameEmpty()) {
+                Toast.makeText(SaleDeliveryQrScanner.this, "请选择仓库信息", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(SaleDeliveryQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     private int getLengthInQrRule() {
@@ -483,7 +514,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
         return list;
     }
 
-    private void InsertintoTempQrDBForSaleDelivery() {
+    private void InsertintoTempQrDBForSaleDelivery(final String productcode) {
 //插入临时数据库保持条码信息并显示在此页面
 
         new Thread(new Runnable() {
@@ -492,14 +523,18 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                 if (Utils.isNetworkConnected(SaleDeliveryQrScanner.this)) {
                     try {
                         //使用 ContentValues 来对要添加的数据进行组装
+
                         ContentValues values = new ContentValues();
                         // 开始组装第一条数据
                         values.put("vbillcode", current_vbillcode_qrRecv);
                         values.put("vcooporderbcode_b", current_vcooporderbcode_b_qrRecv);
                         values.put("matrcode", current_matrcode_qrRecv);
                         values.put("platecode", plateCodeEditText.getText().toString());
-                        values.put("boxcode", boxCodeEditText.getText().toString());
-                        values.put("prodcutcode", productCodeEditText.getText().toString());
+
+                        //values.put("boxcode", boxCodeEditText.getText().toString());
+                        values.put("boxcode", "");
+                        values.put("prodcutcode", productcode);
+                        Log.i("code-->",productcode);
                         values.put("num", current_nnum_qrRecv);
                         values.put("itemuploadflag", "N");
                         values.put("xlh", current_xlh_substring);

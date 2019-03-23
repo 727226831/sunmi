@@ -27,6 +27,8 @@ public class SaleDeliverySendBean {
     public String wlbill;
     public List<BodyBean> body;
 
+
+
     public SaleDeliverySendBean(String lyxt, String tmcode, String cwhsmanagercode,String wlcode,String wlbill, String cwarehousecode, String bisreturn, String pobillcode, List<BodyBean> body) {
         this.lyxt = lyxt;
         this.tmcode = tmcode;

@@ -25,6 +25,61 @@ public class SaleDeliveryBean {
     public String vbillcode;
     public String dbilldate;
     public int dr;
+    String matrcode;
+
+    public String getMatrcode() {
+        return matrcode;
+    }
+
+    public void setMatrcode(String matrcode) {
+        this.matrcode = matrcode;
+    }
+
+    public String getMatrname() {
+        return matrname;
+    }
+
+    public void setMatrname(String matrname) {
+        this.matrname = matrname;
+    }
+
+    public String getMaccode() {
+        return maccode;
+    }
+
+    public void setMaccode(String maccode) {
+        this.maccode = maccode;
+    }
+
+    public String getNnum() {
+        return nnum;
+    }
+
+    public void setNnum(String nnum) {
+        this.nnum = nnum;
+    }
+
+    public String getProdcutcode() {
+        return prodcutcode;
+    }
+
+    public void setProdcutcode(String prodcutcode) {
+        this.prodcutcode = prodcutcode;
+    }
+
+    public String getXlh() {
+        return xlh;
+    }
+
+    public void setXlh(String xlh) {
+        this.xlh = xlh;
+    }
+
+    String matrname;
+    String maccode;
+    String nnum;
+    String prodcutcode;
+    String xlh;
 
     public boolean isSelected = false;
     public SaleDeliveryBean(){

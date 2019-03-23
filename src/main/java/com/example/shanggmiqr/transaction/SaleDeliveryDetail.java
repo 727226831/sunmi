@@ -47,6 +47,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -346,6 +347,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 expressCode = expressCodeEditText.getText().toString();
+                Log.i("expresscode",expressCode);
                 if ("".equals(expressCode) || "".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)) {
                     if("".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)){
                         chooseLogisticscompany ="";
@@ -942,12 +944,18 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         }
         SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
         String current_user = currentAccount.getString("current_account","");
-        SaleDeliverySendBean otherOutgoingSend = new SaleDeliverySendBean("APP", "123456",current_user, wlCode, expressCode, upload_all_cwarehousecode, current_bisreturn, current_sale_delivery_vbillcodeRecv, bodylist);
-        Gson gson = new Gson();
-        String userSendBean = gson.toJson(otherOutgoingSend);
+        List<String> stringList=new ArrayList<>();
+        stringList = Arrays.asList(expressCode.split("\\s+"));
+        for (int i = 0; i <stringList.size() ; i++) {
+            SaleDeliverySendBean otherOutgoingSend = new SaleDeliverySendBean("APP", "123456",current_user, wlCode,stringList.get(i), upload_all_cwarehousecode, current_bisreturn, current_sale_delivery_vbillcodeRecv, bodylist);
+            otherOutgoingSend.setCwhsmanagercode( currentAccount.getString("current_account",""));
+            Gson gson = new Gson();
+            String userSendBean = gson.toJson(otherOutgoingSend);
 
-        request.addProperty("string", workcode);
-        request.addProperty("string1", userSendBean);
+            request.addProperty("string", workcode);
+            request.addProperty("string1", userSendBean);
+        }
+
         //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
         //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);

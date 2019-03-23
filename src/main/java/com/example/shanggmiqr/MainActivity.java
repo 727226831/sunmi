@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -20,19 +21,25 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.Url.iUrl;
 import com.example.shanggmiqr.bean.CommonSendNoPagetotalBean;
 import com.example.shanggmiqr.bean.User;
 import com.example.shanggmiqr.util.BaseConfig;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
+import com.example.weiytjiang.shangmiqr.BuildConfig;
 import com.example.weiytjiang.shangmiqr.R;
 import com.google.gson.Gson;
+import com.zyao89.view.zloading.ZLoadingDialog;
+import com.zyao89.view.zloading.Z_TYPE;
 
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
@@ -49,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
     private Button msettingButton;
     private EditText accountEdittext;
     private EditText pwdEdittext;
-    private Handler mHandler = null;
     private Button mlogInButton;
     private String result;
     private String number;
@@ -57,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
     private SQLiteDatabase db;
     private String user_ts_begintime;
     private String user_ts_endtime;
+    private TextView textViewversion;
+    private ZLoadingDialog dialog;
     //读写权限
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -64,7 +72,8 @@ public class MainActivity extends AppCompatActivity {
     //请求状态码
     private static int REQUEST_PERMISSION_CODE = 1;
 
-
+    SharedPreferences updateConfig;
+    SharedPreferences.Editor editor;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,17 +85,24 @@ public class MainActivity extends AppCompatActivity {
         }
         //设定URL值
         //使用本地保存的代替
-        SharedPreferences sharedPreferences = getSharedPreferences("configInfo", 0);
-      //  String URL = sharedPreferences.getString("WSDL_URI", "http://101.132.113.34:8001/uapws/service/INetWebserviceServer");
+
+
       //测试服
-        String URL = sharedPreferences.getString("WSDL_URI", "http://120.92.218.158:8888/uapws/service/INetWebserviceServer");
+
+
+         updateConfig = getSharedPreferences("configInfo", 0);
+         editor = updateConfig.edit();
+        String URL = updateConfig.getString("WSDL_URI", iUrl.WSDL_URI);
         BaseConfig.setNcUrl(URL);
+
         mdownloadUserInfo = (Button) findViewById(R.id.downloaduserinfo);
         msettingButton = (Button) findViewById(R.id.setting);
         mquitButton = (Button) findViewById(R.id.quit);
         mlogInButton = (Button) findViewById(R.id.login);
         accountEdittext = (EditText) findViewById(R.id.accountEdittext);
         pwdEdittext = (EditText) findViewById(R.id.pwdEdittext);
+        textViewversion=findViewById(R.id.tv_version);
+       textViewversion.setText("版本号:"+ BuildConfig.VERSION_NAME);
         helper = new MyDataBaseHelper(MainActivity.this, "ShangmiData", null, 1);
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错
@@ -107,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
                             SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
                             SharedPreferences.Editor editor1 = currentAccount.edit();
                             editor1.putString("current_account",pwdEdittext.getText().toString());
+
                             editor1.commit();
                             msgLogin.what = 0x13;
                             mHandler.sendMessage(msgLogin);
@@ -137,21 +154,18 @@ public class MainActivity extends AppCompatActivity {
                 final EditText editTextNumEditText = (EditText) textEntryView.findViewById(R.id.editTextNum);
                 AlertDialog.Builder ad1 = new AlertDialog.Builder(MainActivity.this);
                 ad1.setTitle("WebService设置:");
-                SharedPreferences sharedPreferences = getSharedPreferences("configInfo", 0);
-                String proxyname = sharedPreferences.getString("WSDL_URI", BaseConfig.getNcUrl());
-                String proxy = sharedPreferences.getString("namespace", "http://schemas.xmlsoap.org/soap/envelope/");
-                if (proxy.equals("") || proxyname.equals("")) {
-                    proxyname = BaseConfig.getNcUrl();
-                    proxy = "http://schemas.xmlsoap.org/soap/envelope/";
-                }
-                editTextName.setText(proxyname);
-                editTextNumEditText.setText(proxy);
+
+
+                editTextName.setText(updateConfig.getString("WSDL_URI",iUrl.WSDL_URI));
+                editTextNumEditText.setText(updateConfig.getString("namespace",iUrl.namespace));
                 ad1.setView(textEntryView);
+
+
+
                 ad1.setPositiveButton("更新", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int i) {
-                        Log.i("111111", editTextName.getText().toString());
-                        SharedPreferences updateConfig = getSharedPreferences("configInfo", 0);
-                        SharedPreferences.Editor editor = updateConfig.edit();
+
+
                         editor.putString("WSDL_URI", editTextName.getText().toString());
                         editor.putString("namespace", editTextNumEditText.getText().toString());
                         editor.commit();
@@ -168,6 +182,18 @@ public class MainActivity extends AppCompatActivity {
         mdownloadUserInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                dialog = new ZLoadingDialog(MainActivity.this);
+                dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
+                        .setLoadingColor(Color.BLUE)//颜色
+                        .setHintText("数据信息下载中...")
+                        .setCancelable(false)
+                        .setCanceledOnTouchOutside(false)
+                        .setHintTextSize(16) // 设置字体大小 dp
+                        .setHintTextColor(Color.GRAY)  // 设置字体颜色
+                        .setDurationTime(0.5) // 设置动画时间百分比 - 0.5倍
+                        //     .setDialogBackgroundColor(Color.parseColor("#CC111111")) // 设置背景色，默认白色
+                        .show();
+
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -190,9 +216,11 @@ public class MainActivity extends AppCompatActivity {
                                 if (user.getPagetotal() ==1){
                                     insertUserDataToDB(user);
                                 }else if(user.getPagetotal() <1){
+
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
+
                                             Toast.makeText(MainActivity.this, "当前用户信息已经是最新数据", Toast.LENGTH_LONG).show();
                                         }
                                     });
@@ -232,52 +260,55 @@ public class MainActivity extends AppCompatActivity {
                 }).start();
             }
         });
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what) {
-                    case 0x11:
-                        //mlogInButton.setEnabled(true);
-                        Toast.makeText(MainActivity.this, "请检查网络连接", Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x12:
-                        mlogInButton.setEnabled(true);
-                        String latest_user_ts = Utils.getCurrentDataTime();
-                        SharedPreferences latestDBTimeInfo3 = getSharedPreferences("LatestDBTimeInfo", 0);
-                        SharedPreferences.Editor editor3 = latestDBTimeInfo3.edit();
-                        editor3.putString("latest_user_ts", latest_user_ts);
-                        editor3.commit();
-                        Toast.makeText(MainActivity.this, "用户数据下载成功", Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x13:
-                        Toast.makeText(MainActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
-                        break;
-                    case 0x14:
-                        Toast.makeText(MainActivity.this, "用户名或密码错误", Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x15:
-                        Toast.makeText(MainActivity.this, "请检查服务器连接", Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x16:
-                        String exception333 = msg.getData().getString("Exception333");
-                        Toast.makeText(MainActivity.this, "用户最新信息下载失败,错误信息："+exception333, Toast.LENGTH_LONG).show();
-                        break;
-                    default:
-                        break;
-                }
-            }
-        };
+
     }
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_PERMISSION_CODE) {
-            for (int i = 0; i < permissions.length; i++) {
-                Log.i("MainActivity", "申请的权限为：" + permissions[i] + ",申请结果：" + grantResults[i]);
+
+   Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+             if(dialog!=null){
+                 dialog.dismiss();
+             }
+            switch (msg.what) {
+
+                case 0x11:
+                    //mlogInButton.setEnabled(true);
+                    Toast.makeText(MainActivity.this, "请检查网络连接", Toast.LENGTH_LONG).show();
+                    break;
+                case 0x12:
+                    mlogInButton.setEnabled(true);
+                    String latest_user_ts = Utils.getCurrentDataTime();
+                    SharedPreferences latestDBTimeInfo3 = getSharedPreferences("LatestDBTimeInfo", 0);
+                    SharedPreferences.Editor editor3 = latestDBTimeInfo3.edit();
+                    editor3.putString("latest_user_ts", latest_user_ts);
+                    editor3.commit();
+                    Toast.makeText(MainActivity.this, "用户数据下载成功", Toast.LENGTH_LONG).show();
+
+                    break;
+                case 0x13:
+                    Toast.makeText(MainActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
+                    break;
+                case 0x14:
+                    Toast.makeText(MainActivity.this, "用户名或密码错误", Toast.LENGTH_LONG).show();
+                    break;
+                case 0x15:
+
+                    Toast.makeText(MainActivity.this, "请检查服务器连接", Toast.LENGTH_LONG).show();
+                    break;
+                case 0x16:
+                    String exception333 = msg.getData().getString("Exception333");
+                    Toast.makeText(MainActivity.this, "用户最新信息下载失败,错误信息："+exception333, Toast.LENGTH_LONG).show();
+                    break;
+                default:
+                    break;
             }
         }
-    }
+    };
+
+
+
+
     private boolean isUserDBEmpty() {
         Cursor cursor = db.rawQuery("select * from User",
                 null);
