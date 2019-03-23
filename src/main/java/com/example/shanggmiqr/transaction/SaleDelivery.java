@@ -33,6 +33,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.Url.iUrl;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.SaleDeliveryAdapter;
 import com.example.shanggmiqr.bean.CommonSendNoPagetotalBean;
@@ -100,7 +101,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         lst_downLoad_ts = (TextView)findViewById(R.id.last_downLoad_ts);
         //显示最后一次的下载时间
         SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestSaleDeliveryTSInfo", 0);
-        begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "2018-09-01 00:00:01");
+        begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
         lst_downLoad_ts.setText("最后一次下载:"+begintime);
 
         db3 = helper3.getWritableDatabase();//获取到了 SQLiteDatabase 对象
@@ -137,7 +138,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 if(dialog!=null){
                     dialog.dismiss();
                 }
-                Log.i("message",msg+"");
+
                 switch (msg.what) {
                     case 0x10:
                         Toast.makeText(SaleDelivery.this, "请检查网络连接", Toast.LENGTH_LONG).show();
@@ -371,7 +372,8 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         }
         return true;
     }
-    int  i=0;
+
+    private boolean isVbillcodeExist=false;
     private void insertDownloadDataToDB(SaleDeliveryQuery saleDeliveryQuery) {
 
         List<SaleDeliveryQuery.DataBean> saleDeliveryBeanList = saleDeliveryQuery.getData();
@@ -390,12 +392,12 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
             String vmemo = ob.getVmemo();
             String dr =ob.getDr();
             //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
-
-            if("0".equals(dr)&& isVbillcodeExist(vbillcode)){
+             isVbillcodeExist=isVbillcodeExist(vbillcode);
+            if("0".equals(dr)&& isVbillcodeExist){
                 continue;
             }
             //等于1时
-            if("1".equals(dr) || ("2".equals(dr)&&isVbillcodeExist(vbillcode)))
+            if("1".equals(dr) || ("2".equals(dr)&&isVbillcodeExist))
             {
                 //操作选择二 通过单号删除
                 //删除三张表
@@ -423,8 +425,6 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
             ContentValues values = new ContentValues();
 
             for (SaleDeliveryQuery.DataBean.BodysBean obb : saleDeliveryDatabodysList) {
-                i++;
-                Log.i("list",i+"");
                 String vcooporderbcode_b = obb.getVcooporderbcode_b();
                 String matrcode = obb.getMatrcode();
                 String matrname = obb.getMatrname();
@@ -520,8 +520,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
     private String countScannedQRCode(String vbillcode,String vcooporderbcode_b, String matrcode) {
         String count = "0";
-        Log.i("sql-->",vbillcode+"/"+vcooporderbcode_b+"/"+matrcode);
-        Cursor cursor2 = db3.rawQuery("select prodcutcode from SaleDeliveryScanResult where vbillcode=? and matrcode=? and vcooporderbcode_b=? ", new String[]{vbillcode, matrcode,vcooporderbcode_b});
+        Cursor cursor2 = db3.rawQuery("select count(prodcutcode) from SaleDeliveryScanResult where vbillcode=? and matrcode=? and vcooporderbcode_b=? ", new String[]{vbillcode, matrcode,vcooporderbcode_b});
         if (cursor2 != null && cursor2.getCount() > 0) {
             //判断cursor中是否存在数据
             count = String.valueOf(cursor2.getCount());
@@ -752,7 +751,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     public ArrayList<SaleDeliveryBean> queryexport(String vbillcode,String current_cwarename,String query_uploadflag) {
         ArrayList<SaleDeliveryBean> list = new ArrayList<SaleDeliveryBean>();
         SharedPreferences currentTimePeriod= getSharedPreferences("query_saledelivery", 0);
-        String start_temp = currentTimePeriod.getString("starttime","2019-03-20 00:00:01");
+        String start_temp = currentTimePeriod.getString("starttime", iUrl.begintime);
         String end_temp = currentTimePeriod.getString("endtime", Utils.getDefaultEndTime());
 
         Cursor cursor = db3.rawQuery("select saledelivery.vbillcode, saledelivery.dbilldate,saledeliverybody.matrcode,saledelivery.dr," +

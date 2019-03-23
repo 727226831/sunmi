@@ -3,6 +3,7 @@ package com.example.shanggmiqr.util;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
@@ -174,17 +175,7 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
 
     }
 
-//    private static boolean mainTmpDirSet = false;
-//    @Override
-//    public SQLiteDatabase getReadableDatabase() {
-//        if (!mainTmpDirSet) {
-//            boolean rs = new File("/data/data/com.example.weiytjiang.shangmiqr/databases/main").mkdir();
-//            super.getReadableDatabase().execSQL("PRAGMA temp_store_directory = '/data/data/com.example.weiytjiang.shangmiqr/databases/main'");
-//            mainTmpDirSet = true;
-//            return super.getReadableDatabase();
-//        }
-//        return super.getReadableDatabase();
-//
-//    }
+
+
 
 }

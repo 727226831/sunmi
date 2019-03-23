@@ -29,6 +29,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.Url.iUrl;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.OtherOutgoingTableAdapter;
 import com.example.shanggmiqr.bean.CommonSendBean;
@@ -54,6 +55,7 @@ import static com.example.shanggmiqr.util.Utils.getDefaultEndTime;
 
 /**
  * Created by weiyt.jiang on 2018/8/9.
+ * 其他出库
  */
 
 public class OtherOutgoing extends AppCompatActivity implements OnClickListener {
@@ -87,7 +89,7 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
         lst_downLoad_ts = (TextView)findViewById(R.id.last_downLoad_ts_outgoing);
         //显示最后一次的下载时间
         SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestOtherOutgoingTSInfo", 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_systime", "2018-09-01 00:00:01");
+        String begintime = latestDBTimeInfo.getString("latest_download_ts_systime", iUrl.begintime);
         lst_downLoad_ts.setText("最后一次下载:"+begintime);
         helper3 = new MyDataBaseHelper(OtherOutgoing.this, "ShangmiData", null, 1);
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
@@ -264,7 +266,7 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
                                         @Override
                                         public void run() {
                                             SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestOtherOutgoingTSInfo", 0);
-                                            String begintime = latestDBTimeInfo.getString("latest_download_ts_systime", "2018-09-01 00:00:01");
+                                            String begintime = latestDBTimeInfo.getString("latest_download_ts_systime", iUrl.begintime);
                                             lst_downLoad_ts.setText("最后一次下载:"+begintime);
                                         }
                                     });
@@ -278,7 +280,7 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
                                     });
                                 }
                             } catch (Exception e) {
-                                //e.printStackTrace();
+                                e.printStackTrace();
                                 Bundle bundle = new Bundle();
                                 bundle.putString("Exception", e.toString());
                                 Message msg = new Message();
@@ -335,7 +337,7 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
                 date.add(cursor.getString(cursor.getColumnIndex("dbilldate")));
             }
         } else {
-            date.add("2018-09-01 00:00:01");
+            date.add(iUrl.begintime);
         }
         //加1秒
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -344,7 +346,7 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
         String addone = df.format(datetemp);
         return addone;
     }
-
+   private boolean isPobillcodeExist=false;
     private void insertDownloadDataToDB(OtherOutgoingQuery outGoingBean) {
         List<OtherOutgoingQuery.DataBean> outGoingBeanList = outGoingBean.getData();
         for (OtherOutgoingQuery.DataBean ob : outGoingBeanList) {
@@ -353,11 +355,12 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
             String cwarename = ob.getCwarename();
             String dbilldate = ob.getDbilldate();
             String dr = ob.getDr();
-            if("0".equals(dr)&& isPobillcodeExist(pobillcode)){
+            isPobillcodeExist=isPobillcodeExist(pobillcode);
+            if("0".equals(dr)&& isPobillcodeExist){
                 continue;
             }
             //等于1时
-            if("1".equals(dr)|| ("2".equals(dr)&&isPobillcodeExist(pobillcode)))
+            if("1".equals(dr)|| ("2".equals(dr)&&isPobillcodeExist))
             {
 //                ContentValues contentupdateValues = new ContentValues();
 //                contentupdateValues.put("dr", dr);
@@ -434,13 +437,17 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
 
     private String countScannedQRCode(String pobillcode, String materialcode, String vcooporderbcode_b) {
         String count = "0";
-        Cursor cursor2 = db3.rawQuery("select prodcutcode from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?", new String[]{pobillcode, materialcode, vcooporderbcode_b});
-        if (cursor2 != null && cursor2.getCount() > 0) {
-            //判断cursor中是否存在数据
-            count = String.valueOf(cursor2.getCount());
-            cursor2.close();
-            return count;
-        }
+
+            Cursor cursor2 = db3.rawQuery("select count(prodcutcode) from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?", new String[]{pobillcode, materialcode, vcooporderbcode_b});
+            if (cursor2 != null && cursor2.getCount() > 0) {
+                //判断cursor中是否存在数据
+                count = String.valueOf(cursor2.getCount());
+                cursor2.close();
+                return count;
+            }
+
+
+
         return count;
     }
 
@@ -682,7 +689,7 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
         SoapObject request = new SoapObject(namespace, methodName);
         // 设置需调用WebService接口需要传入的两个参数string、string1
         SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestOtherOutgoingTSInfo", 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "2018-09-01 00:00:01");
+        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
         String endtime = getDefaultEndTime();
         CommonSendBean userSend = new CommonSendBean(begintime, endtime, pagenum, "0");
         Gson gson = new Gson();

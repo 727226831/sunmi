@@ -614,4 +614,10 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
         }
         return true;
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+    }
 }
