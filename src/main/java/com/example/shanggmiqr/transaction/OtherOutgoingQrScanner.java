@@ -27,6 +27,7 @@ import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -93,7 +94,7 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
         numText = (TextView) findViewById(R.id.outgoing_num_scanner_text);
         uploadnumText = (TextView) findViewById(R.id.outgoing_uploadnum_scanner_text);
         scannednumText = (TextView) findViewById(R.id.outgoing_scannednum_text);
-
+        boxCodeEditText.setOnKeyListener(onKeyListener);
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。
         db5 = helper5.getWritableDatabase();//获取到了 SQLiteDatabase 对象
@@ -123,20 +124,7 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //截取产品码的第五位到第九位，查看是否与物料大类匹配
-                count = countSum();
-                if ((!isAlreadyScanned(productCodeEditText.getText().toString()) && !isEditTextEmpty() && (productCodeEditText.getText().toString().length() == getLengthInQrRule())) && count < Math.abs(current_nnum_qrRecv) && isValidQr()) {
-                    InsertintoTempQrDBForOutgoing();
-                    scanStatus = true;
-                } else if (count >= Math.abs(current_nnum_qrRecv)) {
-                    Toast.makeText(OtherOutgoingQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
-
-                } else if (isEditTextEmpty()) {
-                    Toast.makeText(OtherOutgoingQrScanner.this, "二维码区域不可以为空", Toast.LENGTH_LONG).show();
-                } else if (isAlreadyScanned(productCodeEditText.getText().toString())) {
-                    Toast.makeText(OtherOutgoingQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(OtherOutgoingQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
-                }
+                getData();
             }
         });
 
@@ -202,6 +190,46 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
                 }
             }
         };
+    }
+    View.OnKeyListener onKeyListener=new View.OnKeyListener() {
+        @Override
+        public boolean onKey(View v, int keyCode, KeyEvent event) {
+            if(keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
+                switch (v.getId()) {
+                    case R.id.outgoing_boxcode_scanner:
+                        getData();
+                        break;
+                }
+            }
+
+            return false;
+        }
+    };
+    private  List<String> listcode;
+    private void getData() {
+
+        count = countSum();
+        listcode= Arrays.asList(boxCodeEditText.getText().toString().split("\\s+"));
+        scannednumText.setText("已扫码数量："+listcode.size());
+        for (int i = 0; i <listcode.size() ; i++) {
+            productCodeEditText.setText(listcode.get(i));
+            if ((!isAlreadyScanned(productCodeEditText.getText().toString()) && !isEditTextEmpty() && (productCodeEditText.getText().toString().length() == getLengthInQrRule())) && count < Math.abs(current_nnum_qrRecv) && isValidQr()) {
+                InsertintoTempQrDBForOutgoing();
+                boxCodeEditText.setText("");
+                //scanStatus = true;
+            } else if (count >= Math.abs(current_nnum_qrRecv)) {
+                Toast.makeText(OtherOutgoingQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
+
+            } else if (isEditTextEmpty()) {
+                Toast.makeText(OtherOutgoingQrScanner.this, "二维码区域不可以为空", Toast.LENGTH_LONG).show();
+            } else if (isAlreadyScanned(productCodeEditText.getText().toString())) {
+                Toast.makeText(OtherOutgoingQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(OtherOutgoingQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
+            }
+        }
+
+
     }
 
     private boolean isAlreadyScanned(String s) {

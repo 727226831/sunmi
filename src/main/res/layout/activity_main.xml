@@ -117,9 +117,9 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/tv_version"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="version: 2018-11-30-003"
         android:layout_margin="50dip"
         android:layout_gravity="center" />
 </LinearLayout>

@@ -251,12 +251,13 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
         boxCodeEditTextContent= Arrays.asList(boxCodeEditText.getText().toString().split("\\s+"));
         qrcode_xm_Text.setText("二维箱码："+boxCodeEditTextContent.size());
         for (int i = 0; i <boxCodeEditTextContent.size() ; i++) {
-            Log.i(" boxCodeEditTextConten",boxCodeEditTextContent.get(i));
+
             productCodeEditText.setText(boxCodeEditTextContent.get(i));
 
             count = countSum();
             //    if((productCodeEditText.getText().toString().length() == 13) &&productCodeEditText.getText().toString().substring(4,9).equals(current_maccode_qrRecv) && count<current_nnum_qrRecv ){
-            if ((!isAlreadyScanned(productCodeEditText.getText().toString()) && !isEditTextEmpty() && (productCodeEditText.getText().toString().length() == getLengthInQrRule())) && count < Math.abs(current_nnum_qrRecv) && isValidQr() && !isCwarenameEmpty()) {
+            if ((!isAlreadyScanned(productCodeEditText.getText().toString()) && !isEditTextEmpty() && (productCodeEditText.getText().toString().length()
+                    == getLengthInQrRule())) && count < Math.abs(current_nnum_qrRecv) && isValidQr() && !isCwarenameEmpty()) {
                 InsertintoTempQrDBForSaleDelivery(productCodeEditText.getText().toString());
                 boxCodeEditText.setText("");
                 //scanStatus = true;

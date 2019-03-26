@@ -6,6 +6,7 @@
     android:orientation="vertical">
 
     <LinearLayout
+        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -47,7 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:text="箱码:" />
+            android:text="产品码/箱码:" />
 
         <scut.carson_ho.diy_view.SuperEditText
             android:id="@+id/saledelivery_boxcode_scanner"

@@ -32,10 +32,11 @@
 
         <EditText
             android:id="@+id/expressCode_edit_text"
-            android:layout_width="264dp"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
             android:layout_marginLeft="0dp"
-            android:inputType="textNoSuggestions" />
+
+          />
 
         <Spinner
             android:id="@+id/spinner_logistics_company"

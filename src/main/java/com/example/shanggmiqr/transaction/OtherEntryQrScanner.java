@@ -25,6 +25,7 @@ import com.example.shanggmiqr.bean.QrcodeRule;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -83,6 +84,7 @@ public class OtherEntryQrScanner extends AppCompatActivity {
         scanCheckButton = (Button) findViewById(R.id.otherentry_ok_scanner);
         plateCodeEditText = (scut.carson_ho.diy_view.SuperEditText) findViewById(R.id.otherentry_platecode_scanner);
         boxCodeEditText = (scut.carson_ho.diy_view.SuperEditText) findViewById(R.id.otherentry_boxcode_scanner);
+        boxCodeEditText.setOnKeyListener(onKeyListener);
         productCodeEditText = (scut.carson_ho.diy_view.SuperEditText) findViewById(R.id.otherentry_productcode_scanner);
         pobillcodeText = (TextView) findViewById(R.id.otherentry_pbill_scanner_text);
         cwarenameText = (TextView) findViewById(R.id.otherentry_cwarename_scanner_text);
@@ -119,19 +121,8 @@ public class OtherEntryQrScanner extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //截取产品码的第五位到第九位，查看是否与物料大类匹配
-                count = countSum();
-                if ((!isAlreadyScanned(productCodeEditText.getText().toString()) && !isEditTextEmpty() && (productCodeEditText.getText().toString().length() == getLengthInQrRule())) && count < Math.abs(current_nnum_qrRecv) && isValidQr()) {
-                    InsertintoTempQrDBForOutgoing();
-                    scanStatus = true;
-                } else if (count >= Math.abs(current_nnum_qrRecv)) {
-                    Toast.makeText(OtherEntryQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
-                } else if (isEditTextEmpty()) {
-                    Toast.makeText(OtherEntryQrScanner.this, "二维码区域不可以为空", Toast.LENGTH_LONG).show();
-                } else if (isAlreadyScanned(productCodeEditText.getText().toString())) {
-                    Toast.makeText(OtherEntryQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(OtherEntryQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
-                }
+                getData();
+
             }
         });
 
@@ -152,6 +143,7 @@ public class OtherEntryQrScanner extends AppCompatActivity {
             }
 
         });
+
         mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -197,6 +189,45 @@ public class OtherEntryQrScanner extends AppCompatActivity {
                 }
             }
         };
+    }
+    View.OnKeyListener onKeyListener=new View.OnKeyListener() {
+        @Override
+        public boolean onKey(View v, int keyCode, KeyEvent event) {
+            if(keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
+                switch (v.getId()) {
+                    case R.id.otherentry_boxcode_scanner:
+                        getData();
+                        break;
+                }
+            }
+
+            return false;
+        }
+    };
+     private List<String> listcode;
+    private void getData() {
+
+        listcode= Arrays.asList(boxCodeEditText.getText().toString().split("\\s+"));
+        scannumText.setText("已扫码数量："+listcode.size());
+        for (int i = 0; i <listcode.size() ; i++) {
+            productCodeEditText.setText(listcode.get(i));
+            count = countSum();
+            if ((!isAlreadyScanned(productCodeEditText.getText().toString()) && !isEditTextEmpty() && (productCodeEditText.getText().toString().length() ==
+                    getLengthInQrRule())) && count < Math.abs(current_nnum_qrRecv) && isValidQr()) {
+                InsertintoTempQrDBForOutgoing();
+                boxCodeEditText.setText("");
+              //  scanStatus = true;
+            } else if (count >= Math.abs(current_nnum_qrRecv)) {
+                Toast.makeText(OtherEntryQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
+            } else if (isEditTextEmpty()) {
+                Toast.makeText(OtherEntryQrScanner.this, "二维码区域不可以为空", Toast.LENGTH_LONG).show();
+            } else if (isAlreadyScanned(productCodeEditText.getText().toString())) {
+                Toast.makeText(OtherEntryQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(OtherEntryQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
+            }
+        }
+
     }
 
     private boolean isAlreadyScanned(String s) {
