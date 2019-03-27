@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
@@ -30,6 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.shanggmiqr.Url.iUrl;
+import com.example.shanggmiqr.bean.OtherEntryBean;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.OtherOutgoingTableAdapter;
 import com.example.shanggmiqr.bean.CommonSendBean;
@@ -45,6 +47,9 @@ import com.zyao89.view.zloading.Z_TYPE;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -77,6 +82,7 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
     private ZLoadingDialog dialog;
     private List<String> test;
     private TextView lst_downLoad_ts;
+    private  Button buttonexport;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,6 +109,8 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
         //displayallOutgoingButton.setVisibility(View.INVISIBLE);
         displayallOutgoingButton.setOnClickListener(this);
         tableListView = (ListView) findViewById(R.id.list);
+        buttonexport=findViewById(R.id.b_export);
+        buttonexport.setOnClickListener(this);
         dialog = new ZLoadingDialog(OtherOutgoing.this);
         List<OtherOutgoingBean> list = queryAll();
         listAllPostition = list;
@@ -299,6 +307,9 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
             case R.id.query_other_outging:
                 popupQuery();
                 break;
+            case R.id.b_export:
+                export();
+                break;
             case R.id.displayall_other_outging:
                 List<OtherOutgoingBean> list = displayAll();
                 listAllPostition = list;
@@ -316,6 +327,40 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
                     }
                 });
                 break;
+        }
+    }
+    private void export() {
+        String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+
+        SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
+        File file=new File(sdCardDir+"/sunmi");
+        if(!file.exists()){
+            file.mkdir();
+        }
+        Date curDate =  new Date(System.currentTimeMillis());
+        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        Toast.makeText(OtherOutgoing.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
+        FileOutputStream outputStream=null;
+        try {
+            outputStream=new FileOutputStream(file);
+            outputStream.write(("发货单号"+"\t"+ "单据日期"+"\t"+"物料编码"+"\t"+"物料名称"+"\t"+
+                    "物料大类"+"\t"+"序列号"+"\t"+"条形码").getBytes());
+            for (int j = 0; j <bean1.size() ; j++) {
+                outputStream.write("\n".getBytes());
+
+                outputStream.write((bean1.get(j).getPobillcode()+"\t"
+                        +bean1.get(j).getDbilldate()+"\t"
+                        +bean1.get(j).getMaterialcode()+"\t"
+                        +bean1.get(j).getMatrname()+"\t"
+                        +bean1.get(j).getMaccode()+"\t"
+                        +bean1.get(j).getXlh()+"\t"
+                        +bean1.get(j).getProdcutcode()).getBytes());
+
+            }
+            outputStream.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -515,9 +560,9 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
                 if(query_uploadflag == null){
                     query_uploadflag = "N";
                 }
-                ArrayList<OtherOutgoingBean> bean1 = query(codeNumEditTextOtherOutgoing.getText().toString(), query_cwarename,query_uploadflag);
+                bean1 = query(codeNumEditTextOtherOutgoing.getText().toString(), query_cwarename,query_uploadflag);
                 listAllPostition = bean1;
-                final OtherOutgoingTableAdapter adapter3 = new OtherOutgoingTableAdapter(OtherOutgoing.this, bean1, mListener);
+                final OtherOutgoingTableAdapter adapter3 = new OtherOutgoingTableAdapter(OtherOutgoing.this,removeDuplicate(bean1), mListener);
                 tableListView.setAdapter(adapter3);
                 tableListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
@@ -540,7 +585,7 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
         });
         ad1.show();// 显示对话框
     }
-
+    ArrayList<OtherOutgoingBean> bean1;
     private List<String> queryWarehouseInfo() {
         List<String> cars = new ArrayList<>();
         Cursor cursornew = db3.rawQuery("select name from Warehouse",
@@ -554,11 +599,25 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
         }
         return cars;
     }
+    private   ArrayList<OtherOutgoingBean>  removeDuplicate(ArrayList<OtherOutgoingBean> list)  {
+        for  ( int  i  =   0 ; i  <  list.size()  -   1 ; i ++ )  {
+            for  ( int  j  =  list.size()  -   1 ; j  >  i; j -- )  {
+                if  (list.get(j).getPobillcode().equals(list.get(i).getPobillcode()))  {
+                    list.remove(j);
+                }
+            }
+        }
+        return list;
+    }
 
     public ArrayList<OtherOutgoingBean> query(String pobillcode, String current_cwarename,String query_uploadflag) {
         ArrayList<OtherOutgoingBean> list = new ArrayList<OtherOutgoingBean>();
-        if (pobillcode.length() == 0 || "".equals(pobillcode)) {
-            Cursor cursor1 = db3.rawQuery("select pobillcode,cwarecode,cwarename,dbilldate,dr from OtherOutgoing where flag=? and cwarename like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
+            Cursor cursor1 = db3.rawQuery("select otheroutgoing.pobillcode,otheroutgoing.cwarecode,otheroutgoing.cwarename,otheroutgoing.dr, otheroutgoing.dbilldate," +
+                    "otheroutgoingbody.materialcode,otheroutgoingbody.maccode,otheroutgoingbody.maccode,otheroutgoingbody.nnum, otheroutgoingscanresult.prodcutcode," +
+                    "otheroutgoingscanresult.xlh" + " from otheroutgoing left join otheroutgoingbody on otheroutgoing.pobillcode=otheroutgoingbody.pobillcode " +
+                    "left join otheroutgoingscanresult on otheroutgoingbody.pobillcode=otheroutgoingscanresult.pobillcode " +
+                    "and otheroutgoingbody.vcooporderbcode_b=otheroutgoingscanresult.vcooporderbcode_b where flag=? and otheroutgoing.pobillcode" +
+                    " like '%" + pobillcode + "%' and otheroutgoing.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
             if (cursor1 != null && cursor1.getCount() > 0) {
                 //判断cursor中是否存在数据
                 while (cursor1.moveToNext()) {
@@ -568,31 +627,16 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
                     bean.cwarename = cursor1.getString(cursor1.getColumnIndex("cwarename"));
                     bean.dbilldate = cursor1.getString(cursor1.getColumnIndex("dbilldate"));
                     bean.dr = cursor1.getInt(cursor1.getColumnIndex("dr"));
+                    bean.setMaterialcode(cursor1.getString(cursor1.getColumnIndex("materialcode")));
+                    bean.setMaccode(cursor1.getString(cursor1.getColumnIndex("maccode")));
+                    bean.setNnum(cursor1.getString(cursor1.getColumnIndex("nnum")));
+                    bean.setProdcutcode(cursor1.getString(cursor1.getColumnIndex("prodcutcode")));
+                    bean.setXlh(cursor1.getString(cursor1.getColumnIndex("xlh")));
                     list.add(bean);
                 }
                 cursor1.close();
             }
-        } else {
-//        String sql2 = "select " + "pobillcode"+ ","  + "dbilldate" + "," + "cwarecode" + "," + "cwarename" + " from " + "OtherEntry"
-//                + " where " + "pobillcode" + " like '%" + pobillcode + "%'";//注意：这里有单引号
-            Cursor cursor = db3.rawQuery("select pobillcode,cwarecode,cwarename,dbilldate,dr from OtherOutgoing where pobillcode like '%" + pobillcode + "%'order by dbilldate desc", null);
-            //Cursor cursor = db3.rawQuery(sql2, null);
-            if (cursor != null && cursor.getCount() > 0) {
-                //判断cursor中是否存在数据
-                while (cursor.moveToNext()) {
-                    OtherOutgoingBean bean = new OtherOutgoingBean();
-                    bean.pobillcode = cursor.getString(cursor.getColumnIndex("pobillcode"));
-                    bean.cwarecode = cursor.getString(cursor.getColumnIndex("cwarecode"));
-                    bean.cwarename = cursor.getString(cursor.getColumnIndex("cwarename"));
-                    bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
-                    bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
-                    if (queryCwarename(current_cwarename, bean.pobillcode)) {
-                        list.add(bean);
-                    }
-                }
-                cursor.close();
-            }
-        }
+
         return list;
     }
 

@@ -260,6 +260,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                     == getLengthInQrRule())) && count < Math.abs(current_nnum_qrRecv) && isValidQr() && !isCwarenameEmpty()) {
                 InsertintoTempQrDBForSaleDelivery(productCodeEditText.getText().toString());
                 boxCodeEditText.setText("");
+                boxCodeEditText.requestFocus();
                 //scanStatus = true;
             } else if (count >= Math.abs(current_nnum_qrRecv)) {
                 Toast.makeText(SaleDeliveryQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();

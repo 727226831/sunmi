@@ -294,7 +294,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case 0x15:
 
-                    Toast.makeText(MainActivity.this, "请检查服务器连接", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "用户数据已下载", Toast.LENGTH_LONG).show();
                     break;
                 case 0x16:
                     String exception333 = msg.getData().getString("Exception333");

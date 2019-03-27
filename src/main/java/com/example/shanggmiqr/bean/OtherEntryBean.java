@@ -18,6 +18,64 @@ public class OtherEntryBean {
     public String dbilldate;
     public int dr;
     private boolean isSelected = false;
+
+    String matrname;
+
+    public String getMatrname() {
+        return matrname;
+    }
+
+    public void setMatrname(String matrname) {
+        this.matrname = matrname;
+    }
+
+    public String getMaccode() {
+        return maccode;
+    }
+
+    public void setMaccode(String maccode) {
+        this.maccode = maccode;
+    }
+
+    public String getNnum() {
+        return nnum;
+    }
+
+    public void setNnum(String nnum) {
+        this.nnum = nnum;
+    }
+
+    public String getProdcutcode() {
+        return prodcutcode;
+    }
+
+    public void setProdcutcode(String prodcutcode) {
+        this.prodcutcode = prodcutcode;
+    }
+
+    public String getXlh() {
+        return xlh;
+    }
+
+    public void setXlh(String xlh) {
+        this.xlh = xlh;
+    }
+
+    String maccode;
+    String nnum;
+    String prodcutcode;
+    String xlh;
+
+    public String getMaterialcode() {
+        return materialcode;
+    }
+
+    public void setMaterialcode(String materialcode) {
+        this.materialcode = materialcode;
+    }
+
+    String materialcode;
+
     //private Boolean operation;    //用于记录是否被选中的状态
 
     public OtherEntryBean(){
@@ -32,13 +90,7 @@ public class OtherEntryBean {
         this.dr = dr;
         this.dbilldate =dbilldate;
     }
-//
-//    public OtherOutgoingBean(String pobillcode, String cwarecode, String cwarename, boolean operation) {
-//        this.pobillcode = pobillcode;
-//        this.cwarecode = cwarecode;
-//        this.cwarename = cwarename;
-//        this.operation = operation;
-//    }
+
 
     public void setPobillcode(String pobillcode) {
         this.pobillcode = pobillcode;

@@ -316,22 +316,27 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
 
         SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
+        File file=new File(sdCardDir+"/sunmi");
+        if(!file.exists()){
+            file.mkdir();
+        }
         Date curDate =  new Date(System.currentTimeMillis());
-        File file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
         Toast.makeText(SaleDelivery.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
         FileOutputStream outputStream=null;
         try {
             outputStream=new FileOutputStream(file);
-            outputStream.write("发货单号 单据日期 物料编码 物料名称 物料大类 序列号 条形码".getBytes());
+            outputStream.write(("发货单号"+"\t"+ "单据日期"+"\t"+"物料编码"+"\t"+"物料名称"+"\t"+
+                    "物料大类"+"\t"+"序列号"+"\t"+"条形码").getBytes());
             for (int j = 0; j <bean1.size() ; j++) {
                 outputStream.write("\n".getBytes());
 
-                outputStream.write((bean1.get(j).getVbillcode()+"    "
-                        +bean1.get(j).getDbilldate()+"    "
-                        +bean1.get(j).getMatrcode()+"    "
-                        +bean1.get(j).getMatrname()+"    "
-                        +bean1.get(j).getMaccode()+"    "
-                        +bean1.get(j).getXlh()+"    "
+                outputStream.write((bean1.get(j).getVbillcode()+"\t"
+                        +bean1.get(j).getDbilldate()+"\t"
+                        +bean1.get(j).getMatrcode()+"\t"
+                        +bean1.get(j).getMatrname()+"\t"
+                        +bean1.get(j).getMaccode()+"\t"
+                        +bean1.get(j).getXlh()+"\t"
                         +bean1.get(j).getProdcutcode()).getBytes());
 
             }
@@ -717,37 +722,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         }
         return cars;
     }
-//    public ArrayList<SaleDeliveryBean> query(String vbillcode,String current_cwarename,String query_uploadflag) {
-//        ArrayList<SaleDeliveryBean> list = new ArrayList<SaleDeliveryBean>();
-//        SharedPreferences currentTimePeriod= getSharedPreferences("query_saledelivery", 0);
-//        String start_temp = currentTimePeriod.getString("starttime","2019-03-20 00:00:01");
-//        String end_temp = currentTimePeriod.getString("endtime", Utils.getDefaultEndTime());
-//        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr from SaleDelivery where flag=? and vbillcode like '%" + vbillcode + "%' order by dbilldate desc", new String[]{query_uploadflag});
-//        if (cursor != null && cursor.getCount() > 0) {
-//            //判断cursor中是否存在数据
-//            while (cursor.moveToNext()) {
-//
-//                SaleDeliveryBean bean = new SaleDeliveryBean();
-//
-//                bean.setMatrcode(cursor.getString(cursor.getColumnIndex("matrcode")));
-//                bean.setMatrname(cursor.getString(cursor.getColumnIndex("matrname")));
-//                bean.setMaccode(cursor.getString(cursor.getColumnIndex("maccode")));
-//                bean.setNnum(cursor.getString(cursor.getColumnIndex("nnum")));
-//                bean.setProdcutcode(cursor.getString(cursor.getColumnIndex("prodcutcode")));
-//                bean.setXlh(cursor.getString(cursor.getColumnIndex("xlh")));
-//                bean.dr= cursor.getInt(cursor.getColumnIndex("dr"));
-//
-//
-//
-//                    if (queryTimePeriod(bean.vbillcode,start_temp,end_temp)) {
-//                        list.add(bean);
-//                    }
-//
-//            }
-//            cursor.close();
-//        }
-//        return list;
-//    }
+
     public ArrayList<SaleDeliveryBean> queryexport(String vbillcode,String current_cwarename,String query_uploadflag) {
         ArrayList<SaleDeliveryBean> list = new ArrayList<SaleDeliveryBean>();
         SharedPreferences currentTimePeriod= getSharedPreferences("query_saledelivery", 0);
@@ -759,7 +734,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 "saledeliveryscanresult.xlh" + " from saledelivery left join saledeliverybody on saledelivery.vbillcode=saledeliverybody.vbillcode " +
                 "left join saledeliveryscanresult on saledeliverybody.vbillcode=saledeliveryscanresult.vbillcode " +
                 "and saledeliverybody.vcooporderbcode_b=saledeliveryscanresult.vcooporderbcode_b where flag=? and saledelivery.vbillcode" +
-                " like '%" + vbillcode + "%' order by dbilldate desc", new String[]{query_uploadflag});
+                " like '%" + vbillcode + "%' and saledeliverybody.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
 
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据

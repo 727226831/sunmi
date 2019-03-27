@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
@@ -31,6 +32,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.shanggmiqr.Url.iUrl;
+import com.example.shanggmiqr.bean.SaleDeliveryBean;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.OtherEntryTableAdapter;
 import com.example.shanggmiqr.bean.CommonSendBean;
@@ -46,6 +48,9 @@ import com.zyao89.view.zloading.Z_TYPE;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -78,6 +83,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
     private ZLoadingDialog dialog;
     private List<String> test;
     private TextView lst_downLoad_ts;
+    private Button buttonexport;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +114,8 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         displayallEntryButton.setOnClickListener(this);
         tableListView = (ListView) findViewById(R.id.list_otherentry);
         dialog = new ZLoadingDialog(OtherEntry.this);
+        buttonexport=findViewById(R.id.b_export);
+        buttonexport.setOnClickListener(this);
         List<OtherEntryBean> list = queryAll();
         listAllPostition = list;
         final OtherEntryTableAdapter adapter1 = new OtherEntryTableAdapter(OtherEntry.this, list, mListener);
@@ -234,7 +242,6 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                                     }
                                     Gson gson7 = new Gson();
                                     OtherEntryQuery otherEntryBean = gson7.fromJson(outEntryData, OtherEntryQuery.class);
-                                    //     OtherEntryQuery otherEntryBean = JSON.parseObject(outEntryData, OtherEntryQuery.class);
                                     if (otherEntryBean.getPagetotal() == 1) {
                                         insertDownloadDataToDB(otherEntryBean);
                                         Message msg = new Message();
@@ -304,6 +311,9 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
             case R.id.query_other_entry:
                 popupQuery();
                 break;
+            case R.id.b_export:
+                export();
+                break;
             case R.id.displayall_other_entry:
                 List<OtherEntryBean> list = displayAll();
                 listAllPostition = list;
@@ -367,12 +377,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
             //等于1时
             if("1".equals((dr))|| ("2".equals(dr)&&isPobillcodeExist))
             {
-//                ContentValues contentupdateValues = new ContentValues();
-//                contentupdateValues.put("dr", dr);
-//                //操作选择一 将现有单据的dr = 0 更改为dr= 1
-//                db3.update("OtherEntry",contentupdateValues,"pobillcode=?", new String[]{pobillcode});
-                //操作选择二 通过单号删除
-                //删除三张表
+
                 db3.beginTransaction();
                 try {
                     db3.delete("OtherEntry", "pobillcode=?", new String[]{pobillcode});
@@ -516,9 +521,9 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                 if(query_uploadflag == null){
                     query_uploadflag = "N";
                 }
-                ArrayList<OtherEntryBean> bean1 = query(codeNumEditTextOtherEntry.getText().toString(), query_cwarename,query_uploadflag);
+                bean1 = query(codeNumEditTextOtherEntry.getText().toString(), query_cwarename,query_uploadflag);
                 listAllPostition = bean1;
-                final OtherEntryTableAdapter adapter3 = new OtherEntryTableAdapter(OtherEntry.this, bean1, mListener);
+                final OtherEntryTableAdapter adapter3 = new OtherEntryTableAdapter(OtherEntry.this, removeDuplicate(bean1), mListener);
                 tableListView.setAdapter(adapter3);
                 tableListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
@@ -540,7 +545,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         });
         ad1.show();// 显示对话框
     }
-
+    ArrayList<OtherEntryBean> bean1;
     private List<String> queryWarehouseInfo() {
         List<String> cars = new ArrayList<>();
         Cursor cursornew = db3.rawQuery("select name from Warehouse",
@@ -554,13 +559,61 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         }
         return cars;
     }
+    private   ArrayList<OtherEntryBean>  removeDuplicate(ArrayList<OtherEntryBean> list)  {
+        for  ( int  i  =   0 ; i  <  list.size()  -   1 ; i ++ )  {
+            for  ( int  j  =  list.size()  -   1 ; j  >  i; j -- )  {
+                if  (list.get(j).getPobillcode().equals(list.get(i).getPobillcode()))  {
+                    list.remove(j);
+                }
+            }
+        }
+        return list;
+    }
+    private void export() {
+        String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+
+        SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
+        File file=new File(sdCardDir+"/sunmi");
+        if(!file.exists()){
+            file.mkdir();
+        }
+        Date curDate =  new Date(System.currentTimeMillis());
+        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        Toast.makeText(OtherEntry.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
+        FileOutputStream outputStream=null;
+        try {
+            outputStream=new FileOutputStream(file);
+            outputStream.write(("发货单号"+"\t"+ "单据日期"+"\t"+"物料编码"+"\t"+"物料名称"+"\t"+
+                    "物料大类"+"\t"+"序列号"+"\t"+"条形码").getBytes());
+            for (int j = 0; j <bean1.size() ; j++) {
+                outputStream.write("\n".getBytes());
+
+                outputStream.write((bean1.get(j).getPobillcode()+"\t"
+                        +bean1.get(j).getDbilldate()+"\t"
+                        +bean1.get(j).getMaterialcode()+"\t"
+                        +bean1.get(j).getMatrname()+"\t"
+                        +bean1.get(j).getMaccode()+"\t"
+                        +bean1.get(j).getXlh()+"\t"
+                        +bean1.get(j).getProdcutcode()).getBytes());
+
+            }
+            outputStream.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public ArrayList<OtherEntryBean> query(String pobillcode, String current_cwarename,String query_uploadflag) {
         ArrayList<OtherEntryBean> list = new ArrayList<OtherEntryBean>();
-        if (pobillcode.length() == 0 || "".equals(pobillcode)) {
-            Cursor cursor1 = db3.rawQuery("select pobillcode,cwarecode,cwarename,dbilldate,dr from OtherEntry where flag=? and cwarename like '%" + current_cwarename + "%' order by dbilldate desc" ,new String[]{query_uploadflag});
-            //Cursor cursor = db3.rawQuery(sql2, null);
-            if (cursor1 != null && cursor1.getCount() > 0) {
+            Cursor cursor1 = db3.rawQuery("select otherentry.pobillcode,otherentry.cwarecode,otherentry.cwarename,otherentry.dr, otherentry.dbilldate,otherentrybody.materialcode,otherentry.dr," +
+                    "otherentrybody.maccode,otherentrybody.maccode,otherentrybody.nnum, otherentryscanresult.prodcutcode," +
+                    "otherentryscanresult.xlh" + " from otherentry left join otherentrybody on otherentry.pobillcode=otherentrybody.pobillcode " +
+                    "left join otherentryscanresult on otherentrybody.pobillcode=otherentryscanresult.pobillcode " +
+                    "and otherentrybody.vcooporderbcode_b=otherentryscanresult.vcooporderbcode_b where flag=? and otherentry.pobillcode" +
+                    " like '%" + pobillcode + "%' and otherentry.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
+
                 //判断cursor中是否存在数据
                 while (cursor1.moveToNext()) {
                     OtherEntryBean bean = new OtherEntryBean();
@@ -568,32 +621,17 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                     bean.cwarecode = cursor1.getString(cursor1.getColumnIndex("cwarecode"));
                     bean.cwarename = cursor1.getString(cursor1.getColumnIndex("cwarename"));
                     bean.dbilldate = cursor1.getString(cursor1.getColumnIndex("dbilldate"));
+                    bean.setMaterialcode(cursor1.getString(cursor1.getColumnIndex("materialcode")));
+
+                    bean.setMaccode(cursor1.getString(cursor1.getColumnIndex("maccode")));
+                    bean.setNnum(cursor1.getString(cursor1.getColumnIndex("nnum")));
+                    bean.setProdcutcode(cursor1.getString(cursor1.getColumnIndex("prodcutcode")));
+                    bean.setXlh(cursor1.getString(cursor1.getColumnIndex("xlh")));
                     bean.dr = cursor1.getInt(cursor1.getColumnIndex("dr"));
                     list.add(bean);
                 }
                 cursor1.close();
-            }
-        }else {
-//        String sql2 = "select " + "pobillcode"+ ","  + "dbilldate" + "," + "cwarecode" + "," + "cwarename" + " from " + "OtherEntry"
-//                + " where " + "pobillcode" + " like '%" + pobillcode + "%'";//注意：这里有单引号
-            Cursor cursor = db3.rawQuery("select pobillcode,cwarecode,cwarename,dbilldate,dr from OtherEntry where pobillcode like '%" + pobillcode + "%' order by dbilldate desc", null);
-            //Cursor cursor = db3.rawQuery(sql2, null);
-            if (cursor != null && cursor.getCount() > 0) {
-                //判断cursor中是否存在数据
-                while (cursor.moveToNext()) {
-                    OtherEntryBean bean = new OtherEntryBean();
-                    bean.pobillcode = cursor.getString(cursor.getColumnIndex("pobillcode"));
-                    bean.cwarecode = cursor.getString(cursor.getColumnIndex("cwarecode"));
-                    bean.cwarename = cursor.getString(cursor.getColumnIndex("cwarename"));
-                    bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
-                    bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
-                    if (queryCwarename(current_cwarename, bean.pobillcode)) {
-                        list.add(bean);
-                    }
-                }
-                cursor.close();
-            }
-        }
+
         return list;
     }
 

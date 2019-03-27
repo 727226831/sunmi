@@ -90,7 +90,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
 
     private ZLoadingDialog dialog;
     //用临时变量count计数下载成功的基础数据个数，满6 dialog消失
-
+    private int count = 0;
     @Override
     protected void onCreate( Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -137,76 +137,82 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         Toast.makeText(TopMenu.this, "请检查网络连接并到基础信息界面手动更新基础数据", Toast.LENGTH_LONG).show();
                         break;
                     case 0x11:
-
+                        count++;
+                        if (count ==6){
                             dialog.dismiss();
-
+                        }
                         String latest_warhouse_ts = getCurrentDataTime();
                         SharedPreferences latestDBTimeInfo1= getSharedPreferences("LatestDBTimeInfo", 0);
                         SharedPreferences.Editor editor1 = latestDBTimeInfo1.edit();
                         editor1.putString("latest_warhouse_ts",latest_warhouse_ts);
                         editor1.commit();
-
+                        Toast.makeText(TopMenu.this, "仓库信息已经更新", Toast.LENGTH_LONG).show();
                         break;
                     case 0x12:
-
+                        count++;
+                        if (count ==6){
                             dialog.dismiss();
-
+                        }
                         String latest_material_ts = getCurrentDataTime();
                         SharedPreferences latestDBTimeInfo2 = getSharedPreferences("LatestDBTimeInfo", 0);
                         SharedPreferences.Editor editor2 = latestDBTimeInfo2.edit();
                         editor2.putString("latest_material_ts",latest_material_ts);
                         editor2.commit();
-
+                        Toast.makeText(TopMenu.this, "物料信息已经更新", Toast.LENGTH_LONG).show();
                         break;
                     case 0x13:
-
+                        count++;
+                        if (count ==6){
                             dialog.dismiss();
-
+                        }
                         String latest_user_ts = getCurrentDataTime();
                         SharedPreferences latestDBTimeInfo3 = getSharedPreferences("LatestDBTimeInfo", 0);
                         SharedPreferences.Editor editor3 = latestDBTimeInfo3.edit();
                         editor3.putString("latest_user_ts",latest_user_ts);
                         editor3.commit();
-
+                        Toast.makeText(TopMenu.this, "用户信息已经更新", Toast.LENGTH_LONG).show();
                         break;
                     case 0x14:
-
+                        count++;
+                        if (count ==6){
                             dialog.dismiss();
-
+                        }
                         String latest_customer_ts = getCurrentDataTime();
                         SharedPreferences latestDBTimeInfo4 = getSharedPreferences("LatestDBTimeInfo", 0);
                         SharedPreferences.Editor editor4 = latestDBTimeInfo4.edit();
                         editor4.putString("latest_customer_ts",latest_customer_ts);
                         editor4.commit();
-
+                        Toast.makeText(TopMenu.this, "客户信息已经更新", Toast.LENGTH_LONG).show();
                         break;
                     case 0x15:
-
+                        count++;
+                        if (count ==6){
                             dialog.dismiss();
-
+                        }
                         String latest_qr_ts = getCurrentDataTime();
                         SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestDBTimeInfo", 0);
                         SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
                         editor5.putString("latest_qr_ts",latest_qr_ts);
                         editor5.commit();
-
+                        Toast.makeText(TopMenu.this, "条码字典信息已经更新", Toast.LENGTH_LONG).show();
                         break;
                     case 0x16:
-
+                        count++;
+                        if (count ==6){
                             dialog.dismiss();
-
+                        }
                         String latest_supplier_ts = getCurrentDataTime();
                         SharedPreferences latestDBTimeInfo6 = getSharedPreferences("LatestDBTimeInfo", 0);
                         SharedPreferences.Editor editor6 = latestDBTimeInfo6.edit();
                         editor6.putString("latest_supplier_ts",latest_supplier_ts);
                         editor6.commit();
-
+                        Toast.makeText(TopMenu.this, "供应商信息已经更新", Toast.LENGTH_LONG).show();
                         break;
                     case 0x17:
-
+                        Toast.makeText(TopMenu.this, "所有信息已经更新", Toast.LENGTH_LONG).show();
                         break;
                     case 0x18:
-
+                        Toast.makeText(TopMenu.this, "当前已经是最新数据", Toast.LENGTH_LONG).show();
                         break;
                     case 0x19:
                         dialog.dismiss();
@@ -244,15 +250,16 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         Toast.makeText(TopMenu.this, "物流公司信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
                         break;
                     case 0x26:
-
+                        count++;
+                        if (count ==6){
                             dialog.dismiss();
-
+                        }
                         String latest_logistics_company_ts = getCurrentDataTime();
                         SharedPreferences latestDBTimeInfo26 = getSharedPreferences("LatestDBTimeInfo", 0);
                         SharedPreferences.Editor editor26 = latestDBTimeInfo26.edit();
                         editor26.putString("latest_logistics_company_ts",latest_logistics_company_ts);
                         editor26.commit();
-
+                        Toast.makeText(TopMenu.this, "物流公司信息已经更新", Toast.LENGTH_LONG).show();
                         break;
                     default:
                         break;
@@ -333,10 +340,11 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-
-
+                                    Toast.makeText(TopMenu.this, "当前物流公司信息已经是最新数据", Toast.LENGTH_LONG).show();
+                                    count++;
+                                    if (count ==6){
                                         dialog.dismiss();
-
+                                    }
                                 }
                             });
                             return;
@@ -395,9 +403,11 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-
+                                    Toast.makeText(TopMenu.this, "当前供应商信息已经是最新数据", Toast.LENGTH_LONG).show();
+                                    count++;
+                                    if (count ==6){
                                         dialog.dismiss();
-
+                                    }
                                 }
                             });
                             return;
@@ -457,10 +467,11 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-
-
+                                    Toast.makeText(TopMenu.this, "当前条码字典信息已经是最新数据", Toast.LENGTH_LONG).show();
+                                    count++;
+                                    if (count ==6){
                                         dialog.dismiss();
-
+                                    }
                                 }
                             });
                             return;
@@ -519,10 +530,11 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-
-
+                                    Toast.makeText(TopMenu.this, "当前客户字典信息已经是最新数据", Toast.LENGTH_LONG).show();
+                                    count++;
+                                    if (count ==6){
                                         dialog.dismiss();
-
+                                    }
                                 }
                             });
                             return;
@@ -581,10 +593,11 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-
-
+                                    Toast.makeText(TopMenu.this, "当前用户信息已经是最新数据", Toast.LENGTH_LONG).show();
+                                    count++;
+                                    if (count ==6){
                                         dialog.dismiss();
-
+                                    }
                                 }
                             });
                             return;
@@ -643,10 +656,11 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-
-
+                                    Toast.makeText(TopMenu.this, "当前物料信息已经是最新数据", Toast.LENGTH_LONG).show();
+                                    count++;
+                                    if (count ==6){
                                         dialog.dismiss();
-
+                                    }
                                 }
                             });
                             return;
@@ -705,10 +719,11 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-
-
+                                    Toast.makeText(TopMenu.this, "当前仓库信息已经是最新数据", Toast.LENGTH_LONG).show();
+                                    count++;
+                                    if (count ==6){
                                         dialog.dismiss();
-
+                                    }
                                 }
                             });
                             return;
