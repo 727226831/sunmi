@@ -164,9 +164,10 @@ public class OtherEntryQrScanner extends AppCompatActivity {
                         //将数据库的数据显示出来
                         isSuccess = true;
                         productCodeEditText.setText("");
-                        //boxCodeEditText.setText("");
+                        boxCodeEditText.setText("");
+                        boxCodeEditText.requestFocus();
                         // plateCodeEditText.setText("");
-                        productCodeEditText.requestFocus();
+
                         List<OtherEntryScanResultBean> list = showScannedQR();
                         OtherEntryScannerAdapter adapter = new OtherEntryScannerAdapter(OtherEntryQrScanner.this, list, mListener21);
                         tableBodyListView.setAdapter(adapter);

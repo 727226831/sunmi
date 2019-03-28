@@ -159,33 +159,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
             }
 
         });
-        boxCodeEditText.setOnEditorActionListener(new TextView.OnEditorActionListener()
-        {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(event!=null&&event.getKeyCode()==KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN)
-                {
-                    boxCodeEditTextContent = new ArrayList();
-                    String[] temp = boxCodeEditText.getText().toString().split("\n");
-                    for (int i=0;i<temp.length;i++) {
-                        boxCodeEditTextContent.add(temp[i]);
-                    }
-                   if (boxCodeEditTextContent.size()>1 && boxCodeEditTextContent.size()<(Math.abs(current_nnum_qrRecv)-countSum())){
-                       boxCodeEditText.setText(boxCodeEditTextContent.get(0));
-                       boxCodeEditText.setEnabled(false);
-                       boxCodeEditText.setFocusable(false);
-                       boxCodeEditText.setKeyListener(null);
-                   }
-                    return true;
-                }
-                else
-                {
-                    return false;
 
-                }
-            }
-
-        });
         mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -206,10 +180,13 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                         //将数据库的数据显示出来
                         isSuccess = true;
                         productCodeEditText.setText("");
+
                         //boxCodeEditText.setText("");
                         //plateCodeEditText.setText("");
                         scannnumText.setText("已扫码数量：" + countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv));
-                        productCodeEditText.requestFocus();
+
+                         boxCodeEditText.requestFocus();
+
                         List<SaleDeliveryScanResultBean> list = showScannedQR();
                         SaleDeliveryScannerAdapter adapter = new SaleDeliveryScannerAdapter(SaleDeliveryQrScanner.this, list, mListener2);
                         tableBodyListView.setAdapter(adapter);
@@ -248,7 +225,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
     };
 
     private void getData() {
-        boxCodeEditTextContent= Arrays.asList(boxCodeEditText.getText().toString().split("\\s+"));
+        boxCodeEditTextContent= Arrays.asList(boxCodeEditText.getText().toString().split("\\s"));
         qrcode_xm_Text.setText("二维箱码："+boxCodeEditTextContent.size());
         for (int i = 0; i <boxCodeEditTextContent.size() ; i++) {
 

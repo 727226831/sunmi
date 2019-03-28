@@ -16,6 +16,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -346,7 +347,7 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
             outputStream.write(("发货单号"+"\t"+ "单据日期"+"\t"+"物料编码"+"\t"+"物料名称"+"\t"+
                     "物料大类"+"\t"+"序列号"+"\t"+"条形码").getBytes());
             for (int j = 0; j <bean1.size() ; j++) {
-                outputStream.write("\n".getBytes());
+                outputStream.write("\r\n".getBytes());
 
                 outputStream.write((bean1.get(j).getPobillcode()+"\t"
                         +bean1.get(j).getDbilldate()+"\t"
@@ -482,16 +483,10 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
 
     private String countScannedQRCode(String pobillcode, String materialcode, String vcooporderbcode_b) {
         String count = "0";
-
             Cursor cursor2 = db3.rawQuery("select count(prodcutcode) from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?", new String[]{pobillcode, materialcode, vcooporderbcode_b});
-            if (cursor2 != null && cursor2.getCount() > 0) {
-                //判断cursor中是否存在数据
-                count = String.valueOf(cursor2.getCount());
-                cursor2.close();
-                return count;
-            }
-
-
+             cursor2.moveToFirst();
+            count = cursor2.getString(0);
+             cursor2.close();
 
         return count;
     }
@@ -600,14 +595,18 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
         return cars;
     }
     private   ArrayList<OtherOutgoingBean>  removeDuplicate(ArrayList<OtherOutgoingBean> list)  {
-        for  ( int  i  =   0 ; i  <  list.size()  -   1 ; i ++ )  {
-            for  ( int  j  =  list.size()  -   1 ; j  >  i; j -- )  {
-                if  (list.get(j).getPobillcode().equals(list.get(i).getPobillcode()))  {
-                    list.remove(j);
+
+            ArrayList<OtherOutgoingBean>  beanList=new ArrayList<>();
+            beanList.addAll(list);
+            for  ( int  i  =   0 ; i  <  beanList.size()  -   1 ; i ++ )  {
+                for  ( int  j  =  beanList.size()  -   1 ; j  >  i; j -- )  {
+                    if  (beanList.get(j).getPobillcode().equals(beanList.get(i).getPobillcode()))  {
+                        beanList.remove(j);
+                    }
                 }
             }
-        }
-        return list;
+            return beanList;
+
     }
 
     public ArrayList<OtherOutgoingBean> query(String pobillcode, String current_cwarename,String query_uploadflag) {

@@ -329,7 +329,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
             outputStream.write(("发货单号"+"\t"+ "单据日期"+"\t"+"物料编码"+"\t"+"物料名称"+"\t"+
                     "物料大类"+"\t"+"序列号"+"\t"+"条形码").getBytes());
             for (int j = 0; j <bean1.size() ; j++) {
-                outputStream.write("\n".getBytes());
+                outputStream.write("\r\n".getBytes());
 
                 outputStream.write((bean1.get(j).getVbillcode()+"\t"
                         +bean1.get(j).getDbilldate()+"\t"
@@ -526,12 +526,9 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     private String countScannedQRCode(String vbillcode,String vcooporderbcode_b, String matrcode) {
         String count = "0";
         Cursor cursor2 = db3.rawQuery("select count(prodcutcode) from SaleDeliveryScanResult where vbillcode=? and matrcode=? and vcooporderbcode_b=? ", new String[]{vbillcode, matrcode,vcooporderbcode_b});
-        if (cursor2 != null && cursor2.getCount() > 0) {
-            //判断cursor中是否存在数据
-            count = String.valueOf(cursor2.getCount());
-            cursor2.close();
-            return count;
-        }
+        cursor2.moveToFirst();
+        count = cursor2.getString(0);
+        cursor2.close();
         return count;
     }
 
@@ -616,13 +613,13 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 if(query_uploadflag == null){
                     query_uploadflag = "N";
                 }
-
-
-
                 bean1 = queryexport(temp,query_cwarename,query_uploadflag);
 
                 listAllPostition = bean1;
-                final SaleDeliveryAdapter adapter3 = new SaleDeliveryAdapter(SaleDelivery.this, removeDuplicate(bean1), mListener);
+
+
+                adapter3 = new SaleDeliveryAdapter(SaleDelivery.this, removeDuplicate(bean1), mListener);
+
                 tableListView.setAdapter(adapter3);
                 tableListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
@@ -635,6 +632,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                     }
                 });
 
+
             }
         });
         ad1.setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -645,16 +643,21 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         ad1.show();// 显示对话框
         time.setText(tempperiod);
     }
-    private   ArrayList<SaleDeliveryBean>  removeDuplicate(ArrayList<SaleDeliveryBean> list)  {
-        for  ( int  i  =   0 ; i  <  list.size()  -   1 ; i ++ )  {
-            for  ( int  j  =  list.size()  -   1 ; j  >  i; j -- )  {
-                if  (list.get(j).getVbillcode().equals(list.get(i).getVbillcode()))  {
-                    list.remove(j);
+    SaleDeliveryAdapter adapter3;
+    private    List<SaleDeliveryBean>  removeDuplicate(List<SaleDeliveryBean> list)  {
+        List<SaleDeliveryBean>  beanList=new ArrayList<>();
+        beanList.addAll(list);
+        for  ( int  i  =   0 ; i  <  beanList.size()  -   1 ; i ++ )  {
+            for  ( int  j  =  beanList.size()  -   1 ; j  >  i; j -- )  {
+                if  (beanList.get(j).getVbillcode().equals(beanList.get(i).getVbillcode()))  {
+                    beanList.remove(j);
                 }
             }
         }
-        return list;
+        return beanList;
     }
+
+
     private void showDialogTwo() {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_date, null);
         final DatePicker startTime = (DatePicker) view.findViewById(R.id.st);
@@ -752,8 +755,6 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 bean.setXlh(cursor.getString(cursor.getColumnIndex("xlh")));
                 bean.dr= cursor.getInt(cursor.getColumnIndex("dr"));
 
-
-
                 if (queryTimePeriod(bean.vbillcode,start_temp,end_temp)) {
                     list.add(bean);
                 }
@@ -817,16 +818,14 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         String userSendBean = gson.toJson(userSend);
         request.addProperty("string", workCode);
         request.addProperty("string1", userSendBean);
-        //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
-        //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
+
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
 
         envelope.bodyOut = request;
         envelope.dotNet = false;
 
         HttpTransportSE se = new HttpTransportSE(WSDL_URI);
-        //  se.call(null, envelope);//调用 version1.2
-        //version1.1 需要如下soapaction
+
         se.call(namespace + "sendToWISE", envelope);
         // 获取返回的数据
         SoapObject object = (SoapObject) envelope.bodyIn;
@@ -851,8 +850,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     public ArrayList<SaleDeliveryBean> querySaleDelivery() {
         ArrayList<SaleDeliveryBean> list = new ArrayList<SaleDeliveryBean>();
         List<String> list_update = new ArrayList<String>();
-       // String sql2 = "select " + "vbillcode" + "," + "dbilldate" + "," + "dr" + " from " + "SaleDelivery";//注意：这里有单引号
-      //  Cursor cursor = db3.rawQuery(sql2, null);
+
         Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr from SaleDelivery where flag=? order by dbilldate desc", new String[]{"N"});
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
@@ -862,35 +860,6 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
                 list.add(bean);
-     /*           if (bean.dr == 1) {
-                    list_update.add(bean.vbillcode);
-                    if(null == list || list.size() ==0){
-                    }else{
-//                        Iterator<OtherEntryBean> iter = list.iterator();
-//                        while(iter.hasNext()){  //执行过程中会执行数据锁定，性能稍差，若在循环过程中要去掉某个元素只能调用iter.remove()方法。
-//                            OtherEntryBean tempBean = iter.next();
-//                            if (tempBean.getPobillcode().equals("bean.pobillcode")){
-//                                iter.remove();
-//                            }
-//                        }
-                        for(int i=0;i<list.size();i++){
-                            if(list.get(i).getVbillcode().equals(bean.vbillcode)) {
-                                list.remove(i);
-                            }
-                        }
-                    }
-                }else{
-                    //去掉list里list_update出现过的订单号
-                    if(null == list_update || list_update.size() ==0 ){
-                        list.add(bean);
-                    }else{
-                        if(list_update.contains(bean.vbillcode)) {
-                        }else{
-                            list.add(bean);
-                        }
-                    }
-                }
-                */
             }
 
             cursor.close();

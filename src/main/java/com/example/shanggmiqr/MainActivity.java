@@ -222,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
                                         public void run() {
 
                                             Toast.makeText(MainActivity.this, "当前用户信息已经是最新数据", Toast.LENGTH_LONG).show();
+                                            dialog.dismiss();
                                         }
                                     });
                                     return;
@@ -270,6 +271,7 @@ public class MainActivity extends AppCompatActivity {
              if(dialog!=null){
                  dialog.dismiss();
              }
+             Log.i("dialog",msg.what+"");
             switch (msg.what) {
 
                 case 0x11:

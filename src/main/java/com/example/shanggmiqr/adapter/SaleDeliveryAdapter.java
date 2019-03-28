@@ -32,7 +32,10 @@ public class SaleDeliveryAdapter extends BaseAdapter{
         this.mContentList = list;
         inflater = LayoutInflater.from(context);
         mListener = listener;
+
     }
+
+
     public void setList(List<SaleDeliveryBean> saleDeliveryDataBean) {
         this.mContentList = saleDeliveryDataBean;
     }
@@ -51,11 +54,8 @@ public class SaleDeliveryAdapter extends BaseAdapter{
     }
     @Override
     public int getCount() {
-        int ret = 0;
-        if (mContentList != null) {
-            ret = mContentList.size();
-        }
-        return ret;
+
+        return mContentList.size();
     }
 
     @Override
