@@ -146,7 +146,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         SharedPreferences.Editor editor1 = latestDBTimeInfo1.edit();
                         editor1.putString("latest_warhouse_ts",latest_warhouse_ts);
                         editor1.commit();
-                        Toast.makeText(TopMenu.this, "仓库信息已经更新", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x12:
                         count++;
@@ -158,7 +158,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         SharedPreferences.Editor editor2 = latestDBTimeInfo2.edit();
                         editor2.putString("latest_material_ts",latest_material_ts);
                         editor2.commit();
-                        Toast.makeText(TopMenu.this, "物料信息已经更新", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x13:
                         count++;
@@ -170,7 +170,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         SharedPreferences.Editor editor3 = latestDBTimeInfo3.edit();
                         editor3.putString("latest_user_ts",latest_user_ts);
                         editor3.commit();
-                        Toast.makeText(TopMenu.this, "用户信息已经更新", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x14:
                         count++;
@@ -182,7 +182,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         SharedPreferences.Editor editor4 = latestDBTimeInfo4.edit();
                         editor4.putString("latest_customer_ts",latest_customer_ts);
                         editor4.commit();
-                        Toast.makeText(TopMenu.this, "客户信息已经更新", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x15:
                         count++;
@@ -194,7 +194,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
                         editor5.putString("latest_qr_ts",latest_qr_ts);
                         editor5.commit();
-                        Toast.makeText(TopMenu.this, "条码字典信息已经更新", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x16:
                         count++;
@@ -206,13 +206,13 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         SharedPreferences.Editor editor6 = latestDBTimeInfo6.edit();
                         editor6.putString("latest_supplier_ts",latest_supplier_ts);
                         editor6.commit();
-                        Toast.makeText(TopMenu.this, "供应商信息已经更新", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x17:
-                        Toast.makeText(TopMenu.this, "所有信息已经更新", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x18:
-                        Toast.makeText(TopMenu.this, "当前已经是最新数据", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x19:
                         dialog.dismiss();
@@ -259,7 +259,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         SharedPreferences.Editor editor26 = latestDBTimeInfo26.edit();
                         editor26.putString("latest_logistics_company_ts",latest_logistics_company_ts);
                         editor26.commit();
-                        Toast.makeText(TopMenu.this, "物流公司信息已经更新", Toast.LENGTH_LONG).show();
+
                         break;
                     default:
                         break;

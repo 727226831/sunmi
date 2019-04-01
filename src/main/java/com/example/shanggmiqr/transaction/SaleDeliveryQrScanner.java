@@ -1,5 +1,6 @@
 package com.example.shanggmiqr.transaction;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -183,7 +184,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
                         //boxCodeEditText.setText("");
                         //plateCodeEditText.setText("");
-                        scannnumText.setText("已扫码数量：" + countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv));
+
 
                          boxCodeEditText.requestFocus();
 
@@ -191,6 +192,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                         SaleDeliveryScannerAdapter adapter = new SaleDeliveryScannerAdapter(SaleDeliveryQrScanner.this, list, mListener2);
                         tableBodyListView.setAdapter(adapter);
                         String current_scanSum = countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv);
+                        scannnumText.setText("已扫码数量：" + current_scanSum);
                         insertCountOfScannedQRCode(current_scanSum);
                         break;
                     case 0x14:
@@ -232,13 +234,13 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
             productCodeEditText.setText(boxCodeEditTextContent.get(i));
 
             count = countSum();
-            //    if((productCodeEditText.getText().toString().length() == 13) &&productCodeEditText.getText().toString().substring(4,9).equals(current_maccode_qrRecv) && count<current_nnum_qrRecv ){
+
             if ((!isAlreadyScanned(productCodeEditText.getText().toString()) && !isEditTextEmpty() && (productCodeEditText.getText().toString().length()
                     == getLengthInQrRule())) && count < Math.abs(current_nnum_qrRecv) && isValidQr() && !isCwarenameEmpty()) {
                 InsertintoTempQrDBForSaleDelivery(productCodeEditText.getText().toString());
                 boxCodeEditText.setText("");
                 boxCodeEditText.requestFocus();
-                //scanStatus = true;
+
             } else if (count >= Math.abs(current_nnum_qrRecv)) {
                 Toast.makeText(SaleDeliveryQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
             } else if (isEditTextEmpty()) {
@@ -461,6 +463,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
     private void insertCountOfScannedQRCode(String scannum) {
         db5.execSQL("update SaleDeliveryBody set scannum=? where vbillcode=? and matrcode=? and vcooporderbcode_b=?", new String[]{scannum, current_vbillcode_qrRecv, current_matrcode_qrRecv, current_vcooporderbcode_b_qrRecv});
+
     }
 
     private boolean isEditTextEmpty() {
@@ -509,11 +512,9 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                         values.put("vcooporderbcode_b", current_vcooporderbcode_b_qrRecv);
                         values.put("matrcode", current_matrcode_qrRecv);
                         values.put("platecode", plateCodeEditText.getText().toString());
-
-                        //values.put("boxcode", boxCodeEditText.getText().toString());
                         values.put("boxcode", "");
                         values.put("prodcutcode", productcode);
-                        Log.i("code-->",productcode);
+
                         values.put("num", current_nnum_qrRecv);
                         values.put("itemuploadflag", "N");
                         values.put("xlh", current_xlh_substring);

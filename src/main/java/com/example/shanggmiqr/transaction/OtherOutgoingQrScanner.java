@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -214,20 +215,25 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
         scannednumText.setText("已扫码数量："+listcode.size());
         for (int i = 0; i <listcode.size() ; i++) {
             productCodeEditText.setText(listcode.get(i));
-            if ((!isAlreadyScanned(productCodeEditText.getText().toString()) && !isEditTextEmpty() && (productCodeEditText.getText().toString().length() == getLengthInQrRule())) && count < Math.abs(current_nnum_qrRecv) && isValidQr()) {
-                InsertintoTempQrDBForOutgoing();
-                boxCodeEditText.setText("");
-                //scanStatus = true;
-            } else if (count >= Math.abs(current_nnum_qrRecv)) {
-                Toast.makeText(OtherOutgoingQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
-
-            } else if (isEditTextEmpty()) {
-                Toast.makeText(OtherOutgoingQrScanner.this, "二维码区域不可以为空", Toast.LENGTH_LONG).show();
-            } else if (isAlreadyScanned(productCodeEditText.getText().toString())) {
+            if(isAlreadyScanned(productCodeEditText.getText().toString())){
                 Toast.makeText(OtherOutgoingQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(OtherOutgoingQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
+                return;
             }
+            if(count >= Math.abs(current_nnum_qrRecv)){
+                Toast.makeText(OtherOutgoingQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if(productCodeEditText.getText().toString().length() != getLengthInQrRule()){
+                Toast.makeText(OtherOutgoingQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if(!isValidQr()){
+                return;
+            }
+
+            InsertintoTempQrDBForOutgoing(productCodeEditText.getText().toString());
+            boxCodeEditText.setText("");
+
         }
 
 
@@ -237,11 +243,9 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
         Cursor cursor = db5.rawQuery("select * from OtherOutgoingScanResult where pobillcode=? and prodcutcode=? and vcooporderbcode_b=?",
                 new String[]{current_pobillcode_qrRecv, s, current_vcooporderbcode_b_qrRecv});
         while (cursor != null && cursor.getCount() > 0) {
-            // db.close();
-            //  Log.i(" search_city_name_exist", str + "在数据库已存在,return true");
             if (cursor.getCount() > 0) {
                 return true;
-            }// //有城市在数据库已存在，返回true
+            }
         }
         return false;
     }
@@ -361,7 +365,7 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
         return current_maccode_substring;
     }
 
-    private void InsertintoTempQrDBForOutgoing() {
+    private void InsertintoTempQrDBForOutgoing(final String prodcutcode) {
 //插入临时数据库保持条码信息并显示在此页面
 
         new Thread(new Runnable() {
@@ -378,7 +382,8 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
                         values.put("vcooporderbcode_b", current_vcooporderbcode_b_qrRecv);
                         values.put("platecode", plateCodeEditText.getText().toString());
                         values.put("boxcode", boxCodeEditText.getText().toString());
-                        values.put("prodcutcode", productCodeEditText.getText().toString());
+
+                        values.put("prodcutcode", prodcutcode);
                         values.put("itemuploadflag", "N");
                         values.put("xlh", current_xlh_substring);
                         values.put("num", current_nnum_qrRecv);

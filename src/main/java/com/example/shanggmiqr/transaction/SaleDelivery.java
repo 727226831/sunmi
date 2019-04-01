@@ -401,6 +401,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
             if("0".equals(dr)&& isVbillcodeExist){
                 continue;
             }
+
             //等于1时
             if("1".equals(dr) || ("2".equals(dr)&&isVbillcodeExist))
             {
@@ -411,7 +412,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                     db3.beginTransaction();
                     db3.delete("SaleDelivery", "vbillcode=?", new String[]{vbillcode});
                     db3.delete("SaleDeliveryBody", "vbillcode=?", new String[]{vbillcode});
-                    db3.delete("SaleDeliveryScanResult", "vbillcode=?", new String[]{vbillcode});
+                   // db3.delete("SaleDeliveryScanResult", "vbillcode=?", new String[]{vbillcode});
                     db3.setTransactionSuccessful();
                 }
                 catch (Exception ex)
@@ -734,8 +735,8 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
         Cursor cursor = db3.rawQuery("select saledelivery.vbillcode, saledelivery.dbilldate,saledeliverybody.matrcode,saledelivery.dr," +
                 "saledeliverybody.matrname,saledeliverybody.maccode,saledeliverybody.nnum, saledeliveryscanresult.prodcutcode," +
-                "saledeliveryscanresult.xlh" + " from saledelivery left join saledeliverybody on saledelivery.vbillcode=saledeliverybody.vbillcode " +
-                "left join saledeliveryscanresult on saledeliverybody.vbillcode=saledeliveryscanresult.vbillcode " +
+                "saledeliveryscanresult.xlh" + " from saledelivery inner join saledeliverybody on saledelivery.vbillcode=saledeliverybody.vbillcode " +
+                "inner join saledeliveryscanresult on saledeliverybody.vbillcode=saledeliveryscanresult.vbillcode " +
                 "and saledeliverybody.vcooporderbcode_b=saledeliveryscanresult.vcooporderbcode_b where flag=? and saledelivery.vbillcode" +
                 " like '%" + vbillcode + "%' and saledeliverybody.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
 

@@ -289,7 +289,7 @@ public class MainActivity extends AppCompatActivity {
 
                     break;
                 case 0x13:
-                    Toast.makeText(MainActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
+
                     break;
                 case 0x14:
                     Toast.makeText(MainActivity.this, "用户名或密码错误", Toast.LENGTH_LONG).show();

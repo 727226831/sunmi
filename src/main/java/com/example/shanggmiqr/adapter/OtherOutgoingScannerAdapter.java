@@ -76,8 +76,8 @@ public class OtherOutgoingScannerAdapter extends BaseAdapter{
         viewHolder.itemuploadflag.setTextSize(12);
         viewHolder.platecode.setText(goods.getPlatecode());
         viewHolder.platecode.setTextSize(12);
-        viewHolder.boxcode.setText(goods.getBoxcode());
-        viewHolder.boxcode.setTextSize(12);
+//        viewHolder.boxcode.setText(goods.getBoxcode());
+//        viewHolder.boxcode.setTextSize(12);
         viewHolder.prodcutcode.setText(goods.getProdcutcode());
         viewHolder.prodcutcode.setTextSize(12);
         //给Button添加单击事件  添加Button之后ListView将失去焦点  需要的直接把Button的焦点去掉

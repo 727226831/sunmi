@@ -382,7 +382,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                 try {
                     db3.delete("OtherEntry", "pobillcode=?", new String[]{pobillcode});
                     db3.delete("OtherEntryBody", "pobillcode=?", new String[]{pobillcode});
-                    db3.delete("OtherEntryScanResult", "pobillcode=?", new String[]{pobillcode});
+                  //  db3.delete("OtherEntryScanResult", "pobillcode=?", new String[]{pobillcode});
                     db3.setTransactionSuccessful();
                 }
                 catch (Exception ex)

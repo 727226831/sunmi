@@ -418,7 +418,7 @@ public class OtherOutgoing extends AppCompatActivity implements OnClickListener 
                 try {
                     db3.delete("OtherOutgoing", "pobillcode=?", new String[]{pobillcode});
                     db3.delete("OtherOutgoingBody", "pobillcode=?", new String[]{pobillcode});
-                    db3.delete("OtherOutgoingScanResult", "pobillcode=?", new String[]{pobillcode});
+                  //  db3.delete("OtherOutgoingScanResult", "pobillcode=?", new String[]{pobillcode});
                     db3.setTransactionSuccessful();
                 }
                 catch (Exception ex)
