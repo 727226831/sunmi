@@ -19,6 +19,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.util.iUntils;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.OtherOutgoingScannerAdapter;
 import com.example.shanggmiqr.bean.OtherOutgoingQrDetailBean;
@@ -26,6 +27,7 @@ import com.example.shanggmiqr.bean.OutgoingScanResultBean;
 import com.example.shanggmiqr.bean.QrcodeRule;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
+import com.google.gson.annotations.Until;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,29 +53,17 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
     private String current_cwarename_qrRecv;
     private String current_vcooporderbcode_b_qrRecv;
     private EditText plateCodeEditText;
-    private String plateCodeEditTextContent;
     private EditText boxCodeEditText;
-    private String boxCodeEditTextContent;
     private EditText productCodeEditText;
-    private String productCodeEditTextContent;
     private Button scanCheckButton;
     private SQLiteDatabase db5;
     private MyDataBaseHelper helper5;
     private ListView tableBodyListView;
     private int count;//用于合格条码计数
-    private OutgoingScanResultBean outgoingScanResultBean;
-    private Handler mHandler = null;
-    private boolean isSuccess = false;
 
-    private int current_maccode_rule_itemlength;
-    private int current_maccode_rule_startpos;
-    private int current_xlh_rule_itemlength;
-    private int current_xlh_rule_startpos;
     private int current_qrcode_rule_length = 13;
-    private String current_maccode_substring;
-    private String current_xlh_substring;
     private String current_material_code;
-    private boolean scanStatus = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,7 +106,9 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
         materialcodeText.setText("物料编码:" + current_materialcode_qrRecv);
         numText.setText("单据数量:" + current_nnum_qrRecv);
         uploadnumText.setText("提交数量:" + current_uploadnum_qrRecv);
-        scannednumText.setText("已扫码数量: " + countScannedQRCode(current_pobillcode_qrRecv, current_materialcode_qrRecv));
+
+        scannednumText.setText("已扫码数量: " + iUntils.countScannedQRCode(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv,
+                current_vcooporderbcode_b_qrRecv));
         List<OutgoingScanResultBean> list = showScannedQR();
         OtherOutgoingScannerAdapter adapter = new OtherOutgoingScannerAdapter(OtherOutgoingQrScanner.this, list, mListener21);
         tableBodyListView.setAdapter(adapter);
@@ -141,57 +133,11 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
                 else
                 {
                     return false;
-
                 }
             }
 
         });
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what) {
-                    case 0x11:
-                        //mlogInButton.setEnabled(true);
-                        Toast.makeText(OtherOutgoingQrScanner.this, "请检查网络连接", Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x12:
 
-                        SharedPreferences sharedPreferences12 = getSharedPreferences("UserInfo", 0);
-                        //getString()第二个参数为缺省值，如果preference中不存在该key，将返回缺省值
-                        String showTest12 = sharedPreferences12.getString("userinfo", "");
-                        Toast.makeText(OtherOutgoingQrScanner.this, "用户数据下载成功", Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x13:
-                        //将数据库的数据显示出来
-                        isSuccess = true;
-                        productCodeEditText.setText("");
-                          boxCodeEditText.setText("");
-                          boxCodeEditText.requestFocus();
-                        //  plateCodeEditText.setText("");
-
-                        List<OutgoingScanResultBean> list = showScannedQR();
-                        OtherOutgoingScannerAdapter adapter = new OtherOutgoingScannerAdapter(OtherOutgoingQrScanner.this, list, mListener21);
-                        tableBodyListView.setAdapter(adapter);
-                        String current_scanSum = countScannedQRCode(current_pobillcode_qrRecv, current_materialcode_qrRecv);
-                        insertCountOfScannedQRCode(current_scanSum);
-                        scannednumText.setText("已扫码数量: " + current_scanSum);
-                        break;
-                    case 0x14:
-                        Toast.makeText(OtherOutgoingQrScanner.this, "用户名或密码错误", Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x15:
-                        Toast.makeText(OtherOutgoingQrScanner.this, "请检查服务器连接", Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x19:
-                        String exception = msg.getData().getString("Exception");
-                        Toast.makeText(OtherOutgoingQrScanner.this, "错误："+exception, Toast.LENGTH_LONG).show();
-                        break;
-                    default:
-                        break;
-                }
-            }
-        };
     }
     View.OnKeyListener onKeyListener=new View.OnKeyListener() {
         @Override
@@ -207,15 +153,63 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
             return false;
         }
     };
+   Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 0x11:
+                    //mlogInButton.setEnabled(true);
+                    Toast.makeText(OtherOutgoingQrScanner.this, "请检查网络连接", Toast.LENGTH_LONG).show();
+                    break;
+                case 0x12:
+
+                    SharedPreferences sharedPreferences12 = getSharedPreferences("UserInfo", 0);
+                    //getString()第二个参数为缺省值，如果preference中不存在该key，将返回缺省值
+                    String showTest12 = sharedPreferences12.getString("userinfo", "");
+                    Toast.makeText(OtherOutgoingQrScanner.this, "用户数据下载成功", Toast.LENGTH_LONG).show();
+                    break;
+                case 0x13:
+                    //将数据库的数据显示出来
+                    productCodeEditText.setText("");
+                    boxCodeEditText.setText("");
+                    boxCodeEditText.requestFocus();
+
+
+                    List<OutgoingScanResultBean> list = showScannedQR();
+                    OtherOutgoingScannerAdapter adapter = new OtherOutgoingScannerAdapter(OtherOutgoingQrScanner.this, list, mListener21);
+                    tableBodyListView.setAdapter(adapter);
+                    String current_scanSum =  iUntils.countScannedQRCode(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv,
+                            current_vcooporderbcode_b_qrRecv);
+
+                    insertCountOfScannedQRCode(current_scanSum);
+                    scannednumText.setText("已扫码数量: " + current_scanSum);
+                    break;
+                case 0x14:
+                    Toast.makeText(OtherOutgoingQrScanner.this, "用户名或密码错误", Toast.LENGTH_LONG).show();
+                    break;
+                case 0x15:
+                    Toast.makeText(OtherOutgoingQrScanner.this, "请检查服务器连接", Toast.LENGTH_LONG).show();
+                    break;
+                case 0x19:
+                    String exception = msg.getData().getString("Exception");
+                    Toast.makeText(OtherOutgoingQrScanner.this, "错误："+exception, Toast.LENGTH_LONG).show();
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
     private  List<String> listcode;
     private void getData() {
 
-        count = countSum();
+        count = iUntils.countSum(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv);
         listcode= Arrays.asList(boxCodeEditText.getText().toString().split("\\s+"));
         scannednumText.setText("已扫码数量："+listcode.size());
         for (int i = 0; i <listcode.size() ; i++) {
             productCodeEditText.setText(listcode.get(i));
-            if(isAlreadyScanned(productCodeEditText.getText().toString())){
+
+            if(iUntils.isAlreadyScanned(db5,current_pobillcode_qrRecv,productCodeEditText.getText().toString(),current_vcooporderbcode_b_qrRecv)){
                 Toast.makeText(OtherOutgoingQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
                 return;
             }
@@ -239,50 +233,12 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
 
     }
 
-    private boolean isAlreadyScanned(String s) {
-        Cursor cursor = db5.rawQuery("select * from OtherOutgoingScanResult where pobillcode=? and prodcutcode=? and vcooporderbcode_b=?",
-                new String[]{current_pobillcode_qrRecv, s, current_vcooporderbcode_b_qrRecv});
-        while (cursor != null && cursor.getCount() > 0) {
-            if (cursor.getCount() > 0) {
-                return true;
-            }
-        }
-        return false;
-    }
 
-    public int countSum() {
-        Cursor cursor = db5.rawQuery("select * from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
-                new String[]{current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv});
-        while (cursor != null && cursor.getCount() > 0) {
-            // db.close();
-            //  Log.i(" search_city_name_exist", str + "在数据库已存在,return true");
-            return cursor.getCount();// //有城市在数据库已存在，返回true
-        }
-        return 0;
-    }
 
-    private String countScannedQRCode(String pobillcode, String materialcode) {
-        String count = "0";
-        Cursor cursor2 = db5.rawQuery("select prodcutcode from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?", new String[]{pobillcode, materialcode, current_vcooporderbcode_b_qrRecv});
-        if (cursor2 != null && cursor2.getCount() > 0) {
-            //判断cursor中是否存在数据
-            count = String.valueOf(cursor2.getCount());
-            cursor2.close();
-            return count;
-        }
-        return count;
-    }
+
 
     private void insertCountOfScannedQRCode(String scannum) {
         db5.execSQL("update OtherOutgoingBody set scannum=? where pobillcode=? and materialcode=? and vcooporderbcode_b=?", new String[]{scannum, current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv});
-    }
-
-    private boolean isEditTextEmpty() {
-
-        if (("").equals(productCodeEditText.getText().toString()) || null == productCodeEditText.getText().toString()) {
-            return true;// //有城市在数据库已存在，返回false
-        }
-        return false;
     }
 
     private int getLengthInQrRule() {
@@ -318,7 +274,8 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
 
     private boolean isValidQr() {
         //String category =productCodeEditText.getText().toString().substring(0,3);
-        String scannedMaccode = getCurrentQrcodeRule();
+
+        String scannedMaccode = iUntils.getMaccode(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv);
         if (scannedMaccode == null || scannedMaccode.length() == 0) {
             Toast.makeText(OtherOutgoingQrScanner.this, "请检查物料信息及条码规则数据是否下载，或者是否为有效的条码", Toast.LENGTH_SHORT).show();
             return false;
@@ -340,30 +297,7 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
         return false;
     }
 
-    private String getCurrentQrcodeRule() {
-        Cursor cursor = db5.rawQuery("select * from QrcodeRuleBody where Matbasclasscode=?",
-                new String[]{current_maccode_qrRecv});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-                QrcodeRule.DataBean.ItemBean bean = new QrcodeRule.DataBean.ItemBean();
-                bean.itemlength = cursor.getString(cursor.getColumnIndex("itemlength"));
-                bean.startpos = cursor.getString(cursor.getColumnIndex("startpos"));
-                bean.appobjattr = cursor.getString(cursor.getColumnIndex("appobjattr"));
-                if ("物料条码".equals(bean.appobjattr)) {
-                    current_maccode_rule_itemlength = Integer.parseInt(bean.itemlength);
-                    current_maccode_rule_startpos = Integer.parseInt(bean.startpos);
-                } else if ("序列号".equals(bean.appobjattr)) {
-                    current_xlh_rule_itemlength = Integer.parseInt(bean.itemlength);
-                    current_xlh_rule_startpos = Integer.parseInt(bean.startpos);
-                }
-            }
-            cursor.close();
-            current_maccode_substring = productCodeEditText.getText().toString().substring(current_maccode_rule_startpos - 1, current_maccode_rule_startpos - 1 + current_maccode_rule_itemlength);
-            current_xlh_substring = productCodeEditText.getText().toString().substring(current_xlh_rule_startpos - 1, current_xlh_rule_startpos - 1 + current_xlh_rule_itemlength);
-        }
-        return current_maccode_substring;
-    }
+
 
     private void InsertintoTempQrDBForOutgoing(final String prodcutcode) {
 //插入临时数据库保持条码信息并显示在此页面
@@ -385,7 +319,8 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
 
                         values.put("prodcutcode", prodcutcode);
                         values.put("itemuploadflag", "N");
-                        values.put("xlh", current_xlh_substring);
+
+                        values.put("xlh", iUntils.getXlh(db5,prodcutcode,current_maccode_qrRecv));
                         values.put("num", current_nnum_qrRecv);
                         // 插入第一条数据
                         db5.insert("OtherOutgoingScanResult", null, values);
@@ -469,8 +404,9 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
             List<OutgoingScanResultBean> listDel = showScannedQR();
             if (!isAlreadyUpload(listDel.get(position).getProdcutcode())) {
                 db5.execSQL("delete from OtherOutgoingScanResult where pobillcode=? and vcooporderbcode_b=? and prodcutcode=?", new Object[]{current_pobillcode_qrRecv, current_vcooporderbcode_b_qrRecv, listDel.get(position).getProdcutcode()});
-                count = countSum();
-                String current_scanSum = countScannedQRCode(current_pobillcode_qrRecv, current_materialcode_qrRecv);
+                count = iUntils.countSum(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv);
+                String current_scanSum = iUntils.countScannedQRCode(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv,
+                        current_vcooporderbcode_b_qrRecv);
                 scannednumText.setText("已扫码数量: " + current_scanSum);
                 insertCountOfScannedQRCode(current_scanSum);
                 List<OutgoingScanResultBean> list = showScannedQR();

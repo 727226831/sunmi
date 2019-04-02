@@ -1,8 +1,12 @@
 package com.example.shanggmiqr.util;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+
+import com.example.shanggmiqr.bean.QrcodeRule;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -86,4 +90,5 @@ public class Utils {
         Date date = new Date(System.currentTimeMillis());
         return simpleDateFormat.format(date);
     }
+
 }

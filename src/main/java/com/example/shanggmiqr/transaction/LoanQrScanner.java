@@ -23,6 +23,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.util.iUntils;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.LoanScannerAdapter;
 import com.example.shanggmiqr.bean.OutgoingScanResultBean;
@@ -366,7 +367,7 @@ public class LoanQrScanner extends AppCompatActivity {
 
     private boolean isValidQr() {
         //String category =productCodeEditText.getText().toString().substring(0,3);
-        String scannedMaccode = getCurrentQrcodeRule();
+        String scannedMaccode = iUntils.getMaccode(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv);
         if (scannedMaccode == null || scannedMaccode.length() == 0) {
             Toast.makeText(LoanQrScanner.this, "请检查物料信息及条码规则数据是否下载，或者是否为有效的条码", Toast.LENGTH_SHORT).show();
             return false;
@@ -388,30 +389,7 @@ public class LoanQrScanner extends AppCompatActivity {
         return false;
     }
 
-    private String getCurrentQrcodeRule() {
-        Cursor cursor = db5.rawQuery("select * from QrcodeRuleBody where Matbasclasscode=?",
-                new String[]{current_maccode_qrRecv});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-                QrcodeRule.DataBean.ItemBean bean = new QrcodeRule.DataBean.ItemBean();
-                bean.itemlength = cursor.getString(cursor.getColumnIndex("itemlength"));
-                bean.startpos = cursor.getString(cursor.getColumnIndex("startpos"));
-                bean.appobjattr = cursor.getString(cursor.getColumnIndex("appobjattr"));
-                if ("物料条码".equals(bean.appobjattr)) {
-                    current_maccode_rule_itemlength = Integer.parseInt(bean.itemlength);
-                    current_maccode_rule_startpos = Integer.parseInt(bean.startpos);
-                } else if ("序列号".equals(bean.appobjattr)) {
-                    current_xlh_rule_itemlength = Integer.parseInt(bean.itemlength);
-                    current_xlh_rule_startpos = Integer.parseInt(bean.startpos);
-                }
-            }
-            cursor.close();
-            current_maccode_substring = productCodeEditText.getText().toString().substring(current_maccode_rule_startpos - 1, current_maccode_rule_startpos - 1 + current_maccode_rule_itemlength);
-            current_xlh_substring = productCodeEditText.getText().toString().substring(current_xlh_rule_startpos - 1, current_xlh_rule_startpos - 1 + current_xlh_rule_itemlength);
-        }
-        return current_maccode_substring;
-    }
+
 
     public int countSum() {
         Cursor cursor = db5.rawQuery("select * from LoanScanResult where  pobillcode=? and materialcode=? and itempk=?",
@@ -502,7 +480,7 @@ public class LoanQrScanner extends AppCompatActivity {
                         values.put("prodcutcode", productCodeEditText.getText().toString());
                         values.put("num", current_nnum_qrRecv);
                         values.put("itemuploadflag", "N");
-                        values.put("xlh", current_xlh_substring);
+                        values.put("xlh", iUntils.getXlh(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv));
                         // 插入第一条数据
                         db5.insert("LoanScanResult", null, values);
                         values.clear();

@@ -1138,12 +1138,11 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
                 //这里应该执行的是插入第二个表的操作
                 ContentValues valuesInner = new ContentValues();
                 String appobjattr = sbb.getAppobjattr();
-                String itemlength = sbb.getItemlength();
-                String startpos = sbb.getStartpos();
+
                 valuesInner.put("Matbasclasscode",Matbasclasscode);
                 valuesInner.put("appobjattr",appobjattr);
-                valuesInner.put("itemlength",itemlength);
-                valuesInner.put("startpos",startpos);
+                valuesInner.put("itemlength",sbb.itemlength);
+                valuesInner.put("startpos",sbb.startpos);
                 db2.insert("QrcodeRuleBody", null, valuesInner);
                 valuesInner.clear();
             }

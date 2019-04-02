@@ -25,6 +25,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.util.iUntils;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.SaleDeliveryScannerAdapter;
 import com.example.shanggmiqr.bean.OutgoingScanResultBean;
@@ -181,11 +182,6 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                         //将数据库的数据显示出来
                         isSuccess = true;
                         productCodeEditText.setText("");
-
-                        //boxCodeEditText.setText("");
-                        //plateCodeEditText.setText("");
-
-
                          boxCodeEditText.requestFocus();
 
                         List<SaleDeliveryScanResultBean> list = showScannedQR();
@@ -193,7 +189,9 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                         tableBodyListView.setAdapter(adapter);
                         String current_scanSum = countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv);
                         scannnumText.setText("已扫码数量：" + current_scanSum);
-                        insertCountOfScannedQRCode(current_scanSum);
+                        iUntils.insertCountOfScannedQRCode(db5,current_scanSum,current_vbillcode_qrRecv, current_matrcode_qrRecv,
+                                current_vcooporderbcode_b_qrRecv);
+
                         break;
                     case 0x14:
                         Toast.makeText(SaleDeliveryQrScanner.this, "用户名或密码错误", Toast.LENGTH_LONG).show();
@@ -232,26 +230,36 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
         for (int i = 0; i <boxCodeEditTextContent.size() ; i++) {
 
             productCodeEditText.setText(boxCodeEditTextContent.get(i));
-
             count = countSum();
-
-            if ((!isAlreadyScanned(productCodeEditText.getText().toString()) && !isEditTextEmpty() && (productCodeEditText.getText().toString().length()
-                    == getLengthInQrRule())) && count < Math.abs(current_nnum_qrRecv) && isValidQr() && !isCwarenameEmpty()) {
-                InsertintoTempQrDBForSaleDelivery(productCodeEditText.getText().toString());
-                boxCodeEditText.setText("");
-                boxCodeEditText.requestFocus();
-
-            } else if (count >= Math.abs(current_nnum_qrRecv)) {
+            if (count >= Math.abs(current_nnum_qrRecv)) {
                 Toast.makeText(SaleDeliveryQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
-            } else if (isEditTextEmpty()) {
-                Toast.makeText(SaleDeliveryQrScanner.this, "二维码区域不可以为空", Toast.LENGTH_LONG).show();
-            } else if (isAlreadyScanned(productCodeEditText.getText().toString())) {
-                Toast.makeText(SaleDeliveryQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
-            } else if (isCwarenameEmpty()) {
-                Toast.makeText(SaleDeliveryQrScanner.this, "请选择仓库信息", Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(SaleDeliveryQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
+                return;
             }
+            if (isEditTextEmpty()) {
+                Toast.makeText(SaleDeliveryQrScanner.this, "二维码区域不可以为空", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (isAlreadyScanned(productCodeEditText.getText().toString())) {
+                Toast.makeText(SaleDeliveryQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (isCwarenameEmpty()) {
+                Toast.makeText(SaleDeliveryQrScanner.this, "请选择仓库信息", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if(productCodeEditText.getText().toString().length() != getLengthInQrRule()){
+                Toast.makeText(SaleDeliveryQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if(!isValidQr()){
+                return;
+            }
+            InsertintoTempQrDBForSaleDelivery(productCodeEditText.getText().toString());
+            boxCodeEditText.setText("");
+
+
+
+
         }
     }
 
@@ -377,8 +385,8 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
     }
 
     private boolean isValidQr() {
-        //String category =productCodeEditText.getText().toString().substring(0,3);
-        String scannedMaccode = getCurrentQrcodeRule();
+
+        String scannedMaccode = iUntils.getMaccode(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv);
         if (scannedMaccode == null || scannedMaccode.length() == 0) {
             Toast.makeText(SaleDeliveryQrScanner.this, "请检查物料信息及条码规则数据是否下载，或者是否为有效的条码", Toast.LENGTH_SHORT).show();
             return false;
@@ -400,37 +408,13 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
         return false;
     }
 
-    private String getCurrentQrcodeRule() {
-        Cursor cursor = db5.rawQuery("select * from QrcodeRuleBody where Matbasclasscode=?",
-                new String[]{current_maccode_qrRecv});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-                QrcodeRule.DataBean.ItemBean bean = new QrcodeRule.DataBean.ItemBean();
-                bean.itemlength = cursor.getString(cursor.getColumnIndex("itemlength"));
-                bean.startpos = cursor.getString(cursor.getColumnIndex("startpos"));
-                bean.appobjattr = cursor.getString(cursor.getColumnIndex("appobjattr"));
-                if ("物料条码".equals(bean.appobjattr)) {
-                    current_maccode_rule_itemlength = Integer.parseInt(bean.itemlength);
-                    current_maccode_rule_startpos = Integer.parseInt(bean.startpos);
-                } else if ("序列号".equals(bean.appobjattr)) {
-                    current_xlh_rule_itemlength = Integer.parseInt(bean.itemlength);
-                    current_xlh_rule_startpos = Integer.parseInt(bean.startpos);
-                }
-            }
-            cursor.close();
-            current_maccode_substring = productCodeEditText.getText().toString().substring(current_maccode_rule_startpos - 1, current_maccode_rule_startpos - 1 + current_maccode_rule_itemlength);
-            current_xlh_substring = productCodeEditText.getText().toString().substring(current_xlh_rule_startpos - 1, current_xlh_rule_startpos - 1 + current_xlh_rule_itemlength);
-        }
-        return current_maccode_substring;
-    }
+
 
     public int countSum() {
         Cursor cursor = db5.rawQuery("select * from SaleDeliveryScanResult where  vbillcode=? and matrcode=? and vcooporderbcode_b=?",
                 new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv, current_vcooporderbcode_b_qrRecv});
         while (cursor != null && cursor.getCount() > 0) {
-            // db.close();
-            //  Log.i(" search_city_name_exist", str + "在数据库已存在,return true");
+
             return cursor.getCount();// //有城市在数据库已存在，返回true
         }
         return 0;
@@ -452,8 +436,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
         Cursor cursor = db5.rawQuery("select * from SaleDeliveryScanResult where vbillcode=? and prodcutcode=? and vcooporderbcode_b=?",
                 new String[]{current_vbillcode_qrRecv, s, current_vcooporderbcode_b_qrRecv});
         while (cursor != null && cursor.getCount() > 0) {
-            // db.close();
-            //  Log.i(" search_city_name_exist", str + "在数据库已存在,return true");
+
             if (cursor.getCount() > 0) {
                 return true;
             }// //有城市在数据库已存在，返回true
@@ -461,10 +444,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
         return false;
     }
 
-    private void insertCountOfScannedQRCode(String scannum) {
-        db5.execSQL("update SaleDeliveryBody set scannum=? where vbillcode=? and matrcode=? and vcooporderbcode_b=?", new String[]{scannum, current_vbillcode_qrRecv, current_matrcode_qrRecv, current_vcooporderbcode_b_qrRecv});
 
-    }
 
     private boolean isEditTextEmpty() {
 
@@ -476,7 +456,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
     private List<SaleDeliveryScanResultBean> showScannedQR() {
         ArrayList<SaleDeliveryScanResultBean> list = new ArrayList<SaleDeliveryScanResultBean>();
-        //    String sql2 = "select " + "matrcode "  + ","+"platecode" + "," + "boxcode" + "," +  "prodcutcode" + "," + "num" + " from " + "SaleDeliveryScanResult";//注意：这里有单引号
+
         Cursor cursor = db5.rawQuery("select matrcode,platecode,boxcode,prodcutcode,num,itemuploadflag from SaleDeliveryScanResult where vbillcode=? and matrcode=? and vcooporderbcode_b=?", new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv, current_vcooporderbcode_b_qrRecv});
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
@@ -517,7 +497,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
                         values.put("num", current_nnum_qrRecv);
                         values.put("itemuploadflag", "N");
-                        values.put("xlh", current_xlh_substring);
+                        values.put("xlh", iUntils.getXlh(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv));
                         // 插入第一条数据
                         db5.insert("SaleDeliveryScanResult", null, values);
                         values.clear();
@@ -565,7 +545,8 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                 db5.execSQL("delete from SaleDeliveryScanResult where vbillcode=? and prodcutcode=? and vcooporderbcode_b=?", new Object[]{current_vbillcode_qrRecv, listDel.get(position).getProdcutcode(), current_vcooporderbcode_b_qrRecv});
                 count = countSum();
                 String current_scanSum = countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv);
-                insertCountOfScannedQRCode(current_scanSum);
+                iUntils.insertCountOfScannedQRCode(db5,current_scanSum,current_vbillcode_qrRecv, current_matrcode_qrRecv,
+                        current_vcooporderbcode_b_qrRecv);
                 List<SaleDeliveryScanResultBean> list = showScannedQR();
                 SaleDeliveryScannerAdapter adapter = new SaleDeliveryScannerAdapter(SaleDeliveryQrScanner.this, list, mListener2);
                 tableBodyListView.setAdapter(adapter);

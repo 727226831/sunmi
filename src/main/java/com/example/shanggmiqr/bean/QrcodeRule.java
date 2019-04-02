@@ -165,33 +165,36 @@ public class QrcodeRule {
              * appobjattr : 物料条码
              */
 
-            public String itemlength;
-            public String startpos;
-            public String appobjattr;
+            public int itemlength;
 
-            public void setItemlength(String itemlength) {
+            public int getItemlength() {
+                return itemlength;
+            }
+
+            public void setItemlength(int itemlength) {
                 this.itemlength = itemlength;
             }
 
-            public void setStartpos(String startpos) {
+            public int getStartpos() {
+                return startpos;
+            }
+
+            public void setStartpos(int startpos) {
                 this.startpos = startpos;
+            }
+
+            public String getAppobjattr() {
+                return appobjattr;
             }
 
             public void setAppobjattr(String appobjattr) {
                 this.appobjattr = appobjattr;
             }
 
-            public String getItemlength() {
-                return itemlength;
-            }
+            public int startpos;
+            public String appobjattr;
 
-            public String getStartpos() {
-                return startpos;
-            }
 
-            public String getAppobjattr() {
-                return appobjattr;
-            }
         }
     }
 }
