@@ -91,7 +91,16 @@ public class SaleDeliveryQuery {
         private String billmakercode;
         private String vmemo;
         private String country;
-        private String dr;
+
+        public int getDr() {
+            return dr;
+        }
+
+        public void setDr(int dr) {
+            this.dr = dr;
+        }
+
+        private int dr;
         private List<BodysBean> bodys;
 
         public void setVtrantypecode(String vtrantypecode) {
@@ -125,9 +134,7 @@ public class SaleDeliveryQuery {
         public void setTransporttypecode(String Transporttypecode) {
             this.Transporttypecode = Transporttypecode;
         }
-        public void setDr(String dr) {
-            this.dr = dr;
-        }
+
         public void setBillmakercode(String billmakercode) {
             this.billmakercode = billmakercode;
         }
@@ -155,9 +162,7 @@ public class SaleDeliveryQuery {
         public String getBusitypecode() {
             return busitypecode;
         }
-        public String getDr() {
-            return dr;
-        }
+
         public String getVbillcode() {
             return vbillcode;
         }

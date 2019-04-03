@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -61,17 +63,9 @@ public class OtherEntryQrScanner extends AppCompatActivity {
     private ListView tableBodyListView;
     private int count;//用于合格条码计数
     private Handler mHandler = null;
-    private boolean isSuccess = false;
-
-    private int current_maccode_rule_itemlength;
-    private int current_maccode_rule_startpos;
-    private int current_xlh_rule_itemlength;
-    private int current_xlh_rule_startpos;
     private int current_qrcode_rule_length = 13;
-    private String current_maccode_substring;
-    private String current_xlh_substring;
     private String current_material_code;
-    private boolean scanStatus = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +81,25 @@ public class OtherEntryQrScanner extends AppCompatActivity {
         plateCodeEditText = (scut.carson_ho.diy_view.SuperEditText) findViewById(R.id.otherentry_platecode_scanner);
         boxCodeEditText = (scut.carson_ho.diy_view.SuperEditText) findViewById(R.id.otherentry_boxcode_scanner);
         boxCodeEditText.setOnKeyListener(onKeyListener);
+        boxCodeEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(mHandler.hasMessages(0x20)){
+                    mHandler.removeMessages(0x20);
+                }
+                mHandler.sendEmptyMessageDelayed(0x20,1000);
+            }
+        });
         productCodeEditText = (scut.carson_ho.diy_view.SuperEditText) findViewById(R.id.otherentry_productcode_scanner);
         pobillcodeText = (TextView) findViewById(R.id.otherentry_pbill_scanner_text);
         cwarenameText = (TextView) findViewById(R.id.otherentry_cwarename_scanner_text);
@@ -164,7 +177,7 @@ public class OtherEntryQrScanner extends AppCompatActivity {
                         break;
                     case 0x13:
                         //将数据库的数据显示出来
-                        isSuccess = true;
+
                         productCodeEditText.setText("");
                         boxCodeEditText.setText("");
                         boxCodeEditText.requestFocus();
@@ -186,6 +199,10 @@ public class OtherEntryQrScanner extends AppCompatActivity {
                     case 0x19:
                         String exception = msg.getData().getString("Exception");
                         Toast.makeText(OtherEntryQrScanner.this, "错误："+exception, Toast.LENGTH_LONG).show();
+                        break;
+                    case 0x20:
+                        mHandler.removeMessages(0x20);
+                        getData();
                         break;
                     default:
                         break;
@@ -211,32 +228,43 @@ public class OtherEntryQrScanner extends AppCompatActivity {
     private void getData() {
 
         listcode= Arrays.asList(boxCodeEditText.getText().toString().split("\\s+"));
-        scannumText.setText("已扫码数量："+listcode.size());
+
         for (int i = 0; i <listcode.size() ; i++) {
 
             productCodeEditText.setText(listcode.get(i));
             count = countSum();
+
+
+
             if(isAlreadyScanned(productCodeEditText.getText().toString())){
                 Toast.makeText(OtherEntryQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
                 return;
             }
-            if(isEditTextEmpty()){
-                Toast.makeText(OtherEntryQrScanner.this, "二维码区域不可以为空", Toast.LENGTH_LONG).show();
-                return;
-            }
-            if(count < Math.abs(current_nnum_qrRecv)){
+
+            if(count >= Math.abs(current_nnum_qrRecv)){
                 Toast.makeText(OtherEntryQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
                 return;
             }
-            if(productCodeEditText.getText().toString().length() == getLengthInQrRule()){
+            if(productCodeEditText.getText().toString().isEmpty()){
+                return;
+            }
+
+            if(productCodeEditText.getText().toString().length() != getLengthInQrRule()){
                 Toast.makeText(OtherEntryQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
                 return;
             }
             if(!isValidQr()){
+                Toast.makeText(OtherEntryQrScanner.this, "条码不合法", Toast.LENGTH_LONG).show();
                 return;
             }
+            ContentValues contentValues=new ContentValues();
+            contentValues.put("scannum",count);
+            db5.update("OtherEntryBody",contentValues,"pobillcode=? and vcooporderbcode_b=?",
+                    new String[]{ current_pobillcode_qrRecv,current_vcooporderbcode_b_qrRecv});
+
             InsertintoTempQrDBForOutgoing();
             boxCodeEditText.setText("");
+            scannumText.setText("已扫码数量："+count);
 
 
         }
@@ -293,16 +321,12 @@ public class OtherEntryQrScanner extends AppCompatActivity {
     }
 
     private void insertCountOfScannedQRCode(String scannum) {
-        db5.execSQL("update OtherEntryBody set scannum=? where pobillcode=? and materialcode=? and vcooporderbcode_b=?", new String[]{scannum, current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv});
+        ContentValues contentValues=new ContentValues();
+        contentValues.put("scannum",scannum);
+        db5.update("OtherEntryBody",contentValues,"pobillcode=? and vcooporderbcode_b=?",
+                new String[]{ current_pobillcode_qrRecv,current_vcooporderbcode_b_qrRecv});
     }
 
-    private boolean isEditTextEmpty() {
-
-        if (("").equals(productCodeEditText.getText().toString()) || null == productCodeEditText.getText().toString()) {
-            return true;// //有城市在数据库已存在，返回false
-        }
-        return false;
-    }
 
     private List<OtherEntryScanResultBean> showScannedQR() {
         ArrayList<OtherEntryScanResultBean> list = new ArrayList<OtherEntryScanResultBean>();
@@ -364,8 +388,7 @@ public class OtherEntryQrScanner extends AppCompatActivity {
                     values.put("materialcode", current_materialcode_qrRecv);
                     values.put("vcooporderbcode_b", current_vcooporderbcode_b_qrRecv);
                     values.put("platecode", plateCodeEditText.getText().toString());
-                    values.put("boxcode", boxCodeEditText.getText().toString());
-
+                    values.put("boxcode", "");
                     values.put("prodcutcode", productCodeEditText.getText().toString());
                     values.put("itemuploadflag", "N");
                     values.put("num", current_nnum_qrRecv);

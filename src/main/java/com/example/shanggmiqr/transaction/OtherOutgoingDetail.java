@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -142,7 +143,9 @@ public class OtherOutgoingDetail extends AppCompatActivity {
                         if (Utils.isNetworkConnected(OtherOutgoingDetail.this)) {
                             try {
                                 if (!isAlreadyUpload()) {
+                                    Log.i("start","is run");
                                     String uploadResp = uploadOutgingPobill("R12");
+                                    Log.i("end","is run");
                                     if (!(null == uploadResp)) {
                                         Gson gson = new Gson();
                                         Bundle bundle = new Bundle();
@@ -176,7 +179,7 @@ public class OtherOutgoingDetail extends AppCompatActivity {
                                     });
                                 }
                             } catch (IOException e) {
-                               // e.printStackTrace();
+                                e.printStackTrace();
                                 Bundle bundle = new Bundle();
                                 bundle.putString("Exception222", e.toString());
                                 Message msg = new Message();
@@ -185,7 +188,7 @@ public class OtherOutgoingDetail extends AppCompatActivity {
                                 otherOutgoingDetailHandler.sendMessage(msg);
                                 return;
                             } catch (XmlPullParserException e) {
-                               // e.printStackTrace();
+                                e.printStackTrace();
                                 Bundle bundle = new Bundle();
                                 bundle.putString("Exception222", e.toString());
                                 Message msg = new Message();
@@ -203,6 +206,7 @@ public class OtherOutgoingDetail extends AppCompatActivity {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
+                Log.i("msg-->",msg.what+"");
                 switch (msg.what) {
                     case 0x10:
                         Toast.makeText(OtherOutgoingDetail.this, "请检查网络连接", Toast.LENGTH_LONG).show();
@@ -263,10 +267,12 @@ public class OtherOutgoingDetail extends AppCompatActivity {
                         Toast.makeText(OtherOutgoingDetail.this, "请扫描后再进行提交", Toast.LENGTH_LONG).show();
                         break;
                     case 0x22:
+
                         dialog.dismiss();
                         Toast.makeText(OtherOutgoingDetail.this, "后台接口返回异常", Toast.LENGTH_LONG).show();
                         break;
                     case 0x23:
+
                         dialog.dismiss();
                         String ss = msg.getData().getString("uploadResp");
                         Toast.makeText(OtherOutgoingDetail.this, ss, Toast.LENGTH_LONG).show();
@@ -359,6 +365,7 @@ public class OtherOutgoingDetail extends AppCompatActivity {
         String namespace_current = "http://schemas.xmlsoap.org/soap/envelope/";//namespace
         String methodName = "sendToWISE";//要调用的方法名称
         SharedPreferences proxySp = getSharedPreferences("configInfo", 0);
+
         if (proxySp.getString("WSDL_URI", WSDL_URI_current).equals("") || proxySp.getString("namespace", namespace_current).equals("")) {
             WSDL_URI = WSDL_URI_current;
             namespace = namespace_current;
@@ -366,6 +373,7 @@ public class OtherOutgoingDetail extends AppCompatActivity {
             WSDL_URI = proxySp.getString("WSDL_URI", WSDL_URI_current);
             namespace = proxySp.getString("namespace", namespace_current);
         }
+
         SoapObject request = new SoapObject(namespace, methodName);
         // 设置需调用WebService接口需要传入的两个参数string、string1
         ArrayList<OtherOutgoingSendBean.BodyBean> bodylist = new ArrayList<OtherOutgoingSendBean.BodyBean>();
@@ -409,7 +417,7 @@ public class OtherOutgoingDetail extends AppCompatActivity {
         String userSendBean = gson.toJson(otherOutgoingSend);
         request.addProperty("string", workcode);
         request.addProperty("string1", userSendBean);
-        //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
+
         //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
 
@@ -437,6 +445,7 @@ public class OtherOutgoingDetail extends AppCompatActivity {
             se.call(namespace + "sendToWISE", envelope);
             // 获取返回的数据
             SoapObject object = (SoapObject) envelope.bodyIn;
+
             int sizeValue = object.getPropertyCount();
             // 获取返回的结果
             if (object != null && sizeValue > 0) {

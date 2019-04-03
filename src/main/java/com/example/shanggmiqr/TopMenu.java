@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -14,6 +15,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -340,7 +342,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(TopMenu.this, "当前物流公司信息已经是最新数据", Toast.LENGTH_LONG).show();
+
                                     count++;
                                     if (count ==6){
                                         dialog.dismiss();
@@ -403,7 +405,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(TopMenu.this, "当前供应商信息已经是最新数据", Toast.LENGTH_LONG).show();
+
                                     count++;
                                     if (count ==6){
                                         dialog.dismiss();
@@ -467,7 +469,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(TopMenu.this, "当前条码字典信息已经是最新数据", Toast.LENGTH_LONG).show();
+
                                     count++;
                                     if (count ==6){
                                         dialog.dismiss();
@@ -530,7 +532,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(TopMenu.this, "当前客户字典信息已经是最新数据", Toast.LENGTH_LONG).show();
+
                                     count++;
                                     if (count ==6){
                                         dialog.dismiss();
@@ -593,7 +595,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(TopMenu.this, "当前用户信息已经是最新数据", Toast.LENGTH_LONG).show();
+
                                     count++;
                                     if (count ==6){
                                         dialog.dismiss();
@@ -650,13 +652,14 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         }
                         Gson gsonUser =new Gson();
                         MaterialBean materialBean = gsonUser.fromJson(materialData, MaterialBean.class);
+
                         if (materialBean.getPagetotal() ==1){
                             insertMaterialdDataToDB(materialBean);
                         }else if(materialBean.getPagetotal() <1){
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(TopMenu.this, "当前物料信息已经是最新数据", Toast.LENGTH_LONG).show();
+
                                     count++;
                                     if (count ==6){
                                         dialog.dismiss();
@@ -665,12 +668,16 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                             });
                             return;
                         }else{
+
                             insertMaterialdDataToDB(materialBean);
                             for (int pagenum = 2;pagenum<=materialBean.getPagetotal();pagenum++){
                                 String materialData2 = downloadDatabase("R02",String.valueOf(pagenum));
+
                                 MaterialBean materialBean2 = gsonUser.fromJson(materialData2, MaterialBean.class);
                                 insertMaterialdDataToDB(materialBean2);
                             }
+
+
                         }
                         String currentTs = Utils.getCurrentDate();
                         material_ts_begintime = Utils.getCurrentDateTimeNew() ;
@@ -719,7 +726,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(TopMenu.this, "当前仓库信息已经是最新数据", Toast.LENGTH_LONG).show();
+
                                     count++;
                                     if (count ==6){
                                         dialog.dismiss();
@@ -1030,10 +1037,13 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
             values.clear();
         }
     }
+
     private void insertMaterialdDataToDB (MaterialBean materialBean){
         //对象中拿到集合
         List<MaterialBean.DataBean> materialDataBeanList = materialBean.getData();
+
         for (MaterialBean.DataBean mb:materialDataBeanList){
+
             //目前是以返回报文为准建立的bean，与文档并不一样
             String stordocpk = mb.getStordocpk();
             String name = mb.getName();
@@ -1063,12 +1073,15 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
             values.put("orgcode",orgcode);
             values.put("brandname",brandname);
             values.put("enablestate",enablestate);
+
             values.put("materialbarcode",materialbarcode);
             values.put("ts",ts);
             // 插入第一条数据
             db2.insert("Material",null,values);
             values.clear();
         }
+
+
     }
     public boolean isNetworkConnected(Context context) {
         if (context != null) {
@@ -1081,4 +1094,5 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
         }
         return false;
     }
+
 }

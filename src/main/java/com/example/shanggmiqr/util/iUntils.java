@@ -1,9 +1,32 @@
 package com.example.shanggmiqr.util;
 
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.TextView;
 
+import com.example.shanggmiqr.adapter.SaleDeliveryAdapter;
 import com.example.shanggmiqr.bean.QrcodeRule;
+import com.example.shanggmiqr.bean.SaleDeliveryBean;
+import com.example.shanggmiqr.transaction.SaleDelivery;
+import com.example.weiytjiang.shangmiqr.R;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class iUntils {
     //0物料编码  1序列号
@@ -74,10 +97,16 @@ public class iUntils {
         }
         return count;
     }
-    public static void insertCountOfScannedQRCode(SQLiteDatabase db,String scannum,String pobillcode, String materialcode,String vcooporderbcode_b) {
-        db.execSQL("update OtherOutgoingBody set scannum=? where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
-                new String[]{scannum, pobillcode, materialcode, vcooporderbcode_b});
+    public static void updateSaleDeliveryBodyscannum(SQLiteDatabase db, String scannum, String vbillcode, String vcooporderbcode_b) {
+
+        ContentValues contentValues=new ContentValues();
+        contentValues.put("scannum",scannum);
+
+        db.update("SaleDeliveryBody",contentValues,"vbillcode=? and vcooporderbcode_b=?",
+                new String[]{ vbillcode,vcooporderbcode_b});
     }
+
+
 
 
 

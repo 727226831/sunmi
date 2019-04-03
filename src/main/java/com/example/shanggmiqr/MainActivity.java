@@ -221,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
                                         @Override
                                         public void run() {
 
-                                            Toast.makeText(MainActivity.this, "当前用户信息已经是最新数据", Toast.LENGTH_LONG).show();
+
                                             dialog.dismiss();
                                         }
                                     });
@@ -285,11 +285,11 @@ public class MainActivity extends AppCompatActivity {
                     SharedPreferences.Editor editor3 = latestDBTimeInfo3.edit();
                     editor3.putString("latest_user_ts", latest_user_ts);
                     editor3.commit();
-                    Toast.makeText(MainActivity.this, "用户数据下载成功", Toast.LENGTH_LONG).show();
+
 
                     break;
                 case 0x13:
-
+                    Toast.makeText(MainActivity.this, "用户信息已是最新", Toast.LENGTH_SHORT).show();
                     break;
                 case 0x14:
                     Toast.makeText(MainActivity.this, "用户名或密码错误", Toast.LENGTH_LONG).show();

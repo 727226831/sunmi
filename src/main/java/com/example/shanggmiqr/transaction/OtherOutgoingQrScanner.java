@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -85,7 +87,26 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
         numText = (TextView) findViewById(R.id.outgoing_num_scanner_text);
         uploadnumText = (TextView) findViewById(R.id.outgoing_uploadnum_scanner_text);
         scannednumText = (TextView) findViewById(R.id.outgoing_scannednum_text);
-        boxCodeEditText.setOnKeyListener(onKeyListener);
+      //  boxCodeEditText.setOnKeyListener(onKeyListener);
+        boxCodeEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(mHandler.hasMessages(0x20)){
+                    mHandler.removeMessages(0x20);
+                }
+                mHandler.sendEmptyMessageDelayed(0x20,1000);
+            }
+        });
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。
         db5 = helper5.getWritableDatabase();//获取到了 SQLiteDatabase 对象
@@ -195,6 +216,10 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
                     String exception = msg.getData().getString("Exception");
                     Toast.makeText(OtherOutgoingQrScanner.this, "错误："+exception, Toast.LENGTH_LONG).show();
                     break;
+                case 0x20:
+                    mHandler.removeMessages(0x20);
+                    getData();
+                    break;
                 default:
                     break;
             }
@@ -203,12 +228,15 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
     private  List<String> listcode;
     private void getData() {
 
-        count = iUntils.countSum(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv);
+
+
+
+
         listcode= Arrays.asList(boxCodeEditText.getText().toString().split("\\s+"));
-        scannednumText.setText("已扫码数量："+listcode.size());
+
         for (int i = 0; i <listcode.size() ; i++) {
             productCodeEditText.setText(listcode.get(i));
-
+            count = iUntils.countSum(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv);
             if(iUntils.isAlreadyScanned(db5,current_pobillcode_qrRecv,productCodeEditText.getText().toString(),current_vcooporderbcode_b_qrRecv)){
                 Toast.makeText(OtherOutgoingQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
                 return;
@@ -217,17 +245,22 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
                 Toast.makeText(OtherOutgoingQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
                 return;
             }
+            if(productCodeEditText.getText().toString().isEmpty()){
+                return;
+            }
             if(productCodeEditText.getText().toString().length() != getLengthInQrRule()){
                 Toast.makeText(OtherOutgoingQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
                 return;
             }
             if(!isValidQr()){
+                Toast.makeText(OtherOutgoingQrScanner.this, "条码不合法", Toast.LENGTH_LONG).show();
                 return;
             }
 
+
             InsertintoTempQrDBForOutgoing(productCodeEditText.getText().toString());
             boxCodeEditText.setText("");
-
+            scannednumText.setText("已扫码数量："+count);
         }
 
 
@@ -238,7 +271,11 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
 
 
     private void insertCountOfScannedQRCode(String scannum) {
-        db5.execSQL("update OtherOutgoingBody set scannum=? where pobillcode=? and materialcode=? and vcooporderbcode_b=?", new String[]{scannum, current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv});
+        ContentValues contentValues=new ContentValues();
+        contentValues.put("scannum",scannum);
+        db5.update("OtherOutgoingBody",contentValues,"pobillcode=? and vcooporderbcode_b=?",
+                new String[]{ current_pobillcode_qrRecv,current_vcooporderbcode_b_qrRecv});
+
     }
 
     private int getLengthInQrRule() {
@@ -315,8 +352,7 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
                         values.put("materialcode", current_materialcode_qrRecv);
                         values.put("vcooporderbcode_b", current_vcooporderbcode_b_qrRecv);
                         values.put("platecode", plateCodeEditText.getText().toString());
-                        values.put("boxcode", boxCodeEditText.getText().toString());
-
+                        values.put("boxcode", "");
                         values.put("prodcutcode", prodcutcode);
                         values.put("itemuploadflag", "N");
 

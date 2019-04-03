@@ -78,7 +78,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     private String saleDeliveryUploadDataResp;
     private ZLoadingDialog dialog;
     private String query_cwarename;
-    private String query_uploadflag;
+    private String query_uploadflag="";
     private List<String> test;
     private List<String> uploadflag;
     private TextView lst_downLoad_ts;
@@ -378,106 +378,107 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         return true;
     }
 
-    private boolean isVbillcodeExist=false;
+
     private void insertDownloadDataToDB(SaleDeliveryQuery saleDeliveryQuery) {
 
         List<SaleDeliveryQuery.DataBean> saleDeliveryBeanList = saleDeliveryQuery.getData();
         for (SaleDeliveryQuery.DataBean ob : saleDeliveryBeanList) {
 
-            String vtrantypecode = ob.getVtrantypecode();
-            String unitcode = ob.getUnitcode();
-            String busitypecode = ob.getBusitypecode();
-            String vbillcode = ob.getVbillcode();
-            String dbilldate = ob.getDbilldate();
-            String deptcode = ob.getDeptcode();
-            String pupsndoccode = ob.getPupsndoccode();
-            String transporttypecode = ob.getTransporttypecode();
-            String billmakercode = ob.getBillmakercode();
-            String country = ob.getCountry();
-            String vmemo = ob.getVmemo();
-            String dr =ob.getDr();
             //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
-             isVbillcodeExist=isVbillcodeExist(vbillcode);
-            if("0".equals(dr)&& isVbillcodeExist){
-                continue;
-            }
 
-            //等于1时
-            if("1".equals(dr) || ("2".equals(dr)&&isVbillcodeExist))
-            {
-                //操作选择二 通过单号删除
-                //删除三张表
+             switch (ob.getDr()){
+                 case 1:
+                     if(!isUploadflag(ob.getVbillcode())) {
+                         db3.delete("SaleDelivery", "vbillcode=?", new String[]{ob.getVbillcode()});
+                         db3.delete("SaleDeliveryBody", "vbillcode=?", new String[]{ob.getVbillcode()});
+                         db3.delete("SaleDeliveryScanResult", "vbillcode=?", new String[]{ob.getVbillcode()});
+                     }
+                     break;
 
-                try {
-                    db3.beginTransaction();
-                    db3.delete("SaleDelivery", "vbillcode=?", new String[]{vbillcode});
-                    db3.delete("SaleDeliveryBody", "vbillcode=?", new String[]{vbillcode});
-                   // db3.delete("SaleDeliveryScanResult", "vbillcode=?", new String[]{vbillcode});
-                    db3.setTransactionSuccessful();
-                }
-                catch (Exception ex)
-                {
-                    ex.printStackTrace();
-                }
-                finally {
-                    db3.endTransaction();
-                }
-            }
-            if("1".equals(dr)){
-                continue;
-            }
-            List<SaleDeliveryQuery.DataBean.BodysBean> saleDeliveryDatabodysList = ob.getBodys();
-            //使用 ContentValues 来对要添加的数据进行组装
-            ContentValues values = new ContentValues();
+                 case 2:
+                     db3.delete("SaleDelivery", "vbillcode=?", new String[]{ob.getVbillcode()});
+                     setSaleDeliveryData(ob);
+                     if(!isUploadflag(ob.getVbillcode())) {
+                         db3.delete("SaleDeliveryBody", "vbillcode=?", new String[]{ob.getVbillcode()});
+                         setSaleDeliverybodyData(ob);
+                     }
+                     break;
+                 case 0:
+                     setSaleDeliveryData(ob);
+                     setSaleDeliverybodyData(ob);
+                     break;
+             }
 
-            for (SaleDeliveryQuery.DataBean.BodysBean obb : saleDeliveryDatabodysList) {
-                String vcooporderbcode_b = obb.getVcooporderbcode_b();
-                String matrcode = obb.getMatrcode();
-                String matrname = obb.getMatrname();
-                String maccode = obb.getMaccode();
-                int nnum = obb.getNnum();
-                String rackcode = obb.getRackcode();
-                String customer = obb.getCustomer();
-                String cwarehousecode = obb.getCwarehousecode();
-                String cwarename = getCwarename(obb.getCwarehousecode());
-                String orginal_cwarename = existOriginalCwarename(obb.getCwarehousecode());
-                String scannum = countScannedQRCode(vbillcode,vcooporderbcode_b, matrcode);
-                //这里应该执行的是插入第二个表的操作
-                ContentValues valuesInner = new ContentValues();
-                valuesInner.put("vbillcode", vbillcode);
-                valuesInner.put("vcooporderbcode_b", vcooporderbcode_b);
-                valuesInner.put("matrcode", matrcode);
-                valuesInner.put("matrname", matrname);
-                valuesInner.put("maccode", maccode);
-                valuesInner.put("nnum", nnum);
-                valuesInner.put("scannum", scannum);
-                valuesInner.put("rackcode", rackcode);
-                valuesInner.put("customer", customer);
-                valuesInner.put("cwarehousecode", cwarehousecode);
-                valuesInner.put("cwarename", cwarename);
-                valuesInner.put("orginal_cwarename", orginal_cwarename);
-                //N代表尚未上传
-                valuesInner.put("uploadflag", "N");
-                db3.insert("SaleDeliveryBody", null, valuesInner);
-                valuesInner.clear();
-            }
-            values.put("vtrantypecode", vtrantypecode);
-            values.put("unitcode", unitcode);
-            values.put("busitypecode", busitypecode);
-            values.put("vbillcode", vbillcode);
-            values.put("dbilldate", dbilldate);
-            values.put("deptcode", deptcode);
-            values.put("Pupsndoccode", pupsndoccode);
-            values.put("Transporttypecode", transporttypecode);
-            values.put("billmakercode", billmakercode);
-            values.put("country", country);
-            values.put("dr", dr);
-            values.put("flag", "N");
-            values.put("vmemo", vmemo);
-            // 插入第一条数据
-            db3.insert("SaleDelivery", null, values);
-            values.clear();
         }
+    }
+
+    private void setSaleDeliverybodyData(SaleDeliveryQuery.DataBean ob) {
+        List<SaleDeliveryQuery.DataBean.BodysBean> saleDeliveryDatabodysList = ob.getBodys();
+        for (SaleDeliveryQuery.DataBean.BodysBean obb : saleDeliveryDatabodysList) {
+            String vcooporderbcode_b = obb.getVcooporderbcode_b();
+            String matrcode = obb.getMatrcode();
+            String matrname = obb.getMatrname();
+            String maccode = obb.getMaccode();
+            int nnum = obb.getNnum();
+            String rackcode = obb.getRackcode();
+            String customer = obb.getCustomer();
+            String cwarehousecode = obb.getCwarehousecode();
+            String cwarename = getCwarename(obb.getCwarehousecode());
+            String orginal_cwarename = existOriginalCwarename(obb.getCwarehousecode());
+            String scannum = countScannedQRCode(ob.getVbillcode(),vcooporderbcode_b, matrcode);
+            //这里应该执行的是插入第二个表的操作
+            ContentValues valuesInner = new ContentValues();
+            valuesInner.put("vbillcode", ob.getVbillcode());
+            valuesInner.put("vcooporderbcode_b", vcooporderbcode_b);
+            valuesInner.put("matrcode", matrcode);
+            valuesInner.put("matrname", matrname);
+            valuesInner.put("maccode", maccode);
+            valuesInner.put("nnum", nnum);
+            valuesInner.put("scannum", scannum);
+            valuesInner.put("rackcode", rackcode);
+            valuesInner.put("customer", customer);
+            valuesInner.put("cwarehousecode", cwarehousecode);
+            valuesInner.put("cwarename", cwarename);
+            valuesInner.put("orginal_cwarename", orginal_cwarename);
+            //N代表尚未上传
+            valuesInner.put("uploadflag", "N");
+            db3.insert("SaleDeliveryBody", null, valuesInner);
+            valuesInner.clear();
+        }
+
+    }
+
+    private void setSaleDeliveryData(SaleDeliveryQuery.DataBean ob ) {
+
+        //使用 ContentValues 来对要添加的数据进行组装
+        ContentValues values = new ContentValues();
+        values.put("vtrantypecode", ob.getVtrantypecode());
+        values.put("unitcode", ob.getUnitcode());
+        values.put("busitypecode", ob.getBusitypecode());
+        values.put("vbillcode", ob.getVbillcode());
+        values.put("dbilldate", ob.getDbilldate());
+        values.put("deptcode", ob.getDeptcode());
+        values.put("Pupsndoccode", ob.getPupsndoccode());
+        values.put("Transporttypecode", ob.getTransporttypecode());
+        values.put("billmakercode", ob.getBillmakercode());
+        values.put("country", ob.getCountry());
+        values.put("dr", ob.getDr());
+        values.put("flag", "N");
+        values.put("vmemo",ob.getVmemo());
+        // 插入第一条数据
+        db3.insert("SaleDelivery", null, values);
+        values.clear();
+    }
+
+    private boolean isUploadflag(String vbillcode) {
+        boolean isUploadflag=false;
+        Cursor cursor = db3.rawQuery("select uploadflag from SaleDeliveryBody where vbillcode=?", new String[]{vbillcode});
+        while (cursor.moveToNext()){
+            if(!cursor.getString(cursor.getColumnIndex("uploadflag")).equals("N")){
+                   isUploadflag=true;
+            }
+        }
+        return isUploadflag;
     }
 
     private boolean isVbillcodeExist(String vbillcode) {
@@ -614,7 +615,9 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 if(query_uploadflag == null){
                     query_uploadflag = "N";
                 }
+
                 bean1 = queryexport(temp,query_cwarename,query_uploadflag);
+
 
                 listAllPostition = bean1;
 
@@ -648,8 +651,11 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     private    List<SaleDeliveryBean>  removeDuplicate(List<SaleDeliveryBean> list)  {
         List<SaleDeliveryBean>  beanList=new ArrayList<>();
         beanList.addAll(list);
+
         for  ( int  i  =   0 ; i  <  beanList.size()  -   1 ; i ++ )  {
+
             for  ( int  j  =  beanList.size()  -   1 ; j  >  i; j -- )  {
+
                 if  (beanList.get(j).getVbillcode().equals(beanList.get(i).getVbillcode()))  {
                     beanList.remove(j);
                 }
@@ -736,8 +742,8 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         Cursor cursor = db3.rawQuery("select saledelivery.vbillcode, saledelivery.dbilldate,saledeliverybody.matrcode,saledelivery.dr," +
                 "saledeliverybody.matrname,saledeliverybody.maccode,saledeliverybody.nnum, saledeliveryscanresult.prodcutcode," +
                 "saledeliveryscanresult.xlh" + " from saledelivery inner join saledeliverybody on saledelivery.vbillcode=saledeliverybody.vbillcode " +
-                "inner join saledeliveryscanresult on saledeliverybody.vbillcode=saledeliveryscanresult.vbillcode " +
-                "and saledeliverybody.vcooporderbcode_b=saledeliveryscanresult.vcooporderbcode_b where flag=? and saledelivery.vbillcode" +
+                "left join saledeliveryscanresult on saledeliverybody.vbillcode=saledeliveryscanresult.vbillcode " +
+                "and saledeliverybody.vcooporderbcode_b=saledeliveryscanresult.vcooporderbcode_b where saledeliverybody.uploadflag=? and saledelivery.vbillcode" +
                 " like '%" + vbillcode + "%' and saledeliverybody.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
 
         if (cursor != null && cursor.getCount() > 0) {
@@ -747,6 +753,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 SaleDeliveryBean bean = new SaleDeliveryBean();
 
                 bean.vbillcode = cursor.getString(cursor.getColumnIndex("vbillcode"));
+
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.setMatrcode(cursor.getString(cursor.getColumnIndex("matrcode")));
                 bean.setMatrname(cursor.getString(cursor.getColumnIndex("matrname")));
@@ -766,10 +773,11 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         return list;
     }
 
-    private boolean queryTimePeriod(String vbillcode,String startTime,String endTime) {
-        Cursor cursor = db3.rawQuery("SELECT * FROM SaleDelivery WHERE vbillcode =? and " +
+    private boolean queryTimePeriod(String vbillcode ,String startTime,String endTime) {
+        Cursor cursor = db3.rawQuery("SELECT * FROM SaleDelivery WHERE vbillcode=? and "+
                 "dbilldate>=? and dbilldate<?",
-        new String[] {vbillcode, startTime, endTime});
+        new String[] { vbillcode,startTime, endTime});
+
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             cursor.close();
@@ -832,7 +840,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         SoapObject object = (SoapObject) envelope.bodyIn;
         // 获取返回的结果
         saleDelivDataResp = object.getProperty(0).toString();
-        Log.i("sale data->",saleDelivDataResp);
+
         return saleDelivDataResp;
     }
 

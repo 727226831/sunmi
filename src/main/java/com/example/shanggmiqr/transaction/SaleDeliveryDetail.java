@@ -139,31 +139,8 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         spinner = findViewById(R.id.spinner_logistics_company);
         //加载数据
         myadapter();
-        Log.i("current_sale",current_sale_delivery_vbillcodeRecv);
-        listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
-        final SaleDeliveryBodyTableAdapter adapter = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
-        tableBodyListView.setAdapter(adapter);
-        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapter.select(position);
-                saleDeliveryScanButton.setEnabled(true);
-                uploadSingleButton.setEnabled(true);
-                SaleDeliveryBodyBean local_saleDeliveryBodyBean = (SaleDeliveryBodyBean) adapter.getItem(position);
 
-                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getVcooporderbcode_b();
-                chosen_line_matrname = local_saleDeliveryBodyBean.getMatrname();
-                chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
-                chosen_line_matrcode = local_saleDeliveryBodyBean.getMatrcode();
-                chosen_line_customer = local_saleDeliveryBodyBean.getCustomer();
-                chosen_line_maccode = QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, local_saleDeliveryBodyBean.getVcooporderbcode_b(), local_saleDeliveryBodyBean.getMatrcode());
-                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannnum();
-                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
 
-                Toast.makeText(SaleDeliveryDetail.this, chosen_line_matrcode, Toast.LENGTH_LONG).show();
-            }
-        });
         saleDeliveryScanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -517,29 +494,9 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                             finish();
                         }
                         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
-                        final SaleDeliveryBodyTableAdapter adapterNew = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
-                        tableBodyListView.setAdapter(adapterNew);
-                        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                adapterNew.select(position);
-                                saleDeliveryScanButton.setEnabled(true);
-                                uploadSingleButton.setEnabled(true);
-                                SaleDeliveryBodyBean local_saleDeliveryBodyBean = (SaleDeliveryBodyBean) adapterNew.getItem(position);
-
-                                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getVcooporderbcode_b();
-                                chosen_line_matrname = local_saleDeliveryBodyBean.getMatrname();
-                                chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
-                                chosen_line_matrcode = local_saleDeliveryBodyBean.getMatrcode();
-                                chosen_line_maccode = QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, local_saleDeliveryBodyBean.getVcooporderbcode_b(), local_saleDeliveryBodyBean.getMatrcode());
-                                chosen_line_customer = local_saleDeliveryBodyBean.getCustomer();
-                                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannnum();
-                                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-
-                                //        Toast.makeText(SaleDeliveryDetail.this,chosen_line_matrcode,Toast.LENGTH_LONG).show();
-                            }
-                        });
+                       adapter = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
+                        tableBodyListView.setAdapter(adapter);
+                        adapter.notifyDataSetChanged();
 
                         break;
                     case 0x12:
@@ -564,26 +521,10 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                             finish();
                         }
                         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
-                        final SaleDeliveryBodyTableAdapter adapterNew2 = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
-                        tableBodyListView.setAdapter(adapterNew2);
-                        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                adapterNew2.select(position);
-                                saleDeliveryScanButton.setEnabled(true);
-                                uploadSingleButton.setEnabled(true);
-                                SaleDeliveryBodyBean local_saleDeliveryBodyBean = (SaleDeliveryBodyBean) adapterNew2.getItem(position);
-                                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getVcooporderbcode_b();
-                                chosen_line_matrname = local_saleDeliveryBodyBean.getMatrname();
-                                chosen_line_matrcode = local_saleDeliveryBodyBean.getMatrcode();
-                                chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
-                                chosen_line_maccode = QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, local_saleDeliveryBodyBean.getVcooporderbcode_b(), local_saleDeliveryBodyBean.getMatrcode());
-                                chosen_line_customer = local_saleDeliveryBodyBean.getCustomer();
-                                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannnum();
-                                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-                            }
-                        });
+                        adapter= new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
+                        tableBodyListView.setAdapter(adapter);
+                        adapter.notifyDataSetChanged();
+
                         break;
                     case 0x16:
                         Toast.makeText(SaleDeliveryDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
@@ -662,6 +603,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         }
     }
 
+
     private List<String> querylogisticscompanies() {
         List<String> cars = new ArrayList<>();
         Cursor cursornew = db4.rawQuery("select name from LogisticsCompany",
@@ -692,6 +634,39 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         } else {
             return false;
         }
+    }
+    SaleDeliveryBodyTableAdapter adapter;
+    @Override
+    protected void onStart() {
+
+        super.onStart();
+        Log.i("onstart","is run");
+        listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
+        adapter = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
+        tableBodyListView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                adapter.select(position);
+                saleDeliveryScanButton.setEnabled(true);
+                uploadSingleButton.setEnabled(true);
+                SaleDeliveryBodyBean local_saleDeliveryBodyBean = (SaleDeliveryBodyBean) adapter.getItem(position);
+
+                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getVcooporderbcode_b();
+                chosen_line_matrname = local_saleDeliveryBodyBean.getMatrname();
+                chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
+                chosen_line_matrcode = local_saleDeliveryBodyBean.getMatrcode();
+                chosen_line_customer = local_saleDeliveryBodyBean.getCustomer();
+                chosen_line_maccode = QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, local_saleDeliveryBodyBean.getVcooporderbcode_b(), local_saleDeliveryBodyBean.getMatrcode());
+                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
+                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannnum();
+                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
+
+
+            }
+        });
+
     }
 
     private boolean isCwarenameSame() {
@@ -1000,26 +975,10 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         saleDeliveryScanButton.setEnabled(false);
         uploadSingleButton.setEnabled(false);
         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
-        final SaleDeliveryBodyTableAdapter adapterNew = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
-        tableBodyListView.setAdapter(adapterNew);
-        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapterNew.select(position);
-                saleDeliveryScanButton.setEnabled(true);
-                uploadSingleButton.setEnabled(true);
-                SaleDeliveryBodyBean local_saleDeliveryBodyBean = (SaleDeliveryBodyBean) adapterNew.getItem(position);
-                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getVcooporderbcode_b();
-                chosen_line_matrname = local_saleDeliveryBodyBean.getMatrname();
-                chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
-                chosen_line_matrcode = local_saleDeliveryBodyBean.getMatrcode();
-                chosen_line_maccode = QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, local_saleDeliveryBodyBean.getVcooporderbcode_b(), local_saleDeliveryBodyBean.getMatrcode());
-                chosen_line_customer = local_saleDeliveryBodyBean.getCustomer();
-                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannnum();
-                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-            }
-        });
+         adapter = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
+        tableBodyListView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+
     }
 
     public ArrayList<SaleDeliveryBodyBean> QuerySaleDeliveryBody(String current_sale_delivery_vbillcodeRecv) {
