@@ -17,23 +17,23 @@ import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import com.example.shanggmiqr.bean.OtherBean;
 import com.example.weiytjiang.shangmiqr.R;
-import com.example.shanggmiqr.bean.OtherOutgoingBean;
 
 
 public class OtherOutgoingTableAdapter extends BaseAdapter{
 
-    private List<OtherOutgoingBean> mContentList;
+    private List<OtherBean> mContentList;
     private LayoutInflater inflater;
     private MyClickListener mListener;
-    private OtherOutgoingBean otherOutgoingBean;
+    private OtherBean otherOutgoingBean;
 
-    public OtherOutgoingTableAdapter(Context context, List<OtherOutgoingBean> list, MyClickListener listener) {
+    public OtherOutgoingTableAdapter(Context context, List<OtherBean> list, MyClickListener listener) {
         this.mContentList = list;
         inflater = LayoutInflater.from(context);
         mListener = listener;
     }
-    public void setList(List<OtherOutgoingBean> otherOutgoingBean) {
+    public void setList(List<OtherBean> otherOutgoingBean) {
         this.mContentList = otherOutgoingBean;
     }
 
@@ -71,7 +71,7 @@ public class OtherOutgoingTableAdapter extends BaseAdapter{
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
 
-        OtherOutgoingBean goods = (OtherOutgoingBean) this.getItem(position);
+        OtherBean goods = (OtherBean) this.getItem(position);
 
         ViewHolder viewHolder;
 
@@ -92,7 +92,7 @@ public class OtherOutgoingTableAdapter extends BaseAdapter{
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
-        otherOutgoingBean = (OtherOutgoingBean) getItem(position);
+        otherOutgoingBean = (OtherBean) getItem(position);
         viewHolder.pobillcode.setText(goods.getPobillcode());
         viewHolder.pobillcode.setTextSize(12);
         viewHolder.cwarecode.setText(goods.getCwarename());

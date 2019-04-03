@@ -29,6 +29,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.BusinessOperation;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.AllocateTransferAdapter;
 import com.example.shanggmiqr.bean.AllocateTransferBean;

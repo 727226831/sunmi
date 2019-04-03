@@ -26,7 +26,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.shanggmiqr.util.iUntils;
+import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.SaleDeliveryScannerAdapter;
 import com.example.shanggmiqr.bean.OutgoingScanResultBean;
@@ -213,7 +213,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                         tableBodyListView.setAdapter(adapter);
                         String current_scanSum = countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv);
                         scannnumText.setText("已扫码数量：" + current_scanSum);
-                        iUntils.updateSaleDeliveryBodyscannum(db5,current_scanSum,current_vbillcode_qrRecv,
+                        DataHelper.updateSaleDeliveryBodyscannum(db5,current_scanSum,current_vbillcode_qrRecv,
                                 current_vcooporderbcode_b_qrRecv);
 
                         break;
@@ -412,7 +412,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
     private boolean isValidQr() {
 
-        String scannedMaccode = iUntils.getMaccode(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv);
+        String scannedMaccode = DataHelper.getMaccode(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv);
         if (scannedMaccode == null || scannedMaccode.length() == 0) {
             Toast.makeText(SaleDeliveryQrScanner.this, "请检查物料信息及条码规则数据是否下载，或者是否为有效的条码", Toast.LENGTH_SHORT).show();
             return false;
@@ -518,7 +518,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                         values.put("boxcode", "");
                         values.put("num", current_nnum_qrRecv);
                         values.put("itemuploadflag", "N");
-                        values.put("xlh", iUntils.getXlh(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv));
+                        values.put("xlh", DataHelper.getXlh(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv));
                         // 插入第一条数据
                         db5.insert("SaleDeliveryScanResult", null, values);
                         values.clear();
@@ -566,7 +566,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                 db5.execSQL("delete from SaleDeliveryScanResult where vbillcode=? and prodcutcode=? and vcooporderbcode_b=?", new Object[]{current_vbillcode_qrRecv, listDel.get(position).getProdcutcode(), current_vcooporderbcode_b_qrRecv});
                 count = countSum();
                 String current_scanSum = countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv);
-                iUntils.updateSaleDeliveryBodyscannum(db5,current_scanSum,current_vbillcode_qrRecv, current_vcooporderbcode_b_qrRecv);
+                DataHelper.updateSaleDeliveryBodyscannum(db5,current_scanSum,current_vbillcode_qrRecv, current_vcooporderbcode_b_qrRecv);
                 List<SaleDeliveryScanResultBean> list = showScannedQR();
                 SaleDeliveryScannerAdapter adapter = new SaleDeliveryScannerAdapter(SaleDeliveryQrScanner.this, list, mListener2);
                 tableBodyListView.setAdapter(adapter);

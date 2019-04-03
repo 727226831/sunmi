@@ -31,6 +31,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.BusinessOperation;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.PurchaseReturnAdapter;
 import com.example.shanggmiqr.bean.CommonSendAllocateBean;
@@ -778,7 +779,6 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
     private PurchaseReturnAdapter.MyClickListener mListener = new PurchaseReturnAdapter.MyClickListener() {
         @Override
         public void myOnClick(int position, View v) {
-            //  Toast.makeText(OtherOutgoing.this,listAllPostition.get(position).getPobillcode(),Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(PurchaseReturn.this, PurchaseReturnDetail.class);
             intent.putExtra("current_sale_delivery_vbillcode", listAllPostition.get(position).getVbillcode());
             intent.putExtra("current_sale_delivery_dbilldate", listAllPostition.get(position).getDbilldate());

@@ -29,9 +29,6 @@
         <activity android:name="com.example.shanggmiqr.transaction.DataManage"
             android:label="基础数据管理"
             android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.BusinessOperation"
-            android:label="业务操作导航"
-            android:screenOrientation="portrait" ></activity>
         <activity android:name="com.example.shanggmiqr.transaction.SaleDelivery"
             android:label="销售发货"
             android:screenOrientation="portrait" ></activity>
@@ -51,9 +48,6 @@
             android:screenOrientation="portrait" ></activity>
         <activity android:name="com.example.shanggmiqr.transaction.LoanBill"
             android:label="借出单"
-            android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.OtherOutgoing"
-            android:label="其他出库"
             android:screenOrientation="portrait" ></activity>
         <activity android:name="com.example.shanggmiqr.transaction.OtherEntry"
             android:label="其他入库"
@@ -133,6 +127,7 @@
         <activity android:name="com.example.shanggmiqr.transaction.QrcodeRuleDBDetail"
             android:label="条码档案"
             android:screenOrientation="portrait"></activity>
+        <activity android:name="com.example.shanggmiqr.BusinessOperation"/>
     </application>
 
 </manifest>

@@ -206,7 +206,7 @@ public class OtherOutgoingDetail extends AppCompatActivity {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
-                Log.i("msg-->",msg.what+"");
+
                 switch (msg.what) {
                     case 0x10:
                         Toast.makeText(OtherOutgoingDetail.this, "请检查网络连接", Toast.LENGTH_LONG).show();
@@ -231,28 +231,15 @@ public class OtherOutgoingDetail extends AppCompatActivity {
                                 chosen_line_nnum = otherOutgoingBodyBean.getNnum();
                                 chosen_line_uploadnum = otherOutgoingBodyBean.getUploadnum();
                                 chosen_line_vcooporderbcode_b = otherOutgoingBodyBean.getVcooporderbcode_b();
-                                //Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
+
                             }
                         });
-//                        final AlertDialog alertDialog2 = new AlertDialog.Builder(OtherOutgoingDetail.this)
-//                                .setMessage("   "+s)
-//                                .create();
-//                        alertDialog2.show();
-//                        WindowManager m = getWindowManager();
-//                        Display d = m.getDefaultDisplay();//为获取屏幕宽、高     
-//                        android.view.WindowManager.LayoutParams p = alertDialog2.getWindow().getAttributes();//获取对话框当前的参数值     
-//                        p.width = (int) (d.getWidth() * 0.4); //宽度设置为屏幕的0.5 
-//                        p.alpha = 0.5f;//   
-//                        alertDialog2.getWindow().setAttributes(p);
-//                        new Handler().postDelayed(new Runnable() {
-//                            @Override
-//                            public void run() {
-                              //  alertDialog2.dismiss();
-                                Intent intent = new Intent(OtherOutgoingDetail.this, OtherOutgoing.class);
+
+                                Intent intent = new Intent(OtherOutgoingDetail.this, OtherEntry.class);
+                                intent.putExtra("type",1);
                         startActivity(intent);
                         finish();
-       //                     }
-          //              }, 5000);
+
                         break;
                     case 0x19:
                         dialog.dismiss();

@@ -16,7 +16,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -33,7 +32,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.BusinessOperation;
 import com.example.shanggmiqr.Url.iUrl;
+import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.SaleDeliveryAdapter;
 import com.example.shanggmiqr.bean.CommonSendNoPagetotalBean;
@@ -51,7 +52,6 @@ import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -73,19 +73,17 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     private Handler saleDeliveryHandler = null;
     private ListView tableListView;
     private List<SaleDeliveryBean> listAllPostition;
-    private String chosen_line_vbillcode;
-    private String chosen_line_dbilldate;
-    private String saleDeliveryUploadDataResp;
+
     private ZLoadingDialog dialog;
     private String query_cwarename;
     private String query_uploadflag="";
-    private List<String> test;
+
     private List<String> uploadflag;
     private TextView lst_downLoad_ts;
     private TextView time;
     private  Button buttonexport;
     private  String begintime;
-
+    SharedPreferences latestDBTimeInfo;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,7 +98,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         }
         lst_downLoad_ts = (TextView)findViewById(R.id.last_downLoad_ts);
         //显示最后一次的下载时间
-        SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestSaleDeliveryTSInfo", 0);
+        latestDBTimeInfo = getSharedPreferences("LatestSaleDeliveryTSInfo", 0);
         begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
         lst_downLoad_ts.setText("最后一次下载:"+begintime);
 
@@ -125,9 +123,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 adapter1.select(position);
-                SaleDeliveryBean saleDelivery1Bean = (SaleDeliveryBean) adapter1.getItem(position);
-                chosen_line_vbillcode = saleDelivery1Bean.getVbillcode();
-                chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
+
 
             }
         });
@@ -154,9 +150,8 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                             @Override
                             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                                 adapter.select(position);
-                                SaleDeliveryBean saleDelivery1Bean = (SaleDeliveryBean) adapter.getItem(position);
-                                chosen_line_vbillcode = saleDelivery1Bean.getVbillcode();
-                                chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
+
+
 
                             }
                         });
@@ -190,7 +185,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     {
         super.onResume();
         //返回之后重新下载
-        //downloadDeliveryButton.performClick();
+
     }
 
     @Override
@@ -206,16 +201,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
-                                                    .setLoadingColor(Color.BLUE)//颜色
-                                                    .setHintText("Loading...")
-                                                    .setCancelable(false)
-                                                    .setCanceledOnTouchOutside(false)
-                                                    .setHintTextSize(16) // 设置字体大小 dp
-                                                    .setHintTextColor(Color.GRAY)  // 设置字体颜色
-                                                    .setDurationTime(0.5) // 设置动画时间百分比 - 0.5倍
-                                                    //     .setDialogBackgroundColor(Color.parseColor("#CC111111")) // 设置背景色，默认白色
-                                                    .show();
+                                           DataHelper.showDialog(dialog);
                                         }
                                     });
                                     //R07发货单
@@ -257,7 +243,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-
+                                            begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
                                             lst_downLoad_ts.setText("最后一次下载:"+begintime);
                                         }
                                     });
@@ -291,7 +277,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 popupQuery();
                 break;
             case R.id.b_export:
-                export();
+                exportData();
                 break;
             case R.id.displayall_sale_delivery:
                 List<SaleDeliveryBean> list = displayAllSaleDelivery();
@@ -303,8 +289,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         adapter.select(position);
                         SaleDeliveryBean saleDelivery1Bean = (SaleDeliveryBean) adapter.getItem(position);
-                        chosen_line_vbillcode = saleDelivery1Bean.getVbillcode();
-                        chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
+
                         //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
                     }
                 });
@@ -312,7 +297,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         }
     }
 
-    private void export() {
+    private void exportData() {
         String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
 
         SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
@@ -535,6 +520,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     }
 
   ArrayList<SaleDeliveryBean> bean1;
+    List<String> listWarehouse;
     private void popupQuery() {
         LayoutInflater layoutInflater = LayoutInflater.from(SaleDelivery.this);
         View textEntryView = layoutInflater.inflate(R.layout.query_outgoing_dialog, null);
@@ -551,18 +537,15 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 showDialogTwo();
             }
         });
-        test = queryWarehouseInfo();
-        test.add("");
-        uploadflag = new ArrayList();
-        uploadflag.add("是");
-        uploadflag.add("部分上传");
-        uploadflag.add("否");
+
+        //仓库选择
+        listWarehouse = DataHelper.queryWarehouseInfo(db3);
+        listWarehouse.add("");
         final ArrayAdapter adapter = new ArrayAdapter(
-                SaleDelivery.this, android.R.layout.simple_spinner_item, test);
+                SaleDelivery.this, android.R.layout.simple_spinner_item, listWarehouse);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
-        spinner.setSelection(test.size() - 1, true);
-        query_cwarename =adapter.getItem(test.size() - 1).toString();
+        spinner.setSelection(listWarehouse.size()-1);
         spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -574,34 +557,40 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
             }
         });
+
+
+        //订单选择
+        uploadflag = new ArrayList();
+        uploadflag.add("否");
+        uploadflag.add("部分上传");
+        uploadflag.add("是");
         final ArrayAdapter adapter2 = new ArrayAdapter(
                 SaleDelivery.this, android.R.layout.simple_spinner_item, uploadflag);
         adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         flag_spinner.setAdapter(adapter2);
-        flag_spinner.setSelection(uploadflag.size() - 1, true);
-        if ("是".equals(adapter2.getItem(uploadflag.size() - 1).toString())){
-            query_uploadflag = "Y";
-        } else if ("否".equals(adapter2.getItem(uploadflag.size() - 1).toString())){
-            query_uploadflag = "N";
-        } else {
-            query_uploadflag = "PY";
-        }
-        flag_spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-               if ("是".equals(adapter2.getItem(i).toString())){
-                   query_uploadflag = "Y";
-               } else if ("否".equals(adapter2.getItem(i).toString())){
-                   query_uploadflag = "N";
-               } else {
-                   query_uploadflag = "PY";
-               }
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
 
-            }
-        });
+         flag_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+             @Override
+             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                 switch (position){
+                     case 0:
+                         query_uploadflag = "N";
+                         break;
+                     case 1:
+                         query_uploadflag = "PY";
+                         break;
+                     case 2:
+                         query_uploadflag = "Y";
+                         break;
+                 }
+             }
+
+             @Override
+             public void onNothingSelected(AdapterView<?> parent) {
+
+             }
+         });
+
         AlertDialog.Builder ad1 = new AlertDialog.Builder(SaleDelivery.this);
         ad1.setTitle("出入查询条件:");
         ad1.setView(textEntryView);
@@ -609,30 +598,21 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         ad1.setPositiveButton("查询", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int i) {
                 String temp=codeNumEditText.getText().toString();
-                if(query_cwarename == null){
-                    query_cwarename = adapter.getItem(test.size() - 1).toString();
-                }
+
                 if(query_uploadflag == null){
                     query_uploadflag = "N";
                 }
 
                 bean1 = queryexport(temp,query_cwarename,query_uploadflag);
-
-
                 listAllPostition = bean1;
-
-
                 adapter3 = new SaleDeliveryAdapter(SaleDelivery.this, removeDuplicate(bean1), mListener);
-
                 tableListView.setAdapter(adapter3);
                 tableListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         adapter3.select(position);
                         SaleDeliveryBean saleDelivery1Bean = (SaleDeliveryBean) adapter3.getItem(position);
-                        chosen_line_vbillcode = saleDelivery1Bean.getVbillcode();
-                        chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
-                        //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
+
                     }
                 });
 
@@ -719,19 +699,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         startTime.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
         endTime.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
     }
-    private List<String> queryWarehouseInfo() {
-        List<String> cars = new ArrayList<>();
-        Cursor cursornew = db3.rawQuery("select name from Warehouse",
-                null);
-        if (cursornew != null && cursornew.getCount() > 0) {
-            while (cursornew.moveToNext()) {
-                String name = cursornew.getString(cursornew.getColumnIndex("name"));
-                cars.add(name);
-            }
-            cursornew.close();
-        }
-        return cars;
-    }
+
 
     public ArrayList<SaleDeliveryBean> queryexport(String vbillcode,String current_cwarename,String query_uploadflag) {
         ArrayList<SaleDeliveryBean> list = new ArrayList<SaleDeliveryBean>();
@@ -787,18 +755,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         }
     }
 
-    private boolean queryCwarename(String current_cwarename,String vbillcode) {
 
-        Cursor cursor = db3.rawQuery("select vbillcode from SaleDeliveryBody where vbillcode =? and cwarename like '%" + current_cwarename + "%'  ", new String[]{vbillcode});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-            }
-            cursor.close();
-            return true;
-        }
-        return false;
-    }
 
     /**
      * webservice查询下载
@@ -898,7 +855,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     private SaleDeliveryAdapter.MyClickListener mListener = new SaleDeliveryAdapter.MyClickListener() {
         @Override
         public void myOnClick(int position, View v) {
-            //  Toast.makeText(OtherOutgoing.this,listAllPostition.get(position).getPobillcode(),Toast.LENGTH_SHORT).show();
+
             Intent intent = new Intent(SaleDelivery.this, SaleDeliveryDetail.class);
             intent.putExtra("current_sale_delivery_vbillcode", listAllPostition.get(position).getVbillcode());
             intent.putExtra("current_sale_delivery_dbilldate", listAllPostition.get(position).getDbilldate());

@@ -1,11 +1,6 @@
 package com.example.shanggmiqr.bean;
 
-/**
- * Created by weiyt.jiang on 2018/8/13.
- */
-
-public class OtherOutgoingBean {
-
+public class OtherBean {
     /**
      * pobillcode : TC2018063000000247
      * cwarecode : 0145
@@ -18,8 +13,16 @@ public class OtherOutgoingBean {
     public String dbilldate;
     public int dr;
     private boolean isSelected = false;
-    String maccode;
-    String nnum;
+
+    String matrname;
+
+    public String getMatrname() {
+        return matrname;
+    }
+
+    public void setMatrname(String matrname) {
+        this.matrname = matrname;
+    }
 
     public String getMaccode() {
         return maccode;
@@ -53,18 +56,10 @@ public class OtherOutgoingBean {
         this.xlh = xlh;
     }
 
+    String maccode;
+    String nnum;
     String prodcutcode;
     String xlh;
-
-    public String getMatrname() {
-        return matrname;
-    }
-
-    public void setMatrname(String matrname) {
-        this.matrname = matrname;
-    }
-
-    String matrname;
 
     public String getMaterialcode() {
         return materialcode;
@@ -78,25 +73,19 @@ public class OtherOutgoingBean {
 
     //private Boolean operation;    //用于记录是否被选中的状态
 
-    public OtherOutgoingBean(){
+    public OtherBean(){
         super();
     }
 
-    public OtherOutgoingBean(String pobillcode, String cwarecode, String cwarename,int dr,String dbilldate) {
+    public OtherBean(String pobillcode, String cwarecode, String cwarename,int dr, String dbilldate) {
         super();
         this.pobillcode = pobillcode;
         this.cwarecode = cwarecode;
         this.cwarename = cwarename;
-        this.dr =dr;
+        this.dr = dr;
         this.dbilldate =dbilldate;
     }
-//
-//    public OtherOutgoingBean(String pobillcode, String cwarecode, String cwarename, boolean operation) {
-//        this.pobillcode = pobillcode;
-//        this.cwarecode = cwarecode;
-//        this.cwarename = cwarename;
-//        this.operation = operation;
-//    }
+
 
     public void setPobillcode(String pobillcode) {
         this.pobillcode = pobillcode;
@@ -142,5 +131,4 @@ public class OtherOutgoingBean {
     public void setSelected(boolean isSelected) {
         this.isSelected = isSelected;
     }
-
 }

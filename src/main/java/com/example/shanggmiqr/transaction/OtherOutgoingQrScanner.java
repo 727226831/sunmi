@@ -11,7 +11,6 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,15 +20,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.shanggmiqr.util.iUntils;
+import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.OtherOutgoingScannerAdapter;
 import com.example.shanggmiqr.bean.OtherOutgoingQrDetailBean;
 import com.example.shanggmiqr.bean.OutgoingScanResultBean;
-import com.example.shanggmiqr.bean.QrcodeRule;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
-import com.google.gson.annotations.Until;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -128,8 +125,8 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
         numText.setText("单据数量:" + current_nnum_qrRecv);
         uploadnumText.setText("提交数量:" + current_uploadnum_qrRecv);
 
-        scannednumText.setText("已扫码数量: " + iUntils.countScannedQRCode(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv,
-                current_vcooporderbcode_b_qrRecv));
+        scannednumText.setText("已扫码数量: " + DataHelper.queryOtherOutgoingScanResultcount(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv,
+                current_vcooporderbcode_b_qrRecv,1));
         List<OutgoingScanResultBean> list = showScannedQR();
         OtherOutgoingScannerAdapter adapter = new OtherOutgoingScannerAdapter(OtherOutgoingQrScanner.this, list, mListener21);
         tableBodyListView.setAdapter(adapter);
@@ -200,8 +197,8 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
                     List<OutgoingScanResultBean> list = showScannedQR();
                     OtherOutgoingScannerAdapter adapter = new OtherOutgoingScannerAdapter(OtherOutgoingQrScanner.this, list, mListener21);
                     tableBodyListView.setAdapter(adapter);
-                    String current_scanSum =  iUntils.countScannedQRCode(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv,
-                            current_vcooporderbcode_b_qrRecv);
+                    String current_scanSum =  DataHelper.queryOtherOutgoingScanResultcount(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv,
+                            current_vcooporderbcode_b_qrRecv,1);
 
                     insertCountOfScannedQRCode(current_scanSum);
                     scannednumText.setText("已扫码数量: " + current_scanSum);
@@ -236,8 +233,8 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
 
         for (int i = 0; i <listcode.size() ; i++) {
             productCodeEditText.setText(listcode.get(i));
-            count = iUntils.countSum(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv);
-            if(iUntils.isAlreadyScanned(db5,current_pobillcode_qrRecv,productCodeEditText.getText().toString(),current_vcooporderbcode_b_qrRecv)){
+            count = DataHelper.countSum(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv);
+            if(DataHelper.isAlreadyScanned(db5,current_pobillcode_qrRecv,productCodeEditText.getText().toString(),current_vcooporderbcode_b_qrRecv)){
                 Toast.makeText(OtherOutgoingQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
                 return;
             }
@@ -312,7 +309,7 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
     private boolean isValidQr() {
         //String category =productCodeEditText.getText().toString().substring(0,3);
 
-        String scannedMaccode = iUntils.getMaccode(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv);
+        String scannedMaccode = DataHelper.getMaccode(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv);
         if (scannedMaccode == null || scannedMaccode.length() == 0) {
             Toast.makeText(OtherOutgoingQrScanner.this, "请检查物料信息及条码规则数据是否下载，或者是否为有效的条码", Toast.LENGTH_SHORT).show();
             return false;
@@ -356,7 +353,7 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
                         values.put("prodcutcode", prodcutcode);
                         values.put("itemuploadflag", "N");
 
-                        values.put("xlh", iUntils.getXlh(db5,prodcutcode,current_maccode_qrRecv));
+                        values.put("xlh", DataHelper.getXlh(db5,prodcutcode,current_maccode_qrRecv));
                         values.put("num", current_nnum_qrRecv);
                         // 插入第一条数据
                         db5.insert("OtherOutgoingScanResult", null, values);
@@ -440,9 +437,9 @@ public class OtherOutgoingQrScanner extends AppCompatActivity {
             List<OutgoingScanResultBean> listDel = showScannedQR();
             if (!isAlreadyUpload(listDel.get(position).getProdcutcode())) {
                 db5.execSQL("delete from OtherOutgoingScanResult where pobillcode=? and vcooporderbcode_b=? and prodcutcode=?", new Object[]{current_pobillcode_qrRecv, current_vcooporderbcode_b_qrRecv, listDel.get(position).getProdcutcode()});
-                count = iUntils.countSum(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv);
-                String current_scanSum = iUntils.countScannedQRCode(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv,
-                        current_vcooporderbcode_b_qrRecv);
+                count = DataHelper.countSum(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv);
+                String current_scanSum = DataHelper.queryOtherOutgoingScanResultcount(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv,
+                        current_vcooporderbcode_b_qrRecv,1);
                 scannednumText.setText("已扫码数量: " + current_scanSum);
                 insertCountOfScannedQRCode(current_scanSum);
                 List<OutgoingScanResultBean> list = showScannedQR();

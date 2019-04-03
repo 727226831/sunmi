@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -29,7 +28,6 @@ import com.example.shanggmiqr.bean.QrcodeRule;
 import com.example.shanggmiqr.bean.Supplier;
 import com.example.shanggmiqr.bean.User;
 import com.example.shanggmiqr.bean.Warhouse;
-import com.example.shanggmiqr.transaction.BusinessOperation;
 import com.example.shanggmiqr.transaction.DataManage;
 import com.example.shanggmiqr.util.BaseConfig;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
@@ -370,7 +368,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         msg.what = 0x26;
                         dataHandler.sendMessage(msg);
                     } catch (Exception e) {
-                        //e.printStackTrace();
+                        e.printStackTrace();
                         Bundle bundle = new Bundle();
                         bundle.putString("Exception25", e.toString());
                         Message msg = new Message();
@@ -418,6 +416,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                             for (int pagenum = 2; pagenum <= supplier.getPagetotal(); pagenum++) {
                                 String supplierData2 = downloadDatabase("R06", String.valueOf(pagenum));
                                 Supplier supplier2 = gsonUser6.fromJson(supplierData2, Supplier.class);
+                                Log.i("R06",supplierData2);
                                 insertSupplierDataToDB(supplier2);
                             }
                         }
@@ -433,7 +432,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         msg.what = 0x16;
                         dataHandler.sendMessage(msg);
                     } catch (Exception e) {
-                       // e.printStackTrace();
+                        e.printStackTrace();
                         Bundle bundle = new Bundle();
                         bundle.putString("Exception24", e.toString());
                         Message msg = new Message();
@@ -497,7 +496,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         msg.what = 0x15;
                         dataHandler.sendMessage(msg);
                     } catch (Exception e) {
-                       //e.printStackTrace();
+                        e.printStackTrace();
                         Bundle bundle = new Bundle();
                         bundle.putString("Exception22", e.toString());
                         Message msg = new Message();
@@ -566,7 +565,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         msg.what = 0x23;
                         msg.setData(bundle);
                         dataHandler.sendMessage(msg);
-                      //  e.printStackTrace();
+                        e.printStackTrace();
                     }
                 } else {
                     Message msg = new Message();
@@ -623,7 +622,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         msg.what = 0x13;
                         dataHandler.sendMessage(msg);
                     } catch (Exception e) {
-                       // e.printStackTrace();
+                        e.printStackTrace();
                         Bundle bundle = new Bundle();
                         bundle.putString("Exception21", e.toString());
                         Message msg = new Message();
@@ -691,7 +690,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         msg.what = 0x12;
                         dataHandler.sendMessage(msg);
                     } catch (Exception e) {
-                        //e.printStackTrace();
+                        e.printStackTrace();
                         Bundle bundle = new Bundle();
                         bundle.putString("Exception20", e.toString());
                         Message msg = new Message();
@@ -754,7 +753,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         msg.what = 0x11;
                         dataHandler.sendMessage(msg);
                     } catch (Exception e) {
-                      //  e.printStackTrace();
+                        e.printStackTrace();
                         Bundle bundle = new Bundle();
                         bundle.putString("Exception19", e.toString());
                         Message msg = new Message();
@@ -795,6 +794,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
     }
     private void insertSupplierDataToDB(Supplier supplier) {
         List<Supplier.DataBean> supplierBeanList = supplier.getData();
+        if(supplierBeanList==null){
+            return;
+        }
         for (Supplier.DataBean cb:supplierBeanList){
             String Pk_supplie = cb.getPk_supplie();
             String name = cb.getName();

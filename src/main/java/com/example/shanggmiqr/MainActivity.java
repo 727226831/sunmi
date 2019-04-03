@@ -234,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
                                         insertUserDataToDB(userBean2);
                                     }
                                 }
-                                    String currentTs = Utils.getCurrentDate();
+
                                     user_ts_begintime = Utils.getCurrentDateTimeNew();
                                     user_ts_endtime = Utils.getDefaultEndTime();
                                     SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestUserTSInfo", 0);
@@ -244,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
                                     editor5.commit();
                                     mHandler.sendMessage(msg);
                             } catch (Exception e) {
-                              //  e.printStackTrace();
+                                e.printStackTrace();
                                 Bundle bundle = new Bundle();
                                 bundle.putString("Exception333", e.toString());
                                 Message msg = new Message();
@@ -271,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
              if(dialog!=null){
                  dialog.dismiss();
              }
-             Log.i("dialog",msg.what+"");
+
             switch (msg.what) {
 
                 case 0x11:
@@ -288,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                     break;
-                case 0x13:
+                case 19:
                     Toast.makeText(MainActivity.this, "用户信息已是最新", Toast.LENGTH_SHORT).show();
                     break;
                 case 0x14:
@@ -325,6 +325,9 @@ public class MainActivity extends AppCompatActivity {
     private void insertUserDataToDB(User user) {
         //对象中拿到集合
         List<User.UserDataBean> userBeanList = user.getData();
+        if(userBeanList==null){
+            return;
+        }
         for (User.UserDataBean ub : userBeanList) {
             String userpk = ub.getUserpk();
             String code = ub.getCode();

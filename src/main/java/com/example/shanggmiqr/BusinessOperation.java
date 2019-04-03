@@ -1,4 +1,4 @@
-package com.example.shanggmiqr.transaction;
+package com.example.shanggmiqr;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,10 +7,16 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.example.weiytjiang.shangmiqr.R;
-import com.example.shanggmiqr.TopMenu;
+import com.example.shanggmiqr.transaction.AllocateTransfer;
+import com.example.shanggmiqr.transaction.LoanBill;
+import com.example.shanggmiqr.transaction.OtherEntry;
+import com.example.shanggmiqr.transaction.ProductEntry;
+import com.example.shanggmiqr.transaction.PurchaseArrival;
+import com.example.shanggmiqr.transaction.PurchaseReturn;
+import com.example.shanggmiqr.transaction.SaleDelivery;
 import com.example.shanggmiqr.util.MyImageView;
 import com.example.shanggmiqr.util.Utils;
+import com.example.weiytjiang.shangmiqr.R;
 
 /**
  * Created by weiyt.jiang on 2018/8/8.
@@ -96,6 +102,7 @@ public class BusinessOperation extends AppCompatActivity implements MyImageView.
         }
         return true;
     }
+    Intent intent;
     @Override
     public void onClick(View view) {
         switch (view.getId()){
@@ -103,65 +110,67 @@ public class BusinessOperation extends AppCompatActivity implements MyImageView.
                 if (Utils.isFastDoubleClick()) {
                     return;
                 }
-                Intent intent1=new Intent(BusinessOperation.this,SaleDelivery.class);
-                intent1.putExtra("from_business_operation", "Y");
-                startActivity(intent1);
+                intent=new Intent(BusinessOperation.this,SaleDelivery.class);
+                intent.putExtra("from_business_operation", "Y");
+                startActivity(intent);
                 break;
             case R.id.other_entry:
                 if (Utils.isFastDoubleClick()) {
                     return;
                 }
-                Intent intent2=new Intent(BusinessOperation.this,OtherEntry.class);
-                intent2.putExtra("from_business_operation", "Y");
-                startActivity(intent2);
+                intent=new Intent(BusinessOperation.this,OtherEntry.class);
+                intent.putExtra("from_business_operation", "Y");
+                intent.putExtra("type",0);
+                startActivity(intent);
                 break;
             case R.id.other_outgoing:
                 if (Utils.isFastDoubleClick()) {
                     return;
                 }
-                Intent intent3=new Intent(BusinessOperation.this,OtherOutgoing.class);
-                intent3.putExtra("from_business_operation", "Y");
-                startActivity(intent3);
+                intent=new Intent(BusinessOperation.this,OtherEntry.class);
+                intent.putExtra("from_business_operation", "Y");
+                intent.putExtra("type",1);
+                startActivity(intent);
                 break;
             case R.id.product_entry:
                 if (Utils.isFastDoubleClick()) {
                     return;
                 }
-                Intent intent4=new Intent(BusinessOperation.this,ProductEntry.class);
-                intent4.putExtra("from_business_operation", "Y");
-                startActivity(intent4);
+                intent=new Intent(BusinessOperation.this,ProductEntry.class);
+                intent.putExtra("from_business_operation", "Y");
+                startActivity(intent);
                 break;
             case R.id.allocate:
                 if (Utils.isFastDoubleClick()) {
                     return;
                 }
-                Intent intent5=new Intent(BusinessOperation.this,AllocateTransfer.class);
-                intent5.putExtra("from_business_operation", "Y");
-                startActivity(intent5);
+                intent=new Intent(BusinessOperation.this,AllocateTransfer.class);
+                intent.putExtra("from_business_operation", "Y");
+                startActivity(intent);
                 break;
             case R.id.loan:
                 if (Utils.isFastDoubleClick()) {
                     return;
                 }
-                Intent intent6=new Intent(BusinessOperation.this,LoanBill.class);
-                intent6.putExtra("from_business_operation", "Y");
-                startActivity(intent6);
+                intent=new Intent(BusinessOperation.this,LoanBill.class);
+                intent.putExtra("from_business_operation", "Y");
+                startActivity(intent);
                 break;
             case R.id.purchase_arrival:
                 if (Utils.isFastDoubleClick()) {
                     return;
                 }
-                Intent intent8=new Intent(BusinessOperation.this,PurchaseArrival.class);
-                intent8.putExtra("from_business_operation", "Y");
-                startActivity(intent8);
+                intent=new Intent(BusinessOperation.this,PurchaseArrival.class);
+                intent.putExtra("from_business_operation", "Y");
+                startActivity(intent);
                 break;
             case R.id.purchase_return:
                 if (Utils.isFastDoubleClick()) {
                     return;
                 }
-                Intent intent7=new Intent(BusinessOperation.this,PurchaseReturn.class);
-                intent7.putExtra("from_business_operation", "Y");
-                startActivity(intent7);
+                intent=new Intent(BusinessOperation.this,PurchaseReturn.class);
+                intent.putExtra("from_business_operation", "Y");
+                startActivity(intent);
                 break;
 
         }

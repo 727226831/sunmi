@@ -18,11 +18,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.shanggmiqr.util.iUntils;
+import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.SaleDeliveryScannerAdapter;
 import com.example.shanggmiqr.bean.OutgoingScanResultBean;
-import com.example.shanggmiqr.bean.QrcodeRule;
 import com.example.shanggmiqr.bean.SaleDeliveryScanResultBean;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
@@ -230,7 +229,7 @@ public class ProductEntryQrScanner extends AppCompatActivity {
 
     private boolean isValidQr() {
         //String category =productCodeEditText.getText().toString().substring(0,3);
-        String scannedMaccode = iUntils.getMaccode(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv);
+        String scannedMaccode = DataHelper.getMaccode(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv);
         if (scannedMaccode == null || scannedMaccode.length() == 0) {
             Toast.makeText(ProductEntryQrScanner.this, "请检查物料信息及条码规则数据是否下载，或者是否为有效的条码", Toast.LENGTH_SHORT).show();
             return false;
@@ -343,7 +342,7 @@ public class ProductEntryQrScanner extends AppCompatActivity {
                         values.put("prodcutcode", productCodeEditText.getText().toString());
                         values.put("num", current_nnum_qrRecv);
                         values.put("itemuploadflag", "N");
-                        values.put("xlh", iUntils.getXlh(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv));
+                        values.put("xlh", DataHelper.getXlh(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv));
                         // 插入第一条数据
                         db5.insert("ProductEntryScanResult", null, values);
                         values.clear();

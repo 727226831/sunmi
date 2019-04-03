@@ -31,6 +31,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.BusinessOperation;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.PurchaseArrivalAdapter;
 import com.example.shanggmiqr.bean.CommonSendAllocateBean;
@@ -755,35 +756,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
                 list.add(bean);
-     /*           if (bean.dr == 1) {
-                    list_update.add(bean.vbillcode);
-                    if(null == list || list.size() ==0){
-                    }else{
-//                        Iterator<OtherEntryBean> iter = list.iterator();
-//                        while(iter.hasNext()){  //执行过程中会执行数据锁定，性能稍差，若在循环过程中要去掉某个元素只能调用iter.remove()方法。
-//                            OtherEntryBean tempBean = iter.next();
-//                            if (tempBean.getPobillcode().equals("bean.pobillcode")){
-//                                iter.remove();
-//                            }
-//                        }
-                        for(int i=0;i<list.size();i++){
-                            if(list.get(i).getVbillcode().equals(bean.vbillcode)) {
-                                list.remove(i);
-                            }
-                        }
-                    }
-                }else{
-                    //去掉list里list_update出现过的订单号
-                    if(null == list_update || list_update.size() ==0 ){
-                        list.add(bean);
-                    }else{
-                        if(list_update.contains(bean.vbillcode)) {
-                        }else{
-                            list.add(bean);
-                        }
-                    }
-                }
-                */
+
             }
 
             cursor.close();
@@ -813,7 +786,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
     private PurchaseArrivalAdapter.MyClickListener mListener = new PurchaseArrivalAdapter.MyClickListener() {
         @Override
         public void myOnClick(int position, View v) {
-            //  Toast.makeText(OtherOutgoing.this,listAllPostition.get(position).getPobillcode(),Toast.LENGTH_SHORT).show();
+
             Intent intent = new Intent(PurchaseArrival.this, PurchaseReturnDetail.class);
             intent.putExtra("current_sale_delivery_vbillcode", listAllPostition.get(position).getVbillcode());
             intent.putExtra("current_sale_delivery_dbilldate", listAllPostition.get(position).getDbilldate());

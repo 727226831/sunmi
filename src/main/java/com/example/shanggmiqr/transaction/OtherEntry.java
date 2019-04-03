@@ -1,13 +1,11 @@
 package com.example.shanggmiqr.transaction;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -16,7 +14,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -31,23 +28,18 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.BusinessOperation;
 import com.example.shanggmiqr.Url.iUrl;
-import com.example.shanggmiqr.bean.SaleDeliveryBean;
+import com.example.shanggmiqr.bean.OtherBean;
+import com.example.shanggmiqr.bean.OtherQueryBean;
+import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.OtherEntryTableAdapter;
-import com.example.shanggmiqr.bean.CommonSendBean;
-import com.example.shanggmiqr.bean.OtherEntryBean;
-import com.example.shanggmiqr.bean.OtherEntryQuery;
-import com.example.shanggmiqr.util.BaseConfig;
+
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
 import com.google.gson.Gson;
 import com.zyao89.view.zloading.ZLoadingDialog;
-import com.zyao89.view.zloading.Z_TYPE;
-
-import org.ksoap2.serialization.SoapObject;
-import org.ksoap2.serialization.SoapSerializationEnvelope;
-import org.ksoap2.transport.HttpTransportSE;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -57,16 +49,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.example.shanggmiqr.util.Utils.getDefaultEndTime;
-
 /**
  * Created by weiyt.jiang on 2018/8/9.
  * 其他入库
  */
 
 public class OtherEntry extends AppCompatActivity implements OnClickListener {
-    private String otherEntryDataResp;
-    private String otherEntryUploadDataResp;
     private Button downloadOtherEntryButton;
     private Button queryEntryButton;
     private Button displayallEntryButton;
@@ -74,30 +62,46 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
     private SQLiteDatabase db3;
     private MyDataBaseHelper helper3;
     private ListView tableListView;
-    private List<OtherEntryBean> listAllPostition;
-    private String chosen_line_Pobillcode;
-    private String chosen_line_Cwarename;
-    private String chosen_line_Cwarecode;
+    private List<OtherBean> listAllPostition;
     private String query_cwarename;
     private String query_uploadflag;
     private ZLoadingDialog dialog;
     private List<String> test;
     private TextView lst_downLoad_ts;
     private Button buttonexport;
-
+    int type;
+    String workcode;
+    String name="";
+    String title="";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.other_entry_manage);
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+
+         type=getIntent().getIntExtra("type",-1);
+        lst_downLoad_ts = (TextView)findViewById(R.id.last_downLoad_ts_otherentry);
+        //显示最后一次的下载时间
+
+        switch (type){
+            case 0:
+                name="LatestOtherEntryTSInfo";
+                workcode="R09";
+                title="其他入库";
+                break;
+            case 1:
+                workcode="R11";
+                name="LatestOtherOutgoingTSInfo";
+                title="其他出库";
+                break;
+        }
+
         if (actionBar != null) {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle(title);
         }
-
-        lst_downLoad_ts = (TextView)findViewById(R.id.last_downLoad_ts_otherentry);
-        //显示最后一次的下载时间
-        SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestOtherEntryTSInfo", 0);
+        SharedPreferences latestDBTimeInfo = getSharedPreferences(name, 0);
         String begintime = latestDBTimeInfo.getString("latest_download_ts_systime", iUrl.begintime);
         lst_downLoad_ts.setText("最后一次下载:"+begintime);
 
@@ -116,7 +120,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         dialog = new ZLoadingDialog(OtherEntry.this);
         buttonexport=findViewById(R.id.b_export);
         buttonexport.setOnClickListener(this);
-        List<OtherEntryBean> list = queryAll();
+        List<OtherBean> list = queryAll();
         listAllPostition = list;
         final OtherEntryTableAdapter adapter1 = new OtherEntryTableAdapter(OtherEntry.this, list, mListener);
         tableListView.setAdapter(adapter1);
@@ -124,11 +128,8 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 adapter1.select(position);
-                OtherEntryBean otherEntryBean = (OtherEntryBean) adapter1.getItem(position);
-                chosen_line_Pobillcode = otherEntryBean.getPobillcode();
-                chosen_line_Cwarename = otherEntryBean.getCwarename();
-                chosen_line_Cwarecode = otherEntryBean.getCwarecode();
-                //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
+
+
             }
         });
         otherEntryHandler = new Handler() {
@@ -141,10 +142,10 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                         break;
                     case 0x11:
                         dialog.dismiss();
-                        Toast.makeText(OtherEntry.this, "其他入库单已经下载", Toast.LENGTH_LONG).show();
+                        Toast.makeText(OtherEntry.this, title+"单已经下载", Toast.LENGTH_LONG).show();
                         //插入UI表格数据
 
-                        List<OtherEntryBean> list = queryAll();
+                        List<OtherBean> list = queryAll();
                         listAllPostition = list;
                         final OtherEntryTableAdapter adapter = new OtherEntryTableAdapter(OtherEntry.this, list, mListener);
                         tableListView.setAdapter(adapter);
@@ -152,11 +153,8 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                             @Override
                             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                                 adapter.select(position);
-                                OtherEntryBean otherEntryBean = (OtherEntryBean) adapter.getItem(position);
-                                chosen_line_Pobillcode = otherEntryBean.getPobillcode();
-                                chosen_line_Cwarename = otherEntryBean.getCwarename();
-                                chosen_line_Cwarecode = otherEntryBean.getCwarecode();
-                                //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
+
+
                             }
                         });
                         break;
@@ -167,7 +165,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                     case 0x19:
                         dialog.dismiss();
                         String exception = msg.getData().getString("Exception");
-                        Toast.makeText(OtherEntry.this, "其他入库单下载异常，错误："+exception, Toast.LENGTH_LONG).show();
+                        Toast.makeText(OtherEntry.this, title+"单下载异常，错误："+exception, Toast.LENGTH_LONG).show();
                         break;
                     default:
                         break;
@@ -222,28 +220,19 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
-                                                    .setLoadingColor(Color.BLUE)//颜色
-                                                    .setHintText("Loading...")
-                                                    .setCancelable(false)
-                                                    .setCanceledOnTouchOutside(false)
-                                                    .setHintTextSize(16) // 设置字体大小 dp
-                                                    .setHintTextColor(Color.GRAY)  // 设置字体颜色
-                                                    .setDurationTime(0.5) // 设置动画时间百分比 - 0.5倍
-                                                    //     .setDialogBackgroundColor(Color.parseColor("#CC111111")) // 设置背景色，默认白色
-                                                    .show();
+                                          DataHelper.showDialog(dialog);
                                         }
                                     });
                                     //其他入库查询，嵌套json,使用两张表存储，通过pobillcode关联
-                                    String outEntryData = downloadDatabase("R09", "1");
+                                    String outEntryData = DataHelper.downloadDatabase(workcode, "1",OtherEntry.this,0);
                                     if (null == outEntryData) {
                                         dialog.dismiss();
                                         return;
                                     }
                                     Gson gson7 = new Gson();
-                                    OtherEntryQuery otherEntryBean = gson7.fromJson(outEntryData, OtherEntryQuery.class);
+                                    OtherQueryBean otherEntryBean = gson7.fromJson(outEntryData, OtherQueryBean.class);
                                     if (otherEntryBean.getPagetotal() == 1) {
-                                        insertDownloadDataToDB(otherEntryBean);
+                                        DataHelper.insertOtherDataToDB(db3,otherEntryBean,type);
                                         Message msg = new Message();
                                         msg.what = 0x11;
                                         otherEntryHandler.sendMessage(msg);
@@ -252,16 +241,15 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                                             @Override
                                             public void run() {
                                                 dialog.dismiss();
-                                                Toast.makeText(OtherEntry.this, "其他入库单已经是最新", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(OtherEntry.this, title+"单已经是最新", Toast.LENGTH_LONG).show();
                                             }
                                         });
                                     } else {
-                                        insertDownloadDataToDB(otherEntryBean);
+                                        DataHelper.insertOtherDataToDB(db3,otherEntryBean,type);
                                         for (int pagenum = 2; pagenum <= otherEntryBean.getPagetotal(); pagenum++) {
-                                            String outGoingData2 = downloadDatabase("R09", String.valueOf(pagenum));
-                                            OtherEntryQuery outGoingBean2 = gson7.fromJson(outGoingData2, OtherEntryQuery.class);
-                                            //   OtherEntryQuery outGoingBean2 = JSON.parseObject(outGoingData2, OtherEntryQuery.class);
-                                            insertDownloadDataToDB(outGoingBean2);
+                                            String outGoingData2 = DataHelper.downloadDatabase(workcode, String.valueOf(pagenum),OtherEntry.this,0);
+                                            OtherQueryBean outGoingBean2 = gson7.fromJson(outGoingData2, OtherQueryBean.class);
+                                            DataHelper.insertOtherDataToDB(db3,outGoingBean2,type);
                                         }
                                         Message msg = new Message();
                                         msg.what = 0x11;
@@ -269,7 +257,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                                     }
                                     String currentTs = getLatestDbilldate();
                                     String systime = Utils.getCurrentDateTimeNew();
-                                    SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestOtherEntryTSInfo", 0);
+                                    SharedPreferences latestDBTimeInfo5 = getSharedPreferences(name, 0);
                                     SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
                                     editor5.putString("latest_download_ts_begintime", currentTs);
                                     editor5.putString("latest_download_ts_systime", systime);
@@ -277,7 +265,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestOtherEntryTSInfo", 0);
+                                            SharedPreferences latestDBTimeInfo = getSharedPreferences(name, 0);
                                             String begintime = latestDBTimeInfo.getString("latest_download_ts_systime", iUrl.begintime);
                                             lst_downLoad_ts.setText("最后一次下载:"+begintime);
                                         }
@@ -315,7 +303,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                 export();
                 break;
             case R.id.displayall_other_entry:
-                List<OtherEntryBean> list = displayAll();
+                List<OtherBean> list = displayAll();
                 listAllPostition = list;
                 final OtherEntryTableAdapter adapter = new OtherEntryTableAdapter(OtherEntry.this, list, mListener);
                 tableListView.setAdapter(adapter);
@@ -323,11 +311,9 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         adapter.select(position);
-                        OtherEntryBean otherEntryBean = (OtherEntryBean) adapter.getItem(position);
-                        chosen_line_Pobillcode = otherEntryBean.getPobillcode();
-                        chosen_line_Cwarename = otherEntryBean.getCwarename();
-                        chosen_line_Cwarecode = otherEntryBean.getCwarecode();
-                        //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
+
+
+
                     }
                 });
                 break;
@@ -361,98 +347,8 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         String addone = df.format(datetemp);
         return addone;
     }
-     private boolean isPobillcodeExist=false;
-    private void insertDownloadDataToDB(OtherEntryQuery otherEntryBean) {
-        List<OtherEntryQuery.DataBean> otherEntryBeanList = otherEntryBean.getData();
-        for (OtherEntryQuery.DataBean ob : otherEntryBeanList) {
-            String pobillcode = ob.getPobillcode();
-            String cwarecode = ob.getCwarecode();
-            String cwarename = ob.getCwarename();
-            String dbilldate = ob.getDbilldate();
-            String dr =ob.getDr();
-            isPobillcodeExist=isPobillcodeExist(pobillcode);
-            if("0".equals(dr)&& isPobillcodeExist){
-                continue;
-            }
-            //等于1时
-            if("1".equals((dr))|| ("2".equals(dr)&&isPobillcodeExist))
-            {
 
-                db3.beginTransaction();
-                try {
-                    db3.delete("OtherEntry", "pobillcode=?", new String[]{pobillcode});
-                    db3.delete("OtherEntryBody", "pobillcode=?", new String[]{pobillcode});
-                  //  db3.delete("OtherEntryScanResult", "pobillcode=?", new String[]{pobillcode});
-                    db3.setTransactionSuccessful();
-                }
-                catch (Exception ex)
-                {
-                    ex.printStackTrace();
 
-               }
-               finally {
-                    db3.endTransaction();
-                }
-            }
-            if("1".equals(dr)){
-                continue;
-            }
-            List<OtherEntryQuery.DataBean.BodyBean> outGoingDatabodyList = ob.getBody();
-            //使用 ContentValues 来对要添加的数据进行组装
-            ContentValues values = new ContentValues();
-            for (OtherEntryQuery.DataBean.BodyBean obb : outGoingDatabodyList) {
-                String materialcode = obb.getMaterialcode();
-                String maccode = obb.getMaccode();
-                int nnum = obb.getNnum();
-                String pch = obb.getPch();
-                String vcooporderbcode_b = obb.getVcooporderbcode_b();
-                String scannum = countScannedQRCode(pobillcode, materialcode, vcooporderbcode_b);
-                //这里应该执行的是插入第二个表的操作
-                ContentValues valuesInner = new ContentValues();
-                valuesInner.put("pobillcode", pobillcode);
-                valuesInner.put("materialcode", materialcode);
-                valuesInner.put("maccode", maccode);
-                valuesInner.put("nnum", nnum);
-                valuesInner.put("pch", pch);
-                valuesInner.put("uploadnum", "0");
-                valuesInner.put("scannum", scannum);
-                valuesInner.put("uploadflag", "N");
-                valuesInner.put("vcooporderbcode_b", vcooporderbcode_b);
-
-                db3.insert("OtherEntryBody", null, valuesInner);
-                valuesInner.clear();
-            }
-            values.put("pobillcode", pobillcode);
-            values.put("cwarecode", cwarecode);
-            values.put("cwarename", cwarename);
-            values.put("dbilldate", dbilldate);
-            values.put("dr", dr);
-            values.put("flag", "N");
-            // 插入第一条数据
-            db3.insert("OtherEntry", null, values);
-            values.clear();
-
-        }
-    }
-    private boolean isPobillcodeExist(String pobillcode) {
-        Cursor cursor2 = db3.rawQuery("select pobillcode from OtherEntry where pobillcode=?", new String[]{pobillcode});
-        if (cursor2 != null && cursor2.getCount() > 0) {
-            //判断cursor中是否存在数据
-            cursor2.close();
-            return true;
-        }else {
-            return false;
-        }
-    }
-    private String countScannedQRCode(String pobillcode, String materialcode, String vcooporderbcode_b) {
-        String count = "0";
-        Cursor cursor2 = db3.rawQuery("select count(prodcutcode) from OtherEntryScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?", new String[]{pobillcode, materialcode, vcooporderbcode_b});
-        cursor2.moveToFirst();
-        count = cursor2.getString(0);
-        cursor2.close();
-
-        return count;
-    }
 
     private void popupQuery() {
         LayoutInflater layoutInflater = LayoutInflater.from(OtherEntry.this);
@@ -460,7 +356,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         final EditText codeNumEditTextOtherEntry = (EditText) textEntryView.findViewById(R.id.codenum);
         final Spinner spinnerOtherEntry = (Spinner) textEntryView.findViewById(R.id.warehouse_spinner);
         final Spinner flag_spinnerEntry = (Spinner) textEntryView.findViewById(R.id.upload_flag_spinner);
-        test = queryWarehouseInfo();
+        test = DataHelper.queryWarehouseInfo(db3);
         test.add("");
         List<String> uploadflag = new ArrayList();
         uploadflag.add("是");
@@ -526,10 +422,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         adapter3.select(position);
-                        OtherEntryBean otherOutgoingBean = (OtherEntryBean) adapter3.getItem(position);
-                        chosen_line_Pobillcode = otherOutgoingBean.getPobillcode();
-                        chosen_line_Cwarename = otherOutgoingBean.getCwarename();
-                        chosen_line_Cwarecode = otherOutgoingBean.getCwarecode();
+
                     }
                 });
 
@@ -542,22 +435,10 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         });
         ad1.show();// 显示对话框
     }
-    ArrayList<OtherEntryBean> bean1;
-    private List<String> queryWarehouseInfo() {
-        List<String> cars = new ArrayList<>();
-        Cursor cursornew = db3.rawQuery("select name from Warehouse",
-                null);
-        if (cursornew != null && cursornew.getCount() > 0) {
-            while (cursornew.moveToNext()) {
-                String name = cursornew.getString(cursornew.getColumnIndex("name"));
-                cars.add(name);
-            }
-            cursornew.close();
-        }
-        return cars;
-    }
-    private   ArrayList<OtherEntryBean>  removeDuplicate(ArrayList<OtherEntryBean> list)  {
-        ArrayList<OtherEntryBean>  beanList=new ArrayList<>();
+    ArrayList<OtherBean> bean1;
+
+    private   ArrayList<OtherBean>  removeDuplicate(ArrayList<OtherBean> list)  {
+        ArrayList<OtherBean>  beanList=new ArrayList<>();
         beanList.addAll(list);
         for  ( int  i  =   0 ; i  <  beanList.size()  -   1 ; i ++ )  {
             for  ( int  j  =  beanList.size()  -   1 ; j  >  i; j -- )  {
@@ -604,18 +485,32 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
     }
 
 
-    public ArrayList<OtherEntryBean> query(String pobillcode, String current_cwarename,String query_uploadflag) {
-        ArrayList<OtherEntryBean> list = new ArrayList<OtherEntryBean>();
-            Cursor cursor1 = db3.rawQuery("select otherentry.pobillcode,otherentry.cwarecode,otherentry.cwarename,otherentry.dr, otherentry.dbilldate,otherentrybody.materialcode,otherentry.dr," +
-                    "otherentrybody.maccode,otherentrybody.maccode,otherentrybody.nnum, otherentryscanresult.prodcutcode," +
-                    "otherentryscanresult.xlh" + " from otherentry left join otherentrybody on otherentry.pobillcode=otherentrybody.pobillcode " +
-                    "left join otherentryscanresult on otherentrybody.pobillcode=otherentryscanresult.pobillcode " +
-                    "and otherentrybody.vcooporderbcode_b=otherentryscanresult.vcooporderbcode_b where flag=? and otherentry.pobillcode" +
-                    " like '%" + pobillcode + "%' and otherentry.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
+    public ArrayList<OtherBean> query(String pobillcode, String current_cwarename,String query_uploadflag) {
+        ArrayList<OtherBean> list = new ArrayList<OtherBean>();
+        Cursor cursor1=null;
+        switch (type){
+            case 0:
+                cursor1 = db3.rawQuery("select otherentry.pobillcode,otherentry.cwarecode,otherentry.cwarename,otherentry.dr, otherentry.dbilldate,otherentrybody.materialcode,otherentry.dr," +
+                        "otherentrybody.maccode,otherentrybody.maccode,otherentrybody.nnum, otherentryscanresult.prodcutcode," +
+                        "otherentryscanresult.xlh" + " from otherentry left join otherentrybody on otherentry.pobillcode=otherentrybody.pobillcode " +
+                        "left join otherentryscanresult on otherentrybody.pobillcode=otherentryscanresult.pobillcode " +
+                        "and otherentrybody.vcooporderbcode_b=otherentryscanresult.vcooporderbcode_b where flag=? and otherentry.pobillcode" +
+                        " like '%" + pobillcode + "%' and otherentry.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
+                break;
+            case 1:
+                cursor1 = db3.rawQuery("select otheroutgoing.pobillcode,otheroutgoing.cwarecode,otheroutgoing.cwarename,otheroutgoing.dr, otheroutgoing.dbilldate," +
+                        "otheroutgoingbody.materialcode,otheroutgoingbody.maccode,otheroutgoingbody.maccode,otheroutgoingbody.nnum, otheroutgoingscanresult.prodcutcode," +
+                        "otheroutgoingscanresult.xlh" + " from otheroutgoing left join otheroutgoingbody on otheroutgoing.pobillcode=otheroutgoingbody.pobillcode " +
+                        "left join otheroutgoingscanresult on otheroutgoingbody.pobillcode=otheroutgoingscanresult.pobillcode " +
+                        "and otheroutgoingbody.vcooporderbcode_b=otheroutgoingscanresult.vcooporderbcode_b where flag=? and otheroutgoing.pobillcode" +
+                        " like '%" + pobillcode + "%' and otheroutgoing.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
+                break;
+        }
+
 
                 //判断cursor中是否存在数据
                 while (cursor1.moveToNext()) {
-                    OtherEntryBean bean = new OtherEntryBean();
+                    OtherBean bean = new OtherBean();
                     bean.pobillcode = cursor1.getString(cursor1.getColumnIndex("pobillcode"));
                     bean.cwarecode = cursor1.getString(cursor1.getColumnIndex("cwarecode"));
                     bean.cwarename = cursor1.getString(cursor1.getColumnIndex("cwarename"));
@@ -634,68 +529,52 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         return list;
     }
 
-    private boolean queryCwarename(String current_cwarename, String pobillcode) {
+    public ArrayList<OtherBean> queryAll() {
+        ArrayList<OtherBean> list = new ArrayList<OtherBean>();
+        Cursor cursor=null;
+         switch (type){
+             case 0:
+                 cursor = db3.rawQuery("select pobillcode,dbilldate,cwarecode,cwarename,dr from OtherEntry where flag=? order by dbilldate desc",
+                         new String[]{"N"});
+                 break;
+             case 1:
+                 cursor = db3.rawQuery("select pobillcode,dbilldate,cwarecode,cwarename,dr from OtherOutgoing where flag=? order by dbilldate desc", new String[]{"N"});
+                 break;
+         }
 
-        Cursor cursor = db3.rawQuery("select pobillcode from OtherEntry where pobillcode =? and cwarename=?", new String[]{pobillcode, current_cwarename});
+
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
-            }
-            cursor.close();
-            return true;
-        }
-        return false;
-    }
-
-    public ArrayList<OtherEntryBean> queryAll() {
-        ArrayList<OtherEntryBean> list = new ArrayList<OtherEntryBean>();
-        List<String> list_update = new ArrayList<String>();
-  //      String sql2 = "select " + "pobillcode" + "," + "dbilldate" + "," + "cwarecode" + "," + "cwarename" + "," + "dr" + " from " + "OtherEntry";//注意：这里有单引号
-    //    Cursor cursor = db3.rawQuery(sql2, null);
-        Cursor cursor = db3.rawQuery("select pobillcode,dbilldate,cwarecode,cwarename,dr from OtherEntry where flag=? order by dbilldate desc", new String[]{"N"});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-                OtherEntryBean bean = new OtherEntryBean();
+                OtherBean bean = new OtherBean();
                 bean.pobillcode = cursor.getString(cursor.getColumnIndex("pobillcode"));
                 bean.cwarecode = cursor.getString(cursor.getColumnIndex("cwarecode"));
                 bean.cwarename = cursor.getString(cursor.getColumnIndex("cwarename"));
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
-               /* if (bean.dr == 1) {
-                    list_update.add(bean.pobillcode);
-                    if(null == list || list.size() ==0){
-                    }else{
-                        for(int i=0;i<list.size();i++){
-                            if(list.get(i).getPobillcode().equals(bean.pobillcode)) {
-                                list.remove(i);
-                            }
-                        }
-                    }
-                }else{
-                    if(null == list_update || list_update.size() ==0){
-                        list.add(bean);
-                    }else {
-                       if(list_update.contains(bean.pobillcode)) {
-                       }else{
-                           list.add(bean);
-                       }
-                    }
-                }
-                */
                 list.add(bean);
             }
             cursor.close();
         }
         return list;
     }
-    public ArrayList<OtherEntryBean> displayAll() {
-        ArrayList<OtherEntryBean> list = new ArrayList<OtherEntryBean>();
-        Cursor cursor = db3.rawQuery("select pobillcode,dbilldate,cwarecode,cwarename,dr from OtherEntry order by dbilldate desc", null);
+    public ArrayList<OtherBean> displayAll() {
+        ArrayList<OtherBean> list = new ArrayList<OtherBean>();
+        Cursor cursor = null;
+        switch (type){
+            case 0:
+                cursor = db3.rawQuery("select pobillcode,dbilldate,cwarecode,cwarename,dr from OtherEntry order by dbilldate desc",
+                        null);
+                break;
+            case 1:
+                cursor = db3.rawQuery("select pobillcode,dbilldate,cwarecode,cwarename,dr from OtherOutgoing order by dbilldate desc",
+                        null);
+                break;
+        }
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
-                OtherEntryBean bean = new OtherEntryBean();
+                OtherBean bean = new OtherBean();
                 bean.pobillcode = cursor.getString(cursor.getColumnIndex("pobillcode"));
                 bean.cwarecode = cursor.getString(cursor.getColumnIndex("cwarecode"));
                 bean.cwarename = cursor.getString(cursor.getColumnIndex("cwarename"));
@@ -708,50 +587,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         return list;
     }
 
-    /**
-     * webservice查询下载
-     */
-    public String downloadDatabase(String workCode, String pagenum) throws Exception {
-        String WSDL_URI;
-        String namespace;
-        String WSDL_URI_current = BaseConfig.getNcUrl();//wsdl 的uri
-        String namespace_current = "http://schemas.xmlsoap.org/soap/envelope/";//namespace
-        String methodName = "sendToWISE";//要调用的方法名称
-        SharedPreferences proxySp = getSharedPreferences("configInfo", 0);
-        if (proxySp.getString("WSDL_URI", WSDL_URI_current).equals("") || proxySp.getString("namespace", namespace_current).equals("")) {
-            WSDL_URI = WSDL_URI_current;
-            namespace = namespace_current;
-        } else {
-            WSDL_URI = proxySp.getString("WSDL_URI", WSDL_URI_current);
-            namespace = proxySp.getString("namespace", namespace_current);
-        }
-        SoapObject request = new SoapObject(namespace, methodName);
-        // 设置需调用WebService接口需要传入的两个参数string、string1
-        SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestOtherEntryTSInfo", 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
-        String endtime = getDefaultEndTime();
-        CommonSendBean userSend = new CommonSendBean(begintime, endtime, pagenum, "0");
-        Gson gson = new Gson();
-        String userSendBean = gson.toJson(userSend);
-        request.addProperty("string", workCode);
-        request.addProperty("string1", userSendBean);
-        //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
-        //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
-        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
 
-        envelope.bodyOut = request;
-        envelope.dotNet = false;
-
-        HttpTransportSE se = new HttpTransportSE(WSDL_URI);
-        //  se.call(null, envelope);//调用 version1.2
-        //version1.1 需要如下soapaction
-        se.call(namespace + "sendToWISE", envelope);
-        // 获取返回的数据
-        SoapObject object = (SoapObject) envelope.bodyIn;
-        // 获取返回的结果
-        otherEntryDataResp = object.getProperty(0).toString();
-        return otherEntryDataResp;
-    }
 
     public boolean isNetworkConnected(Context context) {
         if (context != null) {
@@ -771,8 +607,17 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
     private OtherEntryTableAdapter.MyClickListener mListener = new OtherEntryTableAdapter.MyClickListener() {
         @Override
         public void myOnClick(int position, View v) {
-            //  Toast.makeText(OtherOutgoing.this,listAllPostition.get(position).getPobillcode(),Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(OtherEntry.this, OtherEntryDetail.class);
+
+            Intent intent=null;
+            switch (type){
+                case 0:
+                    intent = new Intent(OtherEntry.this, OtherEntryDetail.class);
+                    break;
+                case 1:
+                    intent = new Intent(OtherEntry.this, OtherOutgoingDetail.class);
+                    break;
+            }
+
             intent.putExtra("current_pobillcode", listAllPostition.get(position).getPobillcode());
             intent.putExtra("current_cwarename", listAllPostition.get(position).getCwarename());
             intent.putExtra("current_cwarecode", listAllPostition.get(position).getCwarecode());
