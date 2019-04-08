@@ -184,7 +184,9 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                                         msg.what = 0x12;
                                                         saleDeliveryDetailHandler.sendMessage(msg);
                                                     } else if (isCwarenameSame()) {
+
                                                         String uploadResp = uploadSaleDeliveryVBill("R08", list);
+
                                                         if (!(null == uploadResp)) {
                                                             if (!(null == lisitemtall)) {
                                                                 Gson gson = new Gson();
@@ -295,7 +297,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                     }
 
                                 } catch (IOException e) {
-                                    //e.printStackTrace();
+                                    e.printStackTrace();
                                     Bundle bundle = new Bundle();
                                     bundle.putString("Exception111", e.toString());
                                     Message msg = new Message();
@@ -347,7 +349,9 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                                         msg.what = 0x13;
                                                         saleDeliveryDetailHandler.sendMessage(msg);
                                                     } else {
+
                                                         String uploadResp = uploadSaleDeliveryVBill("R08", list);
+                                                        Log.i("R08 response",uploadResp);
                                                         if (!(null == uploadResp)) {
                                                             if (!(null == listitem)) {
                                                                 Gson gson = new Gson();
@@ -376,7 +380,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                                     }
 
                                                 } catch (IOException e) {
-                                                    // e.printStackTrace();
+                                                     e.printStackTrace();
                                                     Bundle bundle = new Bundle();
                                                     bundle.putString("Exception111", e.toString());
                                                     Message msg = new Message();
@@ -385,7 +389,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                                     saleDeliveryDetailHandler.sendMessage(msg);
                                                     return;
                                                 } catch (XmlPullParserException e) {
-                                                    // e.printStackTrace();
+                                                     e.printStackTrace();
                                                     Bundle bundle = new Bundle();
                                                     bundle.putString("Exception111", e.toString());
                                                     Message msg = new Message();
@@ -640,7 +644,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     protected void onStart() {
 
         super.onStart();
-        Log.i("onstart","is run");
+
         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
         adapter = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
@@ -929,6 +933,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
 
             request.addProperty("string", workcode);
             request.addProperty("string1", userSendBean);
+            Log.i(workcode+"request",userSendBean);
         }
 
         //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");

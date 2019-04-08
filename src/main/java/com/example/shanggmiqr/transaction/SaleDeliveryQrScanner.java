@@ -334,7 +334,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
         spinner.setSelection(cars.size() - 1, true);
         if (!isOriginaWarehouse()) {
             if(!allowChangeWarehousename()) {
-                spinner.setEnabled(false);
+               spinner.setEnabled(false);
             }else{
             spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
                 @Override

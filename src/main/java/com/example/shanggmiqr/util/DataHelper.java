@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.util.Log;
 
 import com.example.shanggmiqr.Url.iUrl;
 import com.example.shanggmiqr.bean.CommonSendBean;
@@ -250,15 +251,20 @@ public class DataHelper {
             case 1:
                 name="LatestOtherOutgoingTSInfo";
                 break;
+            case 2:
+                name="LatestSaleDeliveryTSInfo";
+                break;
         }
         SharedPreferences latestDBTimeInfo = context.getSharedPreferences(name, 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
+        String begintime = latestDBTimeInfo.getString("latest_download_ts_systime", iUrl.begintime);
         String endtime = getDefaultEndTime();
+
         CommonSendBean userSend = new CommonSendBean(begintime, endtime, pagenum, "0");
         Gson gson = new Gson();
         String userSendBean = gson.toJson(userSend);
         request.addProperty("string", workCode);
         request.addProperty("string1", userSendBean);
+        Log.i("request",userSendBean);
         //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
 

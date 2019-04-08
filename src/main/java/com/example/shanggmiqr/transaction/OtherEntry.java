@@ -14,17 +14,21 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -259,6 +263,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                                     String systime = Utils.getCurrentDateTimeNew();
                                     SharedPreferences latestDBTimeInfo5 = getSharedPreferences(name, 0);
                                     SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
+
                                     editor5.putString("latest_download_ts_begintime", currentTs);
                                     editor5.putString("latest_download_ts_systime", systime);
                                     editor5.commit();
@@ -331,7 +336,16 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
     }
 
     private String getLatestDbilldate() throws ParseException {
-        Cursor cursor = db3.rawQuery("select dbilldate from OtherEntry order by dbilldate desc", null);
+        Cursor cursor=null;
+        switch (type){
+            case 0:
+                cursor = db3.rawQuery("select dbilldate from OtherEntry order by dbilldate desc", null);
+                break;
+            case 1:
+                cursor = db3.rawQuery("select dbilldate from otheroutgoing order by dbilldate desc", null);
+                break;
+        }
+
         ArrayList<String> date = new ArrayList<String>();
         if (cursor != null && cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
@@ -349,18 +363,39 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
     }
 
 
-
+    private TextView time;
     private void popupQuery() {
         LayoutInflater layoutInflater = LayoutInflater.from(OtherEntry.this);
         View textEntryView = layoutInflater.inflate(R.layout.query_outgoing_dialog, null);
         final EditText codeNumEditTextOtherEntry = (EditText) textEntryView.findViewById(R.id.codenum);
         final Spinner spinnerOtherEntry = (Spinner) textEntryView.findViewById(R.id.warehouse_spinner);
         final Spinner flag_spinnerEntry = (Spinner) textEntryView.findViewById(R.id.upload_flag_spinner);
+        final Button showdailogTwo = (Button)  textEntryView.findViewById(R.id.showdailogTwo);
+        time = (TextView)  textEntryView.findViewById(R.id.timeshow_saledelivery);
+        SharedPreferences currentTimePeriod=null;
+        switch (type){
+            case 0:
+                currentTimePeriod= getSharedPreferences("query_otherentry", 0);
+                break;
+            case 1:
+                currentTimePeriod= getSharedPreferences("query_otheroutgoing", 0);
+                break;
+        }
+
+        String tempperiod =currentTimePeriod.getString("current_account","2018-09-01 至 2018-12-17");
+        time.setText(tempperiod);
+        showdailogTwo.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showDialogTwo();
+            }
+        });
         test = DataHelper.queryWarehouseInfo(db3);
         test.add("");
         List<String> uploadflag = new ArrayList();
         uploadflag.add("是");
         uploadflag.add("否");
+        uploadflag.add("全部");
         final ArrayAdapter adapter = new ArrayAdapter(
                 OtherEntry.this, android.R.layout.simple_spinner_item, test);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -382,27 +417,29 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                 OtherEntry.this, android.R.layout.simple_spinner_item, uploadflag);
         adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         flag_spinnerEntry.setAdapter(adapter2);
-        flag_spinnerEntry.setSelection(uploadflag.size()-1, true);
-        if ("是".equals(adapter2.getItem(uploadflag.size()-1).toString())){
-            query_uploadflag = "Y";
-        } else {
-            query_uploadflag = "N";
-        }
-        flag_spinnerEntry.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                if ("是".equals(adapter2.getItem(i).toString())){
-                    query_uploadflag = "Y";
-                } else {
-                    query_uploadflag = "N";
-                }
-            }
+       flag_spinnerEntry.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+           @Override
+           public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+               switch (position){
+                   case 0:
+                       query_uploadflag = "Y";
+                       break;
+                   case 1:
+                       query_uploadflag = "N";
+                       break;
+                   case 2:
+                       query_uploadflag = "ALL";
+                       break;
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
 
-            }
-        });
+               }
+           }
+
+           @Override
+           public void onNothingSelected(AdapterView<?> parent) {
+
+           }
+       });
         AlertDialog.Builder ad1 = new AlertDialog.Builder(OtherEntry.this);
         ad1.setTitle("请输入出库单号:");
         ad1.setView(textEntryView);
@@ -411,9 +448,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
               if(query_cwarename == null){
                     query_cwarename = adapter.getItem(test.size() - 1).toString();
                 }
-                if(query_uploadflag == null){
-                    query_uploadflag = "N";
-                }
+
                 bean1 = query(codeNumEditTextOtherEntry.getText().toString(), query_cwarename,query_uploadflag);
                 listAllPostition = bean1;
                 final OtherEntryTableAdapter adapter3 = new OtherEntryTableAdapter(OtherEntry.this, removeDuplicate(bean1), mListener);
@@ -448,6 +483,69 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
             }
         }
         return beanList;
+    }
+    private void showDialogTwo() {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_date, null);
+        final DatePicker startTime = (DatePicker) view.findViewById(R.id.st);
+        final DatePicker endTime = (DatePicker) view.findViewById(R.id.et);
+        startTime.updateDate(startTime.getYear(), startTime.getMonth(), 01);
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        builder.setTitle("选择时间");
+        builder.setView(view);
+        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String day_startTime,month_startTime,year_startTime;
+                String day_endTime,month_endTime,year_endTime;
+                year_startTime = String.valueOf(startTime.getYear());
+                year_endTime = String.valueOf(endTime.getYear());
+                if(startTime.getDayOfMonth()<10){
+                    day_startTime = "0"+String.valueOf(startTime.getDayOfMonth());
+                }else{
+                    day_startTime = String.valueOf(startTime.getDayOfMonth());
+                }
+                if((startTime.getMonth())<10){
+                    month_startTime = "0"+String.valueOf(startTime.getMonth() + 1);
+                }else{
+                    month_startTime = String.valueOf(startTime.getMonth() + 1);
+                }
+                if(endTime.getDayOfMonth()<10){
+                    day_endTime = "0"+String.valueOf(endTime.getDayOfMonth());
+                }else{
+                    day_endTime = String.valueOf(endTime.getDayOfMonth());
+                }
+                if((endTime.getMonth())<10){
+                    month_endTime = "0"+String.valueOf(endTime.getMonth() + 1);
+                }else{
+                    month_endTime = String.valueOf(endTime.getMonth() + 1);
+                }
+                String st = year_startTime+"-" + month_startTime+"-" + day_startTime;
+                String et = year_endTime+"-" + month_endTime+"-" + day_endTime;
+                SharedPreferences currentTimePeriod=null;
+                switch (type){
+                    case 0:
+                        currentTimePeriod= getSharedPreferences("query_otherentry", 0);
+                      break;
+                    case 1:
+                        currentTimePeriod= getSharedPreferences("query_otheroutgoing", 0);
+                        break;
+                }
+
+                SharedPreferences.Editor editor1 = currentTimePeriod.edit();
+                editor1.putString("current_account",st+" 至 "+et);
+                editor1.putString("starttime",st+ " "+"00:00:01");
+                editor1.putString("endtime",et+ " "+"23:59:59");
+                editor1.commit();
+                time.setText(st+" 至 "+et);
+            }
+        });
+        builder.setNegativeButton("取消", null);
+        android.app.AlertDialog dialog = builder.create();
+        dialog.show();
+        //自动弹出键盘问题解决
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        startTime.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
+        endTime.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
     }
     private void export() {
         String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
@@ -488,23 +586,53 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
     public ArrayList<OtherBean> query(String pobillcode, String current_cwarename,String query_uploadflag) {
         ArrayList<OtherBean> list = new ArrayList<OtherBean>();
         Cursor cursor1=null;
+        SharedPreferences currentTimePeriod;
+        String start_temp="";
+        String end_temp="";
         switch (type){
             case 0:
-                cursor1 = db3.rawQuery("select otherentry.pobillcode,otherentry.cwarecode,otherentry.cwarename,otherentry.dr, otherentry.dbilldate,otherentrybody.materialcode,otherentry.dr," +
-                        "otherentrybody.maccode,otherentrybody.maccode,otherentrybody.nnum, otherentryscanresult.prodcutcode," +
-                        "otherentryscanresult.xlh" + " from otherentry left join otherentrybody on otherentry.pobillcode=otherentrybody.pobillcode " +
-                        "left join otherentryscanresult on otherentrybody.pobillcode=otherentryscanresult.pobillcode " +
-                        "and otherentrybody.vcooporderbcode_b=otherentryscanresult.vcooporderbcode_b where flag=? and otherentry.pobillcode" +
-                        " like '%" + pobillcode + "%' and otherentry.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
-                break;
+                currentTimePeriod= getSharedPreferences("query_otherentry", 0);
+                start_temp = currentTimePeriod.getString("starttime", iUrl.begintime);
+                end_temp = currentTimePeriod.getString("endtime", Utils.getDefaultEndTime());
+                if(query_uploadflag.equals("ALL")){
+                    cursor1 = db3.rawQuery("select otherentry.pobillcode,otherentry.cwarecode,otherentry.cwarename,otherentry.dr, otherentry.dbilldate,otherentrybody.materialcode,otherentry.dr," +
+                            "otherentrybody.maccode,otherentrybody.maccode,otherentrybody.nnum, otherentryscanresult.prodcutcode," +
+                            "otherentryscanresult.xlh" + " from otherentry left join otherentrybody on otherentry.pobillcode=otherentrybody.pobillcode " +
+                            "left join otherentryscanresult on otherentrybody.pobillcode=otherentryscanresult.pobillcode " +
+                            "and otherentrybody.vcooporderbcode_b=otherentryscanresult.vcooporderbcode_b where otherentry.pobillcode" +
+                            " like '%" + pobillcode + "%' and otherentry.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", null);
+                }else {
+                    cursor1 = db3.rawQuery("select otherentry.pobillcode,otherentry.cwarecode,otherentry.cwarename,otherentry.dr, otherentry.dbilldate,otherentrybody.materialcode,otherentry.dr," +
+                            "otherentrybody.maccode,otherentrybody.maccode,otherentrybody.nnum, otherentryscanresult.prodcutcode," +
+                            "otherentryscanresult.xlh" + " from otherentry left join otherentrybody on otherentry.pobillcode=otherentrybody.pobillcode " +
+                            "left join otherentryscanresult on otherentrybody.pobillcode=otherentryscanresult.pobillcode " +
+                            "and otherentrybody.vcooporderbcode_b=otherentryscanresult.vcooporderbcode_b where flag=? and otherentry.pobillcode" +
+                            " like '%" + pobillcode + "%' and otherentry.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
+
+                }
+              break;
             case 1:
-                cursor1 = db3.rawQuery("select otheroutgoing.pobillcode,otheroutgoing.cwarecode,otheroutgoing.cwarename,otheroutgoing.dr, otheroutgoing.dbilldate," +
-                        "otheroutgoingbody.materialcode,otheroutgoingbody.maccode,otheroutgoingbody.maccode,otheroutgoingbody.nnum, otheroutgoingscanresult.prodcutcode," +
-                        "otheroutgoingscanresult.xlh" + " from otheroutgoing left join otheroutgoingbody on otheroutgoing.pobillcode=otheroutgoingbody.pobillcode " +
-                        "left join otheroutgoingscanresult on otheroutgoingbody.pobillcode=otheroutgoingscanresult.pobillcode " +
-                        "and otheroutgoingbody.vcooporderbcode_b=otheroutgoingscanresult.vcooporderbcode_b where flag=? and otheroutgoing.pobillcode" +
-                        " like '%" + pobillcode + "%' and otheroutgoing.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
-                break;
+               currentTimePeriod= getSharedPreferences("query_otheroutgoing", 0);
+                start_temp = currentTimePeriod.getString("starttime", iUrl.begintime);
+                end_temp = currentTimePeriod.getString("endtime", Utils.getDefaultEndTime());
+                if(query_uploadflag.equals("ALL")){
+                    cursor1 = db3.rawQuery("select otheroutgoing.pobillcode,otheroutgoing.cwarecode,otheroutgoing.cwarename,otheroutgoing.dr, otheroutgoing.dbilldate," +
+                            "otheroutgoingbody.materialcode,otheroutgoingbody.maccode,otheroutgoingbody.maccode,otheroutgoingbody.nnum, otheroutgoingscanresult.prodcutcode," +
+                            "otheroutgoingscanresult.xlh" + " from otheroutgoing left join otheroutgoingbody on otheroutgoing.pobillcode=otheroutgoingbody.pobillcode " +
+                            "left join otheroutgoingscanresult on otheroutgoingbody.pobillcode=otheroutgoingscanresult.pobillcode " +
+                            "and otheroutgoingbody.vcooporderbcode_b=otheroutgoingscanresult.vcooporderbcode_b where  otheroutgoing.pobillcode" +
+                            " like '%" + pobillcode + "%' and otheroutgoing.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc",null);
+
+                }else {
+                    cursor1 = db3.rawQuery("select otheroutgoing.pobillcode,otheroutgoing.cwarecode,otheroutgoing.cwarename,otheroutgoing.dr, otheroutgoing.dbilldate," +
+                            "otheroutgoingbody.materialcode,otheroutgoingbody.maccode,otheroutgoingbody.maccode,otheroutgoingbody.nnum, otheroutgoingscanresult.prodcutcode," +
+                            "otheroutgoingscanresult.xlh" + " from otheroutgoing left join otheroutgoingbody on otheroutgoing.pobillcode=otheroutgoingbody.pobillcode " +
+                            "left join otheroutgoingscanresult on otheroutgoingbody.pobillcode=otheroutgoingscanresult.pobillcode " +
+                            "and otheroutgoingbody.vcooporderbcode_b=otheroutgoingscanresult.vcooporderbcode_b where flag=? and otheroutgoing.pobillcode" +
+                            " like '%" + pobillcode + "%' and otheroutgoing.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
+
+                }
+              break;
         }
 
 
@@ -522,13 +650,41 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                     bean.setProdcutcode(cursor1.getString(cursor1.getColumnIndex("prodcutcode")));
                     bean.setXlh(cursor1.getString(cursor1.getColumnIndex("xlh")));
                     bean.dr = cursor1.getInt(cursor1.getColumnIndex("dr"));
-                    list.add(bean);
+                    Log.i("time-->",start_temp+"/"+end_temp);
+                    if (queryTimePeriod(bean.pobillcode,start_temp,end_temp)) {
+                        list.add(bean);
+                    }
+
                 }
                 cursor1.close();
 
         return list;
     }
+    private boolean queryTimePeriod(String pobillcode ,String startTime,String endTime) {
+        Cursor cursor=null;
+        switch (type){
+            case 0:
+                cursor = db3.rawQuery("SELECT count(pobillcode) FROM OtherEntry WHERE pobillcode=? and "+
+                                "dbilldate>=? and dbilldate<?",
+                        new String[] { pobillcode,startTime, endTime});
+                break;
+            case 1:
+                cursor = db3.rawQuery("SELECT count(pobillcode) FROM OtherOutgoing WHERE pobillcode=? and "+
+                                "dbilldate>=? and dbilldate<?",
+                        new String[] { pobillcode,startTime, endTime});
+                break;
+        }
+        cursor.moveToFirst();
 
+        if(cursor.getInt(0)!=0){
+            cursor.close();
+            return true;
+        }else {
+            cursor.close();
+            return  false;
+        }
+
+    }
     public ArrayList<OtherBean> queryAll() {
         ArrayList<OtherBean> list = new ArrayList<OtherBean>();
         Cursor cursor=null;
