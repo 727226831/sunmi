@@ -310,15 +310,18 @@ public class DataHelper {
                         new String[] { code,startTime, endTime});
                 break;
         }
-        cursor.moveToFirst();
+        while (cursor.moveToNext()){
+            if(cursor.getInt(0)!=0){
 
-        if(cursor.getInt(0)!=0){
-            cursor.close();
-            return true;
-        }else {
-            cursor.close();
-            return  false;
+                return true;
+            }else {
+
+                return  false;
+            }
+
         }
+        cursor.close();
+        return  false;
 
     }
     public static boolean isNetworkConnected(Context context) {
