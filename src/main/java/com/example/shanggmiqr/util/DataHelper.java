@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 import com.example.shanggmiqr.Url.iUrl;
@@ -74,29 +76,28 @@ public class DataHelper {
         }
         return false;
     }
-    public static int countSum(SQLiteDatabase db,String pobillcode,String  materialcode,String vcooporderbcode_b) {
-        Cursor cursor = db.rawQuery("select * from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
-                new String[]{pobillcode,materialcode, vcooporderbcode_b});
-        while (cursor != null && cursor.getCount() > 0) {
-            return cursor.getCount();// //有城市在数据库已存在，返回true
-        }
-        return 0;
-    }
-    public static String queryOtherOutgoingScanResultcount(SQLiteDatabase db, String pobillcode, String materialcode,String vcooporderbcode_b,int type) {
+
+    public static int queryScanResultcount(SQLiteDatabase db, String code, String materialcode, String vcooporderbcode_b, int type) {
         Cursor cursor=null;
-        String count;
+        int count;
         switch (type){
             case 0:
                 cursor = db.rawQuery("select count(prodcutcode) from OtherEntryScanResult  where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
-                        new String[]{pobillcode, materialcode, vcooporderbcode_b});
+                        new String[]{code, materialcode, vcooporderbcode_b});
                 break;
             case 1:
+                cursor = db.rawQuery("select  count(prodcutcode) from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
+                        new String[]{code,materialcode, vcooporderbcode_b});
+                break;
+            case 2:
+                cursor = db.rawQuery("select count(prodcutcode) from SaleDeliveryScanResult where vbillcode=? and matrcode=? and vcooporderbcode_b=? ",
+                        new String[]{code, materialcode,vcooporderbcode_b});
                 break;
         }
 
 
         cursor.moveToFirst();
-        count = cursor.getString(0);
+        count = cursor.getInt(0);
         cursor.close();
 
         return count;
@@ -175,7 +176,7 @@ public class DataHelper {
                 int nnum = obb.getNnum();
                 String pch = obb.getPch();
                 String vcooporderbcode_b = obb.getVcooporderbcode_b();
-                String scannum = queryOtherOutgoingScanResultcount(db,ob.getPobillcode(), materialcode, vcooporderbcode_b,0);
+                int scannum = queryScanResultcount(db,ob.getPobillcode(), materialcode, vcooporderbcode_b,0);
                 //这里应该执行的是插入第二个表的操作
                 ContentValues valuesInner = new ContentValues();
                 valuesInner.put("pobillcode", ob.getPobillcode());
@@ -259,7 +260,7 @@ public class DataHelper {
         String begintime = latestDBTimeInfo.getString("latest_download_ts_systime", iUrl.begintime);
         String endtime = getDefaultEndTime();
 
-        CommonSendBean userSend = new CommonSendBean(begintime, endtime, pagenum, "0");
+        CommonSendBean userSend = new CommonSendBean(begintime, endtime, pagenum, pagenum);
         Gson gson = new Gson();
         String userSendBean = gson.toJson(userSend);
         request.addProperty("string", workCode);
@@ -278,13 +279,79 @@ public class DataHelper {
         SoapObject object = (SoapObject) envelope.bodyIn;
         // 获取返回的结果
        String otherOutgoingDataResp = object.getProperty(0).toString();
+       Log.i("response-->",otherOutgoingDataResp);
         return otherOutgoingDataResp;
     }
+    public static boolean isWarehouseDBDownloaed(SQLiteDatabase db) {
+        Cursor cursor = db.rawQuery("select name from Warehouse",
+                null);
+        if (cursor != null && cursor.getCount() > 0) {
+            return true;
+        }else {
+            return false;
+        }
+    }
+    public static boolean queryTimePeriod(String code ,String startTime,String endTime,int type,SQLiteDatabase db) {
+        Cursor cursor=null;
+        switch (type){
+            case 0:
+                cursor = db.rawQuery("SELECT count(pobillcode) FROM OtherEntry WHERE pobillcode=? and "+
+                                "dbilldate>=? and dbilldate<?",
+                        new String[] { code,startTime, endTime});
+                break;
+            case 1:
+                cursor = db.rawQuery("SELECT count(pobillcode) FROM OtherOutgoing WHERE pobillcode=? and "+
+                                "dbilldate>=? and dbilldate<?",
+                        new String[] { code,startTime, endTime});
+                break;
+            case 2:
+                cursor = db.rawQuery("SELECT * FROM SaleDelivery WHERE vbillcode=? and "+
+                                "dbilldate>=? and dbilldate<?",
+                        new String[] { code,startTime, endTime});
+                break;
+        }
+        cursor.moveToFirst();
 
+        if(cursor.getInt(0)!=0){
+            cursor.close();
+            return true;
+        }else {
+            cursor.close();
+            return  false;
+        }
 
+    }
+    public static boolean isNetworkConnected(Context context) {
+        if (context != null) {
+            ConnectivityManager mConnectivityManager = (ConnectivityManager) context
+                    .getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo mNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
+            if (mNetworkInfo != null) {
+                return mNetworkInfo.isAvailable();
+            }
+        }
 
+        return false;
+    }
 
+    public static String getQueryTime(Context context,int type) {
+        String name="";
+        switch (type){
+            case 0:
+                name="query_otherentry";
+                break;
+            case 1:
+                name="query_otheroutgoing";
+                break;
+            case 2:
+                name="query_saledelivery";
+                break;
 
+        }
+        SharedPreferences currentTimePeriod= context.getSharedPreferences(name, 0);
+        String tempperiod =currentTimePeriod.getString("current_account","2018-09-01 至 2018-12-17");
+        return tempperiod;
+    }
 
 
 }

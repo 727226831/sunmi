@@ -46,11 +46,7 @@ import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
 import com.google.gson.Gson;
 import com.zyao89.view.zloading.ZLoadingDialog;
-import com.zyao89.view.zloading.Z_TYPE;
 
-import org.ksoap2.serialization.SoapObject;
-import org.ksoap2.serialization.SoapSerializationEnvelope;
-import org.ksoap2.transport.HttpTransportSE;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -60,12 +56,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Created by weiyt.jiang on 2018/8/9.
- */
+
 
 public class SaleDelivery extends AppCompatActivity implements OnClickListener {
-    private String saleDelivDataResp;
     private Button downloadDeliveryButton;
     private Button querySaleDeliveryButton;
     private Button displayallSaleDeliveryButton;
@@ -87,6 +80,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     SharedPreferences latestDBTimeInfo;
     SaleDeliveryAdapter adapter3;
     List<SaleDeliveryBean> saleDeliveryBeanList;
+    int type=2;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -150,25 +144,12 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
                         final SaleDeliveryAdapter adapter = new SaleDeliveryAdapter(SaleDelivery.this,saleDeliveryBeanList, mListener);
                         tableListView.setAdapter(adapter);
-                        tableListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                adapter.select(position);
-
-
-
-                            }
-                        });
                         Toast.makeText(SaleDelivery.this, "出库单下载完成", Toast.LENGTH_LONG).show();
                         break;
                     case 0x19:
 
                         String exception = msg.getData().getString("Exception");
                         Toast.makeText(SaleDelivery.this, "发货单下载异常，错误："+exception, Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x12:
-                            break;
-                    default:
                         break;
                 }
             }
@@ -195,9 +176,9 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        if (isNetworkConnected(SaleDelivery.this)) {
+                        if (DataHelper.isNetworkConnected(SaleDelivery.this)) {
                             try {
-                                if (isWarehouseDBDownloaed()) {
+                                if (DataHelper.isWarehouseDBDownloaed(db3)) {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -205,7 +186,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                                         }
                                     });
                                     //R07发货单
-                                    String saleDeliveryData =DataHelper.downloadDatabase("R07", "1",SaleDelivery.this,2);
+                                    String saleDeliveryData =DataHelper.downloadDatabase("R07", "1",SaleDelivery.this,type);
                                     if (null == saleDeliveryData) {
                                         dialog.dismiss();
                                         return;
@@ -286,15 +267,6 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
                 final SaleDeliveryAdapter adapter = new SaleDeliveryAdapter(SaleDelivery.this, saleDeliveryBeanList, mListener);
                 tableListView.setAdapter(adapter);
-                tableListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        adapter.select(position);
-                        SaleDeliveryBean saleDelivery1Bean = (SaleDeliveryBean) adapter.getItem(position);
-
-                        //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
-                    }
-                });
                 break;
         }
     }
@@ -349,15 +321,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         }
         return super.onOptionsItemSelected(item);
     }
-    private boolean isWarehouseDBDownloaed() {
-        Cursor cursor = db3.rawQuery("select name from Warehouse",
-                null);
-        if (cursor != null && cursor.getCount() > 0) {
-            return true;
-        }else {
-            return false;
-        }
-    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -374,13 +338,12 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
         List<SaleDeliveryQuery.DataBean> saleDeliveryBeanList = saleDeliveryQuery.getData();
         for (SaleDeliveryQuery.DataBean ob : saleDeliveryBeanList) {
-               if(ob.getVbillcode().contains("68")){
-                   Log.i("data-->",new Gson().toJson(ob));
-               }
+
             //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
             if(isUploadflag(ob.getVbillcode())) {
                 return;
             }
+
             if(isCwarename(ob.getVbillcode())){
                 return;
             }
@@ -409,29 +372,22 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     private void setSaleDeliverybodyData(SaleDeliveryQuery.DataBean ob) {
         List<SaleDeliveryQuery.DataBean.BodysBean> saleDeliveryDatabodysList = ob.getBodys();
         for (SaleDeliveryQuery.DataBean.BodysBean obb : saleDeliveryDatabodysList) {
-            String vcooporderbcode_b = obb.getVcooporderbcode_b();
-            String matrcode = obb.getMatrcode();
-            String matrname = obb.getMatrname();
-            String maccode = obb.getMaccode();
-            int nnum = obb.getNnum();
-            String rackcode = obb.getRackcode();
-            String customer = obb.getCustomer();
-            String cwarehousecode = obb.getCwarehousecode();
             String cwarename = getCwarename(obb.getCwarehousecode());
             String orginal_cwarename = existOriginalCwarename(obb.getCwarehousecode());
-            String scannum = countScannedQRCode(ob.getVbillcode(),vcooporderbcode_b, matrcode);
+            int scannum = DataHelper.queryScanResultcount(db3,ob.getVbillcode(),obb.getVcooporderbcode_b(), obb.getMatrcode(),type);
+
             //这里应该执行的是插入第二个表的操作
             ContentValues valuesInner = new ContentValues();
             valuesInner.put("vbillcode", ob.getVbillcode());
-            valuesInner.put("vcooporderbcode_b", vcooporderbcode_b);
-            valuesInner.put("matrcode", matrcode);
-            valuesInner.put("matrname", matrname);
-            valuesInner.put("maccode", maccode);
-            valuesInner.put("nnum", nnum);
+            valuesInner.put("vcooporderbcode_b", obb.getVcooporderbcode_b());
+            valuesInner.put("matrcode",obb.getMatrcode());
+            valuesInner.put("matrname", obb.getMatrname());
+            valuesInner.put("maccode", obb.getMaccode());
+            valuesInner.put("nnum", obb.getNnum());
             valuesInner.put("scannum", scannum);
-            valuesInner.put("rackcode", rackcode);
-            valuesInner.put("customer", customer);
-            valuesInner.put("cwarehousecode", cwarehousecode);
+            valuesInner.put("rackcode", obb.getRackcode());
+            valuesInner.put("customer", obb.getCustomer());
+            valuesInner.put("cwarehousecode", obb.getCwarehousecode());
             valuesInner.put("cwarename", cwarename);
             valuesInner.put("orginal_cwarename", orginal_cwarename);
             //N代表尚未上传
@@ -473,6 +429,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                    isUploadflag=true;
             }
         }
+        cursor.close();
         return isUploadflag;
     }
     private boolean isCwarename(String vbillcode) {
@@ -480,9 +437,11 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         Cursor cursor = db3.rawQuery("select cwarename from SaleDeliveryBody where vbillcode=?", new String[]{vbillcode});
         while (cursor.moveToNext()){
             if(!cursor.getString(cursor.getColumnIndex("cwarename")).equals("")){
+
                 isUploadflag=true;
             }
         }
+        cursor.close();
         return isUploadflag;
     }
 
@@ -515,14 +474,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
 
 
-    private String countScannedQRCode(String vbillcode,String vcooporderbcode_b, String matrcode) {
-        String count = "0";
-        Cursor cursor2 = db3.rawQuery("select count(prodcutcode) from SaleDeliveryScanResult where vbillcode=? and matrcode=? and vcooporderbcode_b=? ", new String[]{vbillcode, matrcode,vcooporderbcode_b});
-        cursor2.moveToFirst();
-        count = cursor2.getString(0);
-        cursor2.close();
-        return count;
-    }
+
 
 
     List<String> listWarehouse;
@@ -534,8 +486,8 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         final Spinner flag_spinner = (Spinner) textEntryView.findViewById(R.id.upload_flag_spinner);
         final Button showdailogTwo = (Button)  textEntryView.findViewById(R.id.showdailogTwo);
         time = (TextView)  textEntryView.findViewById(R.id.timeshow_saledelivery);
-        SharedPreferences currentTimePeriod= getSharedPreferences("query_saledelivery", 0);
-        final String tempperiod =currentTimePeriod.getString("current_account","2018-09-01 至 2018-12-17");
+
+        String tempperiod =DataHelper.getQueryTime(SaleDelivery.this,type);
         showdailogTwo.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -616,14 +568,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 saleDeliveryBeanList.addAll(removeDuplicate(exportList));
                 adapter3 = new SaleDeliveryAdapter(SaleDelivery.this, saleDeliveryBeanList, mListener);
                 tableListView.setAdapter(adapter3);
-                tableListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        adapter3.select(position);
 
-
-                    }
-                });
 
 
             }
@@ -634,7 +579,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
             }
         });
         ad1.show();// 显示对话框
-        time.setText(tempperiod);
+
     }
     List<SaleDeliveryBean> exportList;
 
@@ -752,7 +697,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 bean.setXlh(cursor.getString(cursor.getColumnIndex("xlh")));
                 bean.dr= cursor.getInt(cursor.getColumnIndex("dr"));
 
-                if (queryTimePeriod(bean.vbillcode,start_temp,end_temp)) {
+                if (DataHelper.queryTimePeriod(bean.vbillcode,start_temp,end_temp,type,db3)) {
                     list.add(bean);
                 }
 
@@ -762,31 +707,9 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         return list;
     }
 
-    private boolean queryTimePeriod(String vbillcode ,String startTime,String endTime) {
-        Cursor cursor = db3.rawQuery("SELECT * FROM SaleDelivery WHERE vbillcode=? and "+
-                "dbilldate>=? and dbilldate<?",
-        new String[] { vbillcode,startTime, endTime});
 
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            cursor.close();
-            return true;
-        }else{
-            return false;
-        }
-    }
 
-    public boolean isNetworkConnected(Context context) {
-        if (context != null) {
-            ConnectivityManager mConnectivityManager = (ConnectivityManager) context
-                    .getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo mNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
-            if (mNetworkInfo != null) {
-                return mNetworkInfo.isAvailable();
-            }
-        }
-        return false;
-    }
+
 
     public ArrayList<SaleDeliveryBean> querySaleDelivery() {
         ArrayList<SaleDeliveryBean> list = new ArrayList<SaleDeliveryBean>();

@@ -53,10 +53,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Created by weiyt.jiang on 2018/8/9.
- * 其他入库
- */
+
 
 public class OtherEntry extends AppCompatActivity implements OnClickListener {
     private Button downloadOtherEntryButton;
@@ -218,9 +215,9 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        if (isNetworkConnected(OtherEntry.this)) {
+                        if (DataHelper.isNetworkConnected(OtherEntry.this)) {
                             try {
-                                if (isWarehouseDBDownloaed()) {
+                                if (DataHelper.isWarehouseDBDownloaed(db3)) {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -259,19 +256,19 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                                         msg.what = 0x11;
                                         otherEntryHandler.sendMessage(msg);
                                     }
-                                    String currentTs = getLatestDbilldate();
+                                 //   String currentTs = getLatestDbilldate();
                                     String systime = Utils.getCurrentDateTimeNew();
                                     SharedPreferences latestDBTimeInfo5 = getSharedPreferences(name, 0);
                                     SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
 
-                                    editor5.putString("latest_download_ts_begintime", currentTs);
+                                    editor5.putString("latest_download_ts_begintime",systime);
                                     editor5.putString("latest_download_ts_systime", systime);
                                     editor5.commit();
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
                                             SharedPreferences latestDBTimeInfo = getSharedPreferences(name, 0);
-                                            String begintime = latestDBTimeInfo.getString("latest_download_ts_systime", iUrl.begintime);
+                                            String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
                                             lst_downLoad_ts.setText("最后一次下载:"+begintime);
                                         }
                                     });
@@ -325,15 +322,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         }
     }
 
-    private boolean isWarehouseDBDownloaed() {
-        Cursor cursor = db3.rawQuery("select name from Warehouse",
-                null);
-        if (cursor != null && cursor.getCount() > 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+
 
     private String getLatestDbilldate() throws ParseException {
         Cursor cursor=null;
@@ -372,17 +361,9 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         final Spinner flag_spinnerEntry = (Spinner) textEntryView.findViewById(R.id.upload_flag_spinner);
         final Button showdailogTwo = (Button)  textEntryView.findViewById(R.id.showdailogTwo);
         time = (TextView)  textEntryView.findViewById(R.id.timeshow_saledelivery);
-        SharedPreferences currentTimePeriod=null;
-        switch (type){
-            case 0:
-                currentTimePeriod= getSharedPreferences("query_otherentry", 0);
-                break;
-            case 1:
-                currentTimePeriod= getSharedPreferences("query_otheroutgoing", 0);
-                break;
-        }
 
-        String tempperiod =currentTimePeriod.getString("current_account","2018-09-01 至 2018-12-17");
+
+        String tempperiod =DataHelper.getQueryTime(OtherEntry.this,type);
         time.setText(tempperiod);
         showdailogTwo.setOnClickListener(new OnClickListener() {
             @Override
@@ -651,7 +632,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                     bean.setXlh(cursor1.getString(cursor1.getColumnIndex("xlh")));
                     bean.dr = cursor1.getInt(cursor1.getColumnIndex("dr"));
                     Log.i("time-->",start_temp+"/"+end_temp);
-                    if (queryTimePeriod(bean.pobillcode,start_temp,end_temp)) {
+                    if (DataHelper.queryTimePeriod(bean.pobillcode,start_temp,end_temp,type,db3)) {
                         list.add(bean);
                     }
 
@@ -660,31 +641,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
 
         return list;
     }
-    private boolean queryTimePeriod(String pobillcode ,String startTime,String endTime) {
-        Cursor cursor=null;
-        switch (type){
-            case 0:
-                cursor = db3.rawQuery("SELECT count(pobillcode) FROM OtherEntry WHERE pobillcode=? and "+
-                                "dbilldate>=? and dbilldate<?",
-                        new String[] { pobillcode,startTime, endTime});
-                break;
-            case 1:
-                cursor = db3.rawQuery("SELECT count(pobillcode) FROM OtherOutgoing WHERE pobillcode=? and "+
-                                "dbilldate>=? and dbilldate<?",
-                        new String[] { pobillcode,startTime, endTime});
-                break;
-        }
-        cursor.moveToFirst();
 
-        if(cursor.getInt(0)!=0){
-            cursor.close();
-            return true;
-        }else {
-            cursor.close();
-            return  false;
-        }
-
-    }
     public ArrayList<OtherBean> queryAll() {
         ArrayList<OtherBean> list = new ArrayList<OtherBean>();
         Cursor cursor=null;
@@ -745,17 +702,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
 
 
 
-    public boolean isNetworkConnected(Context context) {
-        if (context != null) {
-            ConnectivityManager mConnectivityManager = (ConnectivityManager) context
-                    .getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo mNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
-            if (mNetworkInfo != null) {
-                return mNetworkInfo.isAvailable();
-            }
-        }
-        return false;
-    }
+
 
     /**
      * 实现类，响应按钮点击事件
