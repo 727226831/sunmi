@@ -61,9 +61,6 @@
         <activity android:name="com.example.shanggmiqr.transaction.OtherEntryDetail"
             android:label="其他入库明细"
             android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.OtherOutgoingQRDetail"
-            android:label="出库条码明细"
-            android:screenOrientation="portrait" ></activity>
         <activity android:name="com.example.shanggmiqr.transaction.OtherEntryQRDetail"
             android:label="入库条码明细"
             android:screenOrientation="portrait" ></activity>
@@ -84,9 +81,6 @@
             android:screenOrientation="portrait"></activity>
         <activity android:name="com.example.shanggmiqr.transaction.LogisticsCompanyDBDetail"
             android:label="物料公司档案"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.OtherOutgoingQrScanner"
-            android:label="出库扫描"
             android:screenOrientation="portrait"></activity>
         <activity android:name="com.example.shanggmiqr.transaction.OtherEntryQrScanner"
             android:label="入库扫描"

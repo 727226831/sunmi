@@ -712,15 +712,8 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         public void myOnClick(int position, View v) {
 
             Intent intent=null;
-            switch (type){
-                case 0:
-                    intent = new Intent(OtherEntry.this, OtherEntryDetail.class);
-                    break;
-                case 1:
-                    intent = new Intent(OtherEntry.this, OtherOutgoingDetail.class);
-                    break;
-            }
-
+            intent = new Intent(OtherEntry.this, OtherEntryDetail.class);
+            intent.putExtra("type",type);
             intent.putExtra("current_pobillcode", listAllPostition.get(position).getPobillcode());
             intent.putExtra("current_cwarename", listAllPostition.get(position).getCwarename());
             intent.putExtra("current_cwarecode", listAllPostition.get(position).getCwarecode());

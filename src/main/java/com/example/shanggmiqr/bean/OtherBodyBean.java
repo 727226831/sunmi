@@ -1,16 +1,6 @@
 package com.example.shanggmiqr.bean;
 
-/**
- * Created by weiyt.jiang on 2018/8/13.
- */
-
-public class OtherEntryBodyBean {
-
-    /**
-     * maccode :
-     * nnum : 2
-     * pch :
-     */
+public class OtherBodyBean {
     public String vcooporderbcode_b;
     public String maccode;
     public String materialcode;
@@ -19,11 +9,11 @@ public class OtherEntryBodyBean {
     public String scannum;
     public String uploadflag;
     private boolean isSelected = false;
-    public OtherEntryBodyBean(){
+    public OtherBodyBean(){
         super();
     }
 
-    public OtherEntryBodyBean(String vcooporderbcode_b, String materialcode, String maccode, int nnum, String uploadnum, String scannum, String uploadflag ) {
+    public OtherBodyBean(String vcooporderbcode_b, String materialcode, String maccode, int nnum, String uploadnum, String scannum, String uploadflag ) {
         super();
         this.vcooporderbcode_b =vcooporderbcode_b;
         this.materialcode = materialcode;

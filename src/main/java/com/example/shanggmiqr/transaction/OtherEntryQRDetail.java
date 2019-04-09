@@ -43,15 +43,30 @@ public class OtherEntryQRDetail extends AppCompatActivity {
     private List<OtherOutgoingQrDetailBean> listAllBodyPostition;
     private ListView tableBodyListView;
     private Button scanButton;
+    int type;
+    String title="";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.other_entry_qr_detail);
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+
+        type=getIntent().getIntExtra("type",-1);
+        switch (type){
+            case 0:
+                title="其他入库扫码明细";
+                break;
+            case 1:
+                title="其他出库扫码明细";
+                break;
+        }
+
         if(actionBar != null){
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle(title);
         }
+        type=getIntent().getIntExtra("type",-1);
         helper5 = new MyDataBaseHelper(OtherEntryQRDetail.this, "ShangmiData", null, 1);
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。
@@ -107,7 +122,18 @@ public class OtherEntryQRDetail extends AppCompatActivity {
 //下面的方法内容需要根据实际更新
     public ArrayList<OtherOutgoingQrDetailBean> QueryOtherEntryBody(String current_pobillcodeRecv,String materialcode) {
         ArrayList<OtherOutgoingQrDetailBean> list = new ArrayList<OtherOutgoingQrDetailBean>();
-        Cursor cursor = db5.rawQuery("select platecode,boxcode,prodcutcode,itemuploadflag from OtherEntryScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?", new String[]{current_pobillcodeRecv,materialcode,current_vcooporderbcode_b_qrRecv});
+        Cursor cursor=null;
+        switch (type){
+            case 0:
+                cursor = db5.rawQuery("select platecode,boxcode,prodcutcode,itemuploadflag from OtherEntryScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
+                        new String[]{current_pobillcodeRecv,materialcode,current_vcooporderbcode_b_qrRecv});
+                break;
+            case 1:
+                cursor = db5.rawQuery("select platecode,boxcode,prodcutcode,itemuploadflag from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
+                        new String[]{current_pobillcodeRecv,materialcode,current_vcooporderbcode_b_qrRecv});
+                break;
+        }
+
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
@@ -124,7 +150,18 @@ public class OtherEntryQRDetail extends AppCompatActivity {
     }
     private String countScannedQRCode(String pobillcode,String materialcode) {
         String count = "0";
-        Cursor cursor2= db5.rawQuery("select prodcutcode from OtherEntryScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=? ", new String[]{pobillcode,materialcode,current_vcooporderbcode_b_qrRecv});
+        Cursor cursor2=null;
+        switch (type){
+            case 0:
+                cursor2= db5.rawQuery("select prodcutcode from OtherEntryScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=? ",
+                        new String[]{pobillcode,materialcode,current_vcooporderbcode_b_qrRecv});
+                break;
+            case 1:
+                cursor2= db5.rawQuery("select prodcutcode from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=? ",
+                        new String[]{pobillcode,materialcode,current_vcooporderbcode_b_qrRecv});
+                break;
+        }
+
         if (cursor2 != null && cursor2.getCount() > 0) {
             //判断cursor中是否存在数据
             count = String.valueOf(cursor2.getCount());
@@ -134,7 +171,17 @@ public class OtherEntryQRDetail extends AppCompatActivity {
         return count;
     }
     private void insertCountOfScannedQRCode(String scannum) {
-        db5.execSQL("update OtherEntryBody set scannum=? where pobillcode=? and materialcode=? and vcooporderbcode_b=?", new String[]{scannum,current_pobillcode_qrRecv,current_materialcode_qrRecv,current_vcooporderbcode_b_qrRecv});
+        switch (type){
+            case 0:
+                db5.execSQL("update OtherEntryBody set scannum=? where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
+                        new String[]{scannum,current_pobillcode_qrRecv,current_materialcode_qrRecv,current_vcooporderbcode_b_qrRecv});
+                break;
+            case 1:
+                db5.execSQL("update OtherOutgoingBody set scannum=? where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
+                        new String[]{scannum,current_pobillcode_qrRecv,current_materialcode_qrRecv,current_vcooporderbcode_b_qrRecv});
+                break;
+        }
+
     }
     @Override
     protected void onResume() {
@@ -155,8 +202,18 @@ public class OtherEntryQRDetail extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
     public boolean isAlreadyUpload() {
-        Cursor cursor3 = db5.rawQuery("select pobillcode from OtherEntryBody where pobillcode=? and uploadflag=?",
-                new String[]{current_pobillcode_qrRecv, "N"});
+        Cursor cursor3=null;
+        switch (type){
+            case 0:
+                cursor3 = db5.rawQuery("select pobillcode from OtherEntryBody where pobillcode=? and uploadflag=?",
+                        new String[]{current_pobillcode_qrRecv, "N"});
+                break;
+            case 1:
+                cursor3 = db5.rawQuery("select pobillcode from OtherOutgoingBody where pobillcode=? and uploadflag=?",
+                        new String[]{current_pobillcode_qrRecv, "N"});
+                break;
+        }
+
         // Cursor cursor3 = db3.rawQuery(sql3, null);
         if (cursor3 != null && cursor3.getCount() > 0) {
             return false;
@@ -171,7 +228,17 @@ public class OtherEntryQRDetail extends AppCompatActivity {
         @Override
         public void myOnClick(int position, View v) {
             if(!isAlreadyUpload()){
-            db5.execSQL("delete from OtherEntryScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=? and prodcutcode=?", new Object[] { current_pobillcode_qrRecv,current_materialcode_qrRecv,current_vcooporderbcode_b_qrRecv,listAllBodyPostition.get(position).getProdcutcode() });
+                switch (type){
+                    case 0:
+                        db5.execSQL("delete from OtherEntryScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=? and prodcutcode=?",
+                                new Object[] { current_pobillcode_qrRecv,current_materialcode_qrRecv,current_vcooporderbcode_b_qrRecv,listAllBodyPostition.get(position).getProdcutcode() });
+                        break;
+                    case 1:
+                        db5.execSQL("delete from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=? and prodcutcode=?",
+                                new Object[] { current_pobillcode_qrRecv,current_materialcode_qrRecv,current_vcooporderbcode_b_qrRecv,listAllBodyPostition.get(position).getProdcutcode() });
+                        break;
+                }
+
             listAllBodyPostition = QueryOtherEntryBody(current_pobillcode_qrRecv,current_materialcode_qrRecv);
             String current_scanSum = countScannedQRCode(current_pobillcode_qrRecv,current_materialcode_qrRecv);
             insertCountOfScannedQRCode(current_scanSum);

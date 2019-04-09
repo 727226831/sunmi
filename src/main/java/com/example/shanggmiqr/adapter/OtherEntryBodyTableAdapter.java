@@ -15,26 +15,26 @@ import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import com.example.shanggmiqr.bean.OtherBodyBean;
 import com.example.weiytjiang.shangmiqr.R;
-import com.example.shanggmiqr.bean.OtherEntryBodyBean;
 
 import java.util.List;
 
 
 public class OtherEntryBodyTableAdapter extends BaseAdapter{
 
-    private List<OtherEntryBodyBean> mContentList;
-    private OtherEntryBodyBean otherOutgoingBodyBeen;
+    private List<OtherBodyBean> mContentList;
+    private OtherBodyBean otherOutgoingBodyBeen;
     private LayoutInflater inflater;
     private MyClickListener2 mListener;
     private int temp = -1;//记录每次点击的按钮的Id
 
-    public OtherEntryBodyTableAdapter(Context context, List<OtherEntryBodyBean> list, MyClickListener2 listener) {
+    public OtherEntryBodyTableAdapter(Context context, List<OtherBodyBean> list, MyClickListener2 listener) {
         this.mContentList = list;
         inflater = LayoutInflater.from(context);
         mListener = listener;
     }
-    public void setList(List<OtherEntryBodyBean> otherOutgoingBodyBeen) {
+    public void setList(List<OtherBodyBean> otherOutgoingBodyBeen) {
         this.mContentList = otherOutgoingBodyBeen;
     }
 
@@ -73,7 +73,7 @@ public class OtherEntryBodyTableAdapter extends BaseAdapter{
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
 
-        OtherEntryBodyBean goods = (OtherEntryBodyBean) this.getItem(position);
+        OtherBodyBean goods = (OtherBodyBean) this.getItem(position);
 
         ViewHolder2 viewHolder;
 
@@ -96,7 +96,7 @@ public class OtherEntryBodyTableAdapter extends BaseAdapter{
         } else {
             viewHolder = (ViewHolder2) convertView.getTag();
         }
-        otherOutgoingBodyBeen = (OtherEntryBodyBean) getItem(position);
+        otherOutgoingBodyBeen = (OtherBodyBean) getItem(position);
         viewHolder.vcooporderbcode_b.setText(goods.getVcooporderbcode_b());
         viewHolder.vcooporderbcode_b.setTextSize(10);
         viewHolder.materialcode.setText(goods.getMaterialcode());
