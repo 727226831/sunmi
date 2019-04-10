@@ -79,7 +79,7 @@ public class DataHelper {
 
     public static int queryScanResultcount(SQLiteDatabase db, String code, String materialcode, String vcooporderbcode_b, int type) {
         Cursor cursor=null;
-        int count;
+        int count=0;
         switch (type){
             case 0:
                 cursor = db.rawQuery("select count(prodcutcode) from OtherEntryScanResult  where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
@@ -94,10 +94,10 @@ public class DataHelper {
                         new String[]{code, materialcode,vcooporderbcode_b});
                 break;
         }
+        while (cursor.moveToNext()){
+            count = cursor.getInt(0);
+        }
 
-
-        cursor.moveToFirst();
-        count = cursor.getInt(0);
         cursor.close();
 
         return count;
@@ -124,8 +124,9 @@ public class DataHelper {
         return cars;
     }
 
-    //type 1:OtherEntry
+
     public static void insertOtherDataToDB(SQLiteDatabase db,OtherQueryBean otherEntryBean,int type) {
+
         List<OtherQueryBean.DataBean> otherEntryBeanList = otherEntryBean.getData();
         String otherTable="";
         String otherbodyTable="";
@@ -163,9 +164,6 @@ public class DataHelper {
                 finally {
                     db.endTransaction();
                 }
-            }
-            if("1".equals(ob.getDr())){
-                continue;
             }
             List<OtherQueryBean.DataBean.BodyBean> outGoingDatabodyList = ob.getBody();
             //使用 ContentValues 来对要添加的数据进行组装
@@ -257,15 +255,15 @@ public class DataHelper {
                 break;
         }
         SharedPreferences latestDBTimeInfo = context.getSharedPreferences(name, 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_systime", iUrl.begintime);
+        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
         String endtime = getDefaultEndTime();
 
-        CommonSendBean userSend = new CommonSendBean(begintime, endtime, pagenum, pagenum);
+        CommonSendBean userSend = new CommonSendBean(begintime, endtime, pagenum, "0");
         Gson gson = new Gson();
         String userSendBean = gson.toJson(userSend);
         request.addProperty("string", workCode);
         request.addProperty("string1", userSendBean);
-        Log.i("request",userSendBean);
+        Log.i("request",request.toString());
         //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
 

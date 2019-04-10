@@ -83,17 +83,28 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
          type=getIntent().getIntExtra("type",-1);
         lst_downLoad_ts = (TextView)findViewById(R.id.last_downLoad_ts_otherentry);
         //显示最后一次的下载时间
-
+       TextView textViewPobillcode=findViewById(R.id.text_id_otherentry);
+       TextView textViewCwarename=findViewById(R.id.text_goods_name_otherentry);
+       TextView textViewCwarecode=findViewById(R.id.text_codeBar_otherentry);
+        downloadOtherEntryButton = (Button) findViewById(R.id.download_other_entry);
         switch (type){
             case 0:
                 name="LatestOtherEntryTSInfo";
                 workcode="R09";
                 title="其他入库";
+                textViewPobillcode.setText("入库单号");
+                textViewCwarename.setText("入库仓库名称");
+                textViewCwarecode.setText("入库仓库编号");
+                downloadOtherEntryButton.setText("下载其他入库单");
                 break;
             case 1:
                 workcode="R11";
                 name="LatestOtherOutgoingTSInfo";
                 title="其他出库";
+                textViewPobillcode.setText("出库单号");
+                textViewCwarename.setText("出库仓库名称");
+                textViewCwarecode.setText("出库仓库编号");
+                downloadOtherEntryButton.setText("下载其他出库单");
                 break;
         }
 
@@ -110,7 +121,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。
         db3 = helper3.getWritableDatabase();//获取到了 SQLiteDatabase 对象
-        downloadOtherEntryButton = (Button) findViewById(R.id.download_other_entry);
+
         downloadOtherEntryButton.setOnClickListener(this);
         queryEntryButton = (Button) findViewById(R.id.query_other_entry);
         queryEntryButton.setOnClickListener(this);
@@ -225,13 +236,14 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                                         }
                                     });
                                     //其他入库查询，嵌套json,使用两张表存储，通过pobillcode关联
-                                    String outEntryData = DataHelper.downloadDatabase(workcode, "1",OtherEntry.this,0);
+                                    String outEntryData = DataHelper.downloadDatabase(workcode, "1",OtherEntry.this,type);
                                     if (null == outEntryData) {
                                         dialog.dismiss();
                                         return;
                                     }
                                     Gson gson7 = new Gson();
                                     OtherQueryBean otherEntryBean = gson7.fromJson(outEntryData, OtherQueryBean.class);
+
                                     if (otherEntryBean.getPagetotal() == 1) {
                                         DataHelper.insertOtherDataToDB(db3,otherEntryBean,type);
                                         Message msg = new Message();
@@ -246,9 +258,10 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                                             }
                                         });
                                     } else {
+                                        Log.i("otherEntryBean",new Gson().toJson(otherEntryBean));
                                         DataHelper.insertOtherDataToDB(db3,otherEntryBean,type);
                                         for (int pagenum = 2; pagenum <= otherEntryBean.getPagetotal(); pagenum++) {
-                                            String outGoingData2 = DataHelper.downloadDatabase(workcode, String.valueOf(pagenum),OtherEntry.this,0);
+                                            String outGoingData2 = DataHelper.downloadDatabase(workcode, String.valueOf(pagenum),OtherEntry.this,type);
                                             OtherQueryBean outGoingBean2 = gson7.fromJson(outGoingData2, OtherQueryBean.class);
                                             DataHelper.insertOtherDataToDB(db3,outGoingBean2,type);
                                         }
@@ -313,8 +326,6 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         adapter.select(position);
-
-
 
                     }
                 });

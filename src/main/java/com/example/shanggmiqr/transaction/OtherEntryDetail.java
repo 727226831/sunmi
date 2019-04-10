@@ -136,6 +136,7 @@ public class OtherEntryDetail extends AppCompatActivity {
             public void onClick(View view) {
                 if (!isAlreadyUpload()) {
                     Intent intent = new Intent(OtherEntryDetail.this, OtherEntryQrScanner.class);
+                    intent.putExtra("type",type);
                     intent.putExtra("current_pobillcode_scanner", current_pobillcodeRecv);
                     intent.putExtra("current_cwarename_scanner", current_cwarenameRecv);
                     intent.putExtra("chosen_line_maccode_scanner", chosen_line_maccode);

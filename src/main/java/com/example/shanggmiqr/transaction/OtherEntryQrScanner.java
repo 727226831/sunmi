@@ -245,9 +245,6 @@ public class OtherEntryQrScanner extends AppCompatActivity {
 
             productCodeEditText.setText(listcode.get(i));
             count = DataHelper.queryScanResultcount(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv,type);
-
-
-
             if(DataHelper.isAlreadyScanned(db5,current_pobillcode_qrRecv,productCodeEditText.getText().toString(),current_vcooporderbcode_b_qrRecv)){
                 Toast.makeText(OtherEntryQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
                 return;

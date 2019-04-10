@@ -260,7 +260,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 popupQuery();
                 break;
             case R.id.b_export:
-                exportData();
+                exportData(exportList);
                 break;
             case R.id.displayall_sale_delivery:
                  saleDeliveryBeanList = displayAllSaleDelivery();
@@ -271,9 +271,9 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         }
     }
 
-    private void exportData() {
+    private void exportData( List<SaleDeliveryBean> exportList) {
+        Log.i("exportList",new Gson().toJson(exportList));
         String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-
         SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
         File file=new File(sdCardDir+"/sunmi");
         if(!file.exists()){
@@ -288,9 +288,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
             outputStream.write(("发货单号"+"\t"+ "单据日期"+"\t"+"物料编码"+"\t"+"物料名称"+"\t"+
                     "物料大类"+"\t"+"序列号"+"\t"+"条形码").getBytes());
             for (int j = 0; j <exportList.size() ; j++) {
-                if(exportList.get(j).getXlh()==null ) {
-                    return;
-                }
+                if(exportList.get(j).getXlh()!=null ) {
                     outputStream.write("\r\n".getBytes());
                     outputStream.write((exportList.get(j).getVbillcode()+"\t"
                             +exportList.get(j).getDbilldate()+"\t"
@@ -299,8 +297,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                             +exportList.get(j).getMaccode()+"\t"
                             +exportList.get(j).getXlh()+"\t"
                             +exportList.get(j).getProdcutcode()).getBytes());
-
-
+                }
 
             }
             outputStream.close();
@@ -562,7 +559,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 String temp=codeNumEditText.getText().toString();
 
 
-                Log.i("query_uploadflag",query_uploadflag+"/全部");
+
                 exportList= queryexport(temp,query_cwarename,query_uploadflag);
                 saleDeliveryBeanList=new ArrayList<>();
                 saleDeliveryBeanList.addAll(removeDuplicate(exportList));

@@ -326,7 +326,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 expressCode = expressCodeEditText.getText().toString();
-                Log.i("expresscode",expressCode);
+
                 if ("".equals(expressCode) || "".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)) {
                     if("".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)){
                         chooseLogisticscompany ="";
@@ -351,7 +351,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                                     } else {
 
                                                         String uploadResp = uploadSaleDeliveryVBill("R08", list);
-                                                        Log.i("R08 response",uploadResp);
+
                                                         if (!(null == uploadResp)) {
                                                             if (!(null == listitem)) {
                                                                 Gson gson = new Gson();
@@ -886,6 +886,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                         while (cursor3.moveToNext()) {
                             SaleDeliverySendBean.BodyBean.SnBean snbean = new SaleDeliverySendBean.BodyBean.SnBean();
                             snbean.xlh = cursor3.getString(cursor3.getColumnIndex("xlh"));
+
                             snbean.txm = cursor3.getString(cursor3.getColumnIndex("prodcutcode"));
                             snbean.xm = cursor3.getString(cursor3.getColumnIndex("boxcode"));
                             snbean.tp = cursor3.getString(cursor3.getColumnIndex("platecode"));
@@ -933,7 +934,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
 
             request.addProperty("string", workcode);
             request.addProperty("string1", userSendBean);
-            Log.i(workcode+"request",userSendBean);
+
         }
 
         //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
