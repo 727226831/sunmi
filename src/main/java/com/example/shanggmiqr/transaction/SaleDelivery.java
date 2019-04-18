@@ -335,36 +335,36 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
         List<SaleDeliveryQuery.DataBean> saleDeliveryBeanList = saleDeliveryQuery.getData();
         for (SaleDeliveryQuery.DataBean ob : saleDeliveryBeanList) {
+          //  Log.i("SaleDelivery",ob.getVbillcode());
+             if(isUploadflag(ob.getVbillcode())){
+                 return;
+             }
 
             //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
-            if(isUploadflag(ob.getVbillcode())) {
-                return;
-            }
-
-            if(isCwarename(ob.getVbillcode())){
-                return;
-            }
              switch (ob.getDr()){
+                 case 0:
+                     setSaleDeliveryData(ob);
+                     setSaleDeliverybodyData(ob);
+                     break;
                  case 1:
                      db3.delete("SaleDelivery", "vbillcode=?", new String[]{ob.getVbillcode()});
                      db3.delete("SaleDeliveryBody", "vbillcode=?", new String[]{ob.getVbillcode()});
                      db3.delete("SaleDeliveryScanResult", "vbillcode=?", new String[]{ob.getVbillcode()});
                      break;
-
                  case 2:
                      db3.delete("SaleDelivery", "vbillcode=?", new String[]{ob.getVbillcode()});
-                     setSaleDeliveryData(ob);
                      db3.delete("SaleDeliveryBody", "vbillcode=?", new String[]{ob.getVbillcode()});
-                     setSaleDeliverybodyData(ob);
-                     break;
-                 case 0:
+                     db3.delete("SaleDeliveryScanResult", "vbillcode=?", new String[]{ob.getVbillcode()});
                      setSaleDeliveryData(ob);
                      setSaleDeliverybodyData(ob);
                      break;
+
              }
 
         }
     }
+
+
 
     private void setSaleDeliverybodyData(SaleDeliveryQuery.DataBean ob) {
         List<SaleDeliveryQuery.DataBean.BodysBean> saleDeliveryDatabodysList = ob.getBodys();
@@ -429,18 +429,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         cursor.close();
         return isUploadflag;
     }
-    private boolean isCwarename(String vbillcode) {
-        boolean isUploadflag=false;
-        Cursor cursor = db3.rawQuery("select cwarename from SaleDeliveryBody where vbillcode=?", new String[]{vbillcode});
-        while (cursor.moveToNext()){
-            if(!cursor.getString(cursor.getColumnIndex("cwarename")).equals("")){
 
-                isUploadflag=true;
-            }
-        }
-        cursor.close();
-        return isUploadflag;
-    }
 
 
 

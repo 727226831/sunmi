@@ -277,7 +277,7 @@ public class DataHelper {
         SoapObject object = (SoapObject) envelope.bodyIn;
         // 获取返回的结果
        String otherOutgoingDataResp = object.getProperty(0).toString();
-       Log.i("response-->",otherOutgoingDataResp);
+
         return otherOutgoingDataResp;
     }
     public static boolean isWarehouseDBDownloaed(SQLiteDatabase db) {
@@ -303,20 +303,16 @@ public class DataHelper {
                         new String[] { code,startTime, endTime});
                 break;
             case 2:
-                cursor = db.rawQuery("SELECT * FROM SaleDelivery WHERE vbillcode=? and "+
+                cursor = db.rawQuery("SELECT count(vbillcode) FROM SaleDelivery WHERE vbillcode=? and "+
                                 "dbilldate>=? and dbilldate<?",
                         new String[] { code,startTime, endTime});
                 break;
         }
         while (cursor.moveToNext()){
             if(cursor.getInt(0)!=0){
-
+                cursor.close();
                 return true;
-            }else {
-
-                return  false;
             }
-
         }
         cursor.close();
         return  false;

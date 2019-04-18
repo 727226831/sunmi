@@ -416,7 +416,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
     public int countSum() {
         Cursor cursor = db5.rawQuery("select * from SaleDeliveryScanResult where  vbillcode=? and matrcode=? and vcooporderbcode_b=?",
-                new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv, current_vcooporderbcode_b_qrRecv});
+                    new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv, current_vcooporderbcode_b_qrRecv});
         while (cursor != null && cursor.getCount() > 0) {
 
             return cursor.getCount();// //有城市在数据库已存在，返回true
