@@ -44,8 +44,6 @@ public class DataHelper {
             bean.appobjattr = cursor.getString(cursor.getColumnIndex("appobjattr"));
             if (type.equals(bean.appobjattr)) {
                 return bean;
-            } else if (type.equals(bean.appobjattr)) {
-                return bean;
             }
 
         }
@@ -55,8 +53,13 @@ public class DataHelper {
     public static   String getMaccode(SQLiteDatabase db,String productcode,String matbasclasscode){
         String maccode="";
         QrcodeRule.DataBean.ItemBean bean=getCurrentQrcodeRule(db,matbasclasscode,"物料条码");
-        maccode= productcode.substring(bean.startpos - 1,
-                bean.startpos - 1 + bean.itemlength);
+
+        if(bean.startpos==0 || bean.itemlength==0){
+            return  null;
+        }
+        int beginIndex=bean.startpos - 1;
+        int endIndex=bean.startpos - 1 + bean.itemlength;
+        maccode= productcode.substring(beginIndex,endIndex);
         return maccode;
     }
     public static   String getXlh(SQLiteDatabase db,String productcode,String matbasclasscode){

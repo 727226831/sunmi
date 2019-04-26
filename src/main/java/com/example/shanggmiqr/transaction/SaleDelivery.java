@@ -78,7 +78,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     private  Button buttonexport;
     private  String begintime;
     SharedPreferences latestDBTimeInfo;
-    SaleDeliveryAdapter adapter3;
+    SaleDeliveryAdapter adapter;
     List<SaleDeliveryBean> saleDeliveryBeanList;
     int type=2;
     @Override
@@ -115,12 +115,12 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         saleDeliveryBeanList = querySaleDelivery();
 
 
-        final SaleDeliveryAdapter adapter1 = new SaleDeliveryAdapter(SaleDelivery.this, saleDeliveryBeanList, mListener);
-        tableListView.setAdapter(adapter1);
+       adapter = new SaleDeliveryAdapter(SaleDelivery.this, saleDeliveryBeanList, mListener);
+        tableListView.setAdapter(adapter);
         tableListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapter1.select(position);
+                adapter.select(position);
 
 
             }
@@ -142,7 +142,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
                        saleDeliveryBeanList = querySaleDelivery();
 
-                        final SaleDeliveryAdapter adapter = new SaleDeliveryAdapter(SaleDelivery.this,saleDeliveryBeanList, mListener);
+                        adapter = new SaleDeliveryAdapter(SaleDelivery.this,saleDeliveryBeanList, mListener);
                         tableListView.setAdapter(adapter);
                         Toast.makeText(SaleDelivery.this, "出库单下载完成", Toast.LENGTH_LONG).show();
                         break;
@@ -265,7 +265,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
             case R.id.displayall_sale_delivery:
                  saleDeliveryBeanList = displayAllSaleDelivery();
 
-                final SaleDeliveryAdapter adapter = new SaleDeliveryAdapter(SaleDelivery.this, saleDeliveryBeanList, mListener);
+                adapter = new SaleDeliveryAdapter(SaleDelivery.this, saleDeliveryBeanList, mListener);
                 tableListView.setAdapter(adapter);
                 break;
         }
@@ -484,15 +484,15 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         //仓库选择
         listWarehouse = DataHelper.queryWarehouseInfo(db3);
         listWarehouse.add("");
-        final ArrayAdapter adapter = new ArrayAdapter(
+        final ArrayAdapter arrayAdapter = new ArrayAdapter(
                 SaleDelivery.this, android.R.layout.simple_spinner_item, listWarehouse);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(arrayAdapter);
         spinner.setSelection(listWarehouse.size()-1);
         spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                query_cwarename=adapter.getItem(i).toString();
+                query_cwarename=arrayAdapter.getItem(i).toString();
             }
 
             @Override
@@ -552,8 +552,8 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 exportList= queryexport(temp,query_cwarename,query_uploadflag);
                 saleDeliveryBeanList=new ArrayList<>();
                 saleDeliveryBeanList.addAll(removeDuplicate(exportList));
-                adapter3 = new SaleDeliveryAdapter(SaleDelivery.this, saleDeliveryBeanList, mListener);
-                tableListView.setAdapter(adapter3);
+                adapter = new SaleDeliveryAdapter(SaleDelivery.this, saleDeliveryBeanList, mListener);
+                tableListView.setAdapter(adapter);
 
 
 

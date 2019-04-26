@@ -7,6 +7,7 @@ package com.example.shanggmiqr.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,6 +43,7 @@ public class SaleDeliveryAdapter extends BaseAdapter{
 
     // 选中当前选项时，让其他选项不被选中
     public void select(int position) {
+
         if (!mContentList.get(position).isSelected()) {
             mContentList.get(position).setSelected(true);
             for (int i = 0; i < mContentList.size(); i++) {
