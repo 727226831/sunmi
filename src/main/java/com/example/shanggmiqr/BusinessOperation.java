@@ -149,6 +149,7 @@ public class BusinessOperation extends AppCompatActivity implements MyImageView.
                 startActivity(intent);
                 break;
             case R.id.loan:
+                //借出
                 if (Utils.isFastDoubleClick()) {
                     return;
                 }

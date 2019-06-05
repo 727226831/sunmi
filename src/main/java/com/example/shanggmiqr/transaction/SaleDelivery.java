@@ -210,7 +210,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                                         for (int pagenum = 2; pagenum <= saleDeliveryQuery.getPagetotal(); pagenum++) {
                                             String saleDeliveryData2 = DataHelper.downloadDatabase("R07", String.valueOf(pagenum),
                                                     SaleDelivery.this,2);
-                                            SaleDeliveryQuery saleDeliveryQuery2 = gson7.fromJson(saleDeliveryData2, SaleDeliveryQuery.class);
+                                            SaleDeliveryQuery saleDeliveryQuery2 = new Gson().fromJson(saleDeliveryData2, SaleDeliveryQuery.class);
                                             insertDownloadDataToDB(saleDeliveryQuery2);
                                         }
                                         Message msg = new Message();

@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -203,12 +204,12 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
                                     });
                                     //R07发货单
                                     String productEntryData = downloadDatabase("R35", "1");
+                                    Log.i("json-->R35",productEntryData);
                                     if (null == productEntryData) {
                                         dialog.dismiss();
                                         return;
                                     }
-                                    Gson gson7 = new Gson();
-                                    ProductEntryQuery productEntryQuery = gson7.fromJson(productEntryData, ProductEntryQuery.class);
+                                    ProductEntryQuery productEntryQuery = new Gson().fromJson(productEntryData, ProductEntryQuery.class);
                                     int pagetotal = Integer.parseInt(productEntryQuery.getPagetotal());
                                     if (pagetotal == 1) {
                                         insertDownloadDataToDB(productEntryQuery);
@@ -227,7 +228,7 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
                                         insertDownloadDataToDB(productEntryQuery);
                                         for (int pagenum = 2; pagenum <= pagetotal; pagenum++) {
                                             String saleDeliveryData2 = downloadDatabase("R35", String.valueOf(pagenum));
-                                            ProductEntryQuery saleDeliveryQuery2 = gson7.fromJson(saleDeliveryData2, ProductEntryQuery.class);
+                                            ProductEntryQuery saleDeliveryQuery2 =new Gson().fromJson(saleDeliveryData2, ProductEntryQuery.class);
                                             insertDownloadDataToDB(saleDeliveryQuery2);
                                         }
                                         Message msg = new Message();
@@ -257,7 +258,7 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
                                     });
                                 }
                             } catch (Exception e) {
-                                //e.printStackTrace();
+                                e.printStackTrace();
                                 Bundle bundle = new Bundle();
                                 bundle.putString("Exception", e.toString());
                                 Message msg = new Message();

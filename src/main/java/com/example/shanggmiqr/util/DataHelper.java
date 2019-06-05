@@ -9,11 +9,13 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.shanggmiqr.Url.iUrl;
 import com.example.shanggmiqr.bean.CommonSendBean;
 import com.example.shanggmiqr.bean.OtherQueryBean;
 import com.example.shanggmiqr.bean.QrcodeRule;
+import com.example.shanggmiqr.transaction.SaleDeliveryQrScanner;
 import com.google.gson.Gson;
 import com.zyao89.view.zloading.ZLoadingDialog;
 import com.zyao89.view.zloading.Z_TYPE;
@@ -104,6 +106,44 @@ public class DataHelper {
         cursor.close();
 
         return count;
+    }
+    public static  int getLengthInQrRule(String matbasclasscode,SQLiteDatabase db) {
+        int length=-1;
+        Cursor cursor = db.rawQuery("select length from QrcodeRule where Matbasclasscode=?",
+                new String[]{matbasclasscode});
+        if (cursor != null && cursor.getCount() > 0) {
+            //判断cursor中是否存在数据
+            while (cursor.moveToNext()) {
+                length = cursor.getInt(cursor.getColumnIndex("length"));
+            }
+            cursor.close();
+        }
+        return length;
+    }
+
+
+
+    public static boolean isValidQr(String productcode,String matbasclasscode,String matrcode,SQLiteDatabase db,Context context) {
+
+        String scannedMaccode = DataHelper.getMaccode(db,productcode,matbasclasscode);
+        if (scannedMaccode == null || scannedMaccode.length() == 0) {
+            Toast.makeText(context, "请检查物料信息及条码规则数据是否下载，或者是否为有效的条码", Toast.LENGTH_SHORT).show();
+            return false;
+
+        }
+        Cursor cursor = db.rawQuery("select code from Material where materialbarcode=?",
+                new String[]{scannedMaccode});
+
+        //判断cursor中是否存在数据
+        while (cursor.moveToNext()) {
+            String code = cursor.getString(cursor.getColumnIndex("code"));
+            if (code.equals(matrcode)) {
+                cursor.close();
+                return true;
+            }
+        }
+        cursor.close();
+        return false;
     }
     public static void updateSaleDeliveryBodyscannum(SQLiteDatabase db, String scannum, String vbillcode, String vcooporderbcode_b) {
 
@@ -256,6 +296,9 @@ public class DataHelper {
             case 2:
                 name="LatestSaleDeliveryTSInfo";
                 break;
+            case 3:
+                name="LatestLoanTSInfo";
+                break;
         }
         SharedPreferences latestDBTimeInfo = context.getSharedPreferences(name, 0);
         String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
@@ -266,7 +309,7 @@ public class DataHelper {
         String userSendBean = gson.toJson(userSend);
         request.addProperty("string", workCode);
         request.addProperty("string1", userSendBean);
-        Log.i("request",request.toString());
+        Log.i("request-->",request.toString());
         //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
 
@@ -278,6 +321,7 @@ public class DataHelper {
         se.call(namespace + "sendToWISE", envelope);
         // 获取返回的数据
         SoapObject object = (SoapObject) envelope.bodyIn;
+        Log.i("object-->",object.toString());
         // 获取返回的结果
        String otherOutgoingDataResp = object.getProperty(0).toString();
 

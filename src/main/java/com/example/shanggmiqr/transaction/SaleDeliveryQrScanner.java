@@ -198,7 +198,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
         qrcode_xm_Text.setText("二维箱码："+boxCodeEditTextContent.size());
         for (int i = 0; i <boxCodeEditTextContent.size() ; i++) {
 
-           String stringScan=boxCodeEditTextContent.get(i);
+           String productcode=boxCodeEditTextContent.get(i);
 
             count = countSum();
 
@@ -208,7 +208,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                 return;
             }
 
-            if (isAlreadyScanned(stringScan)) {
+            if (isAlreadyScanned(productcode)) {
                 Toast.makeText(SaleDeliveryQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
                 return;
             }
@@ -216,45 +216,23 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                 Toast.makeText(SaleDeliveryQrScanner.this, "请选择仓库信息", Toast.LENGTH_LONG).show();
                 return;
             }
-            if(stringScan.isEmpty()){
+            if(productcode.isEmpty()){
                 return;
             }
 
-            if(stringScan.length() != getLengthInQrRule()){
+            if(productcode.length() != DataHelper.getLengthInQrRule(current_maccode_qrRecv,db5)){
                 Toast.makeText(SaleDeliveryQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
                 return;
             }
-            if(!isValidQr(stringScan)){
+            if(!DataHelper.isValidQr(productcode,current_maccode_qrRecv,current_matrcode_qrRecv,db5,getApplicationContext())){
                 Toast.makeText(SaleDeliveryQrScanner.this, "条码不合法", Toast.LENGTH_LONG).show();
                 return;
             }
 
-
-            InsertintoTempQrDBForSaleDelivery(stringScan);
+            InsertintoTempQrDBForSaleDelivery(productcode);
             boxCodeEditText.setText("");
-
-
-
         }
 
-
-
-
-    }
-
-
-
-    private int getLengthInQrRule() {
-        Cursor cursor = db5.rawQuery("select length from QrcodeRule where Matbasclasscode=?",
-                new String[]{current_maccode_qrRecv});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-                current_qrcode_rule_length = cursor.getInt(cursor.getColumnIndex("length"));
-            }
-            cursor.close();
-        }
-        return current_qrcode_rule_length;
     }
 
     private boolean isCwarenameEmpty() {
@@ -276,7 +254,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
     private void myadapter() {
         cars = new ArrayList<>();
-        cars = queryWarehouseInfo();
+        cars = DataHelper.queryWarehouseInfo(db5);
         String default_value = current_cwarename_qrRecv;
         if (default_value.length() == 0) {
             cars.add("请选择仓库");
@@ -335,19 +313,6 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
         }
     }
 
-    private List<String> queryWarehouseInfo() {
-        List<String> cars = new ArrayList<>();
-        Cursor cursornew = db5.rawQuery("select name from Warehouse",
-                null);
-        if (cursornew != null && cursornew.getCount() > 0) {
-            while (cursornew.moveToNext()) {
-                String name = cursornew.getString(cursornew.getColumnIndex("name"));
-                cars.add(name);
-            }
-            cursornew.close();
-        }
-        return cars;
-    }
 
     /**
      * 定义一个Myadapter类继承ArrayAdapter * 重写以下两个方法 *
@@ -365,28 +330,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
         }
     }
 
-    private boolean isValidQr(String productcode) {
 
-        String scannedMaccode = DataHelper.getMaccode(db5,productcode,current_maccode_qrRecv);
-        if (scannedMaccode == null || scannedMaccode.length() == 0) {
-            Toast.makeText(SaleDeliveryQrScanner.this, "请检查物料信息及条码规则数据是否下载，或者是否为有效的条码", Toast.LENGTH_SHORT).show();
-            return false;
-
-        }
-        Cursor cursor = db5.rawQuery("select code from Material where materialbarcode=?",
-                new String[]{scannedMaccode});
-
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-                current_material_code = cursor.getString(cursor.getColumnIndex("code"));
-                if (current_material_code.equals(current_matrcode_qrRecv)) {
-                    cursor.close();
-                    return true;
-                }
-        }
-        cursor.close();
-        return false;
-    }
 
 
 
@@ -481,7 +425,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                         mHandler.sendMessage(msg);
 
                     } catch (Exception e) {
-                        //e.printStackTrace();
+                        e.printStackTrace();
                         Bundle bundle = new Bundle();
                         bundle.putString("Exception", e.toString());
                         Message msg = new Message();

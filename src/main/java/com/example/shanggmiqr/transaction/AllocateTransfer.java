@@ -253,7 +253,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                                     });
                                 }
                             } catch (Exception e) {
-                                //e.printStackTrace();
+                                e.printStackTrace();
                                 Bundle bundle = new Bundle();
                                 bundle.putString("Exception", e.toString());
                                 Message msg = new Message();
@@ -268,9 +268,15 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                         }
                     }
                 }).start();
+                try {
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
                 break;
             case R.id.query_allocate_transfer:
                 popupQuery();
+
                 break;
             case R.id.displayall_allocate_transfer:
                 List<AllocateTransferBean> list = displayAllProductEntry();

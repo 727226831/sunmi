@@ -32,6 +32,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.shanggmiqr.BusinessOperation;
+import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.LoanAdapter;
 import com.example.shanggmiqr.bean.CommonSendNoPagetotalBean;
@@ -203,7 +204,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                                         }
                                     });
                                     //R07发货单
-                                    String loanData = downloadDatabase("R37", "1");
+                                    String loanData = DataHelper.downloadDatabase("R37", "1",LoanBill.this,3);
                                     if (null == loanData) {
                                         dialog.dismiss();
                                         return;
@@ -227,7 +228,8 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                                     } else {
                                         insertDownloadDataToDB(loanQuery);
                                         for (int pagenum = 2; pagenum <= pagetotal; pagenum++) {
-                                            String saleDeliveryData2 = downloadDatabase("R37", String.valueOf(pagenum));
+                                            String saleDeliveryData2 = DataHelper.downloadDatabase("R37", String.valueOf(pagenum),
+                                                    LoanBill.this,3);
                                             LoanQuery saleDeliveryQuery2 = gson7.fromJson(saleDeliveryData2, LoanQuery.class);
                                             insertDownloadDataToDB(saleDeliveryQuery2);
                                         }
@@ -258,7 +260,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                                     });
                                 }
                             } catch (Exception e) {
-                                //e.printStackTrace();
+                                e.printStackTrace();
                                 Bundle bundle = new Bundle();
                                 bundle.putString("Exception", e.toString());
                                 Message msg = new Message();
@@ -683,51 +685,6 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
         return false;
     }
 
-    /**
-     * webservice查询下载
-     */
-    public String downloadDatabase(String workCode, String pagenum) throws Exception {
-        String WSDL_URI;
-        String namespace;
-        String WSDL_URI_current = BaseConfig.getNcUrl();//wsdl 的uri
-        String namespace_current = "http://schemas.xmlsoap.org/soap/envelope/";//namespace
-        String methodName = "sendToWISE";//要调用的方法名称
-        SharedPreferences proxySp = getSharedPreferences("configInfo", 0);
-        if (proxySp.getString("WSDL_URI", WSDL_URI_current).equals("") || proxySp.getString("namespace", namespace_current).equals("")) {
-            WSDL_URI = WSDL_URI_current;
-            namespace = namespace_current;
-        } else {
-            WSDL_URI = proxySp.getString("WSDL_URI", WSDL_URI_current);
-            namespace = proxySp.getString("namespace", namespace_current);
-        }
-
-        SoapObject request = new SoapObject(namespace, methodName);
-        // 设置需调用WebService接口需要传入的两个参数string、string1
-        SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestLoanTSInfo", 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "2018-09-01 00:00:01");
-        String endtime = getDefaultEndTime();
-        CommonSendNoPagetotalBean userSend = new CommonSendNoPagetotalBean(begintime, endtime, pagenum);
-        Gson gson = new Gson();
-        String userSendBean = gson.toJson(userSend);
-        request.addProperty("string", workCode);
-        request.addProperty("string1", userSendBean);
-        //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
-        //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
-        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
-
-        envelope.bodyOut = request;
-        envelope.dotNet = false;
-
-        HttpTransportSE se = new HttpTransportSE(WSDL_URI);
-        //  se.call(null, envelope);//调用 version1.2
-        //version1.1 需要如下soapaction
-        se.call(namespace + "sendToWISE", envelope);
-        // 获取返回的数据
-        SoapObject object = (SoapObject) envelope.bodyIn;
-        // 获取返回的结果
-        saleDelivDataResp = object.getProperty(0).toString();
-        return saleDelivDataResp;
-    }
 
     public boolean isNetworkConnected(Context context) {
         if (context != null) {
