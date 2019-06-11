@@ -223,7 +223,7 @@ public class DataHelper {
                 valuesInner.put("pobillcode", ob.getPobillcode());
                 valuesInner.put("materialcode", materialcode);
                 valuesInner.put("maccode", maccode);
-                valuesInner.put("nnum", nnum);
+                    valuesInner.put("nnum", nnum);
                 valuesInner.put("pch", pch);
                 valuesInner.put("uploadnum", "0");
                 valuesInner.put("scannum", scannum);
@@ -298,6 +298,9 @@ public class DataHelper {
                 break;
             case 3:
                 name="LatestLoanTSInfo";
+                break;
+            case 4:
+                name="LatestProductEntryTSInfo";
                 break;
         }
         SharedPreferences latestDBTimeInfo = context.getSharedPreferences(name, 0);

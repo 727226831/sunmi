@@ -388,7 +388,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                 valuesInner.put("address", address);
                 valuesInner.put("materialcode", materialcode);
                 valuesInner.put("materialclasscode", materialclasscode);
-                valuesInner.put("nnum", nnum);
+                    valuesInner.put("nnum", nnum);
                 valuesInner.put("rwarehousecode", rwarehousecode);
                 valuesInner.put("cwarehousecode", cwarehousecode);
                 valuesInner.put("scannum", scannum);

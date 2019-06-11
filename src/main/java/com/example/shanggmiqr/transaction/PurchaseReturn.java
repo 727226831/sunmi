@@ -115,7 +115,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 adapter1.select(position);
-                SaleDeliveryBean saleDelivery1Bean = (SaleDeliveryBean) adapter1.getItem(position);
+                PurchaseReturnBean saleDelivery1Bean = (PurchaseReturnBean) adapter1.getItem(position);
                 chosen_line_vbillcode = saleDelivery1Bean.getVbillcode();
                 chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
 
@@ -273,6 +273,8 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
                         }
                     }
                 }).start();
+
+
                 break;
             case R.id.query_purchase_return:
                 popupQuery();

@@ -395,7 +395,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                 db3.insert("LoanBody", null, valuesInner);
                 valuesInner.clear();
             }
-            values.put("pobillcode", pobillcode);
+                values.put("pobillcode", pobillcode);
             values.put("dbilldate", dbilldate);
             values.put("num", num);
             values.put("ts", ts);

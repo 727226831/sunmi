@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -113,6 +114,7 @@ public class ProductEntryDetail extends AppCompatActivity {
         vbillcodText.setText("发货单号:" + current_sale_delivery_vbillcodeRecv);
         dbilldateText.setText("发货日期:" + current_sale_delivery_dbilldateRecv);
         listAllBodyPostition = QueryProductEntryBody(current_sale_delivery_vbillcodeRecv);
+        Log.i("detail",new Gson().toJson(listAllBodyPostition));
         final ProductEntryBodyTableAdapter adapter = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
         tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

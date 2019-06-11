@@ -9,6 +9,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +30,7 @@ import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -58,7 +62,7 @@ public class ProductEntryQrScanner extends AppCompatActivity {
     private EditText plateCodeEditText;
     private String plateCodeEditTextContent;
     private EditText boxCodeEditText;
-    private String boxCodeEditTextContent;
+
     private EditText productCodeEditText;
     private String productCodeEditTextContent;
     private Button scanCheckButton;
@@ -88,6 +92,27 @@ public class ProductEntryQrScanner extends AppCompatActivity {
         scanCheckButton = (Button) findViewById(R.id.productentry_ok_scanner);
         plateCodeEditText = (EditText) findViewById(R.id.productentry_platecode_scanner);
         boxCodeEditText = (EditText) findViewById(R.id.productentry_boxcode_scanner);
+
+        boxCodeEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(mHandler.hasMessages(0x19)){
+                    mHandler.removeMessages(0x19);
+                }
+                mHandler.sendEmptyMessageDelayed(0x19,1000);
+            }
+        });
+
         productCodeEditText = (EditText) findViewById(R.id.productentry_productcode_scanner);
         scannnumText = (TextView) findViewById(R.id.productentry_scannednum_text);
         Intent _intent = getIntent();
@@ -95,6 +120,7 @@ public class ProductEntryQrScanner extends AppCompatActivity {
         if (_intent != null) {
             current_itempk_qrRecv = _intent.getStringExtra("current_itempk_qrRecv");
             current_nnum_qrRecv =  Integer.parseInt(_intent.getStringExtra("current_nnum_qrRecv"));
+            Log.i("scan count-->",current_ysnum_qrRecv+"");
             current_scannum_qrRecv = _intent.getStringExtra("current_scannum_qrRecv");
             current_materialcode_qrRecv = _intent.getStringExtra("current_materialcode_qrRecv");
             current_ysnum_qrRecv = Integer.parseInt(_intent.getStringExtra("current_ysnum_qrRecv"));
@@ -113,24 +139,7 @@ public class ProductEntryQrScanner extends AppCompatActivity {
         scanCheckButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //截取产品码的第五位到第九位，查看是否与物料大类匹配
-                count = countSum();
-                //    if((productCodeEditText.getText().toString().length() == 13) &&productCodeEditText.getText().toString().substring(4,9).equals(current_maccode_qrRecv) && count<current_nnum_qrRecv ){
-                if ((!isAlreadyScanned(productCodeEditText.getText().toString()) && !isEditTextEmpty() && (productCodeEditText.getText().toString().length() == getLengthInQrRule())) && count < Math.abs(current_ysnum_qrRecv-current_nnum_qrRecv) && isValidQr() && !isCwarenameEmpty())
-                {
-                    InsertintoTempQrDBForSaleDelivery();
-                    //scanStatus = true;
-                } else if (count >= Math.abs(current_ysnum_qrRecv-current_nnum_qrRecv)) {
-                    Toast.makeText(ProductEntryQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
-                } else if (isEditTextEmpty()) {
-                    Toast.makeText(ProductEntryQrScanner.this, "二维码区域不可以为空", Toast.LENGTH_LONG).show();
-                } else if (isAlreadyScanned(productCodeEditText.getText().toString())) {
-                    Toast.makeText(ProductEntryQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
-                } else if (isCwarenameEmpty()) {
-                    Toast.makeText(ProductEntryQrScanner.this, "请选择仓库信息", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(ProductEntryQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
-                }
+             getData();
             }
         });
         productCodeEditText.setOnEditorActionListener(new TextView.OnEditorActionListener()
@@ -190,11 +199,58 @@ public class ProductEntryQrScanner extends AppCompatActivity {
                         String exception = msg.getData().getString("Exception");
                         Toast.makeText(ProductEntryQrScanner.this, "错误："+exception, Toast.LENGTH_LONG).show();
                         break;
+                    case 0x19:
+                        mHandler.removeMessages(0x19);
+                        getData();
+                        break;
                     default:
                         break;
                 }
             }
         };
+    }
+
+    private List<String> boxCodeEditTextContent;
+    private void getData() {
+        boxCodeEditTextContent= Arrays.asList(boxCodeEditText.getText().toString().split("\\s"));
+        scannnumText.setText("二维箱码："+boxCodeEditTextContent.size());
+        for (int i = 0; i <boxCodeEditTextContent.size() ; i++) {
+
+            String productcode=boxCodeEditTextContent.get(i);
+
+            count = countSum();
+
+
+            if (count >= Math.abs(current_nnum_qrRecv)) {
+                Toast.makeText(ProductEntryQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            if (isAlreadyScanned(productcode)) {
+                Toast.makeText(ProductEntryQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (isCwarenameEmpty()) {
+                Toast.makeText(ProductEntryQrScanner.this, "请选择仓库信息", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if(productcode.isEmpty()){
+                return;
+            }
+
+            if(productcode.length() != DataHelper.getLengthInQrRule(current_maccode_qrRecv,db5)){
+                Toast.makeText(ProductEntryQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if(!DataHelper.isValidQr(productcode,current_maccode_qrRecv,current_materialcode_qrRecv,db5,getApplicationContext())){
+                Toast.makeText(ProductEntryQrScanner.this, "条码不合法", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            InsertintoTempQrDBForSaleDelivery(productcode);
+            boxCodeEditText.setText("");
+        }
+
     }
 
     private int getLengthInQrRule() {
@@ -323,7 +379,7 @@ public class ProductEntryQrScanner extends AppCompatActivity {
         return list;
     }
 
-    private void InsertintoTempQrDBForSaleDelivery() {
+    private void InsertintoTempQrDBForSaleDelivery(final String productcode) {
 //插入临时数据库保持条码信息并显示在此页面
 
         new Thread(new Runnable() {
@@ -338,11 +394,11 @@ public class ProductEntryQrScanner extends AppCompatActivity {
                         values.put("itempk", current_itempk_qrRecv);
                         values.put("materialcode", current_materialcode_qrRecv);
                         values.put("platecode", plateCodeEditText.getText().toString());
-                        values.put("boxcode", boxCodeEditText.getText().toString());
-                        values.put("prodcutcode", productCodeEditText.getText().toString());
+                        values.put("boxcode", "");
+                        values.put("prodcutcode",productcode);
                         values.put("num", current_nnum_qrRecv);
                         values.put("itemuploadflag", "N");
-                        values.put("xlh", DataHelper.getXlh(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv));
+                        values.put("xlh", DataHelper.getXlh(db5,productcode,current_maccode_qrRecv));
                         // 插入第一条数据
                         db5.insert("ProductEntryScanResult", null, values);
                         values.clear();
