@@ -80,14 +80,15 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     SharedPreferences latestDBTimeInfo;
     SaleDeliveryAdapter adapter;
     List<SaleDeliveryBean> saleDeliveryBeanList;
-    int type=2;
+    int type;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sale_delivery_manage);
         helper3 = new MyDataBaseHelper(SaleDelivery.this, "ShangmiData", null, 1);
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
-        //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。
+        //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。'
+        type=getIntent().getIntExtra("type",-1);
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setHomeButtonEnabled(true);
@@ -209,7 +210,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                                         insertDownloadDataToDB(saleDeliveryQuery);
                                         for (int pagenum = 2; pagenum <= saleDeliveryQuery.getPagetotal(); pagenum++) {
                                             String saleDeliveryData2 = DataHelper.downloadDatabase( String.valueOf(pagenum),
-                                                    SaleDelivery.this,2);
+                                                    SaleDelivery.this,type);
                                             SaleDeliveryQuery saleDeliveryQuery2 = new Gson().fromJson(saleDeliveryData2, SaleDeliveryQuery.class);
                                             insertDownloadDataToDB(saleDeliveryQuery2);
                                         }
