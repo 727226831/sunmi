@@ -13,6 +13,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.ContactsContract;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
@@ -30,6 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.shanggmiqr.BusinessOperation;
+import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.AllocateTransferAdapter;
 import com.example.shanggmiqr.bean.AllocateTransferBean;
@@ -198,7 +200,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                                         }
                                     });
                                     //R07发货单
-                                    String allocateTransferData = downloadDatabase("R42", "1");
+                                    String allocateTransferData = DataHelper.downloadDatabase("1",AllocateTransfer.this,5);
                                     if (null == allocateTransferData) {
                                         dialog.dismiss();
                                         return;
@@ -222,9 +224,9 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                                     } else {
                                         insertDownloadDataToDB(allocateTransferQuery);
                                         for (int pagenum = 2; pagenum <= pagetotal; pagenum++) {
-//                                            String saleDeliveryData2 = downloadDatabase("R42", String.valueOf(pagenum));
-//                                            AllocateTransferQuery saleDeliveryQuery2 = gson7.fromJson(saleDeliveryData2, AllocateTransferQuery.class);
-//                                            insertDownloadDataToDB(saleDeliveryQuery2);
+                                            String saleDeliveryData2 =  DataHelper.downloadDatabase(pagenum+"",AllocateTransfer.this,5);
+                                            AllocateTransferQuery saleDeliveryQuery2 = gson7.fromJson(saleDeliveryData2, AllocateTransferQuery.class);
+                                            insertDownloadDataToDB(saleDeliveryQuery2);
                                         }
                                         Message msg = new Message();
                                         msg.what = 0x11;
@@ -583,53 +585,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
         return false;
     }
 
-    /**
-     * webservice查询下载
-     */
-    public String downloadDatabase(String workCode, String pagenum) throws Exception {
-        String WSDL_URI;
-        String namespace;
-        String WSDL_URI_current = BaseConfig.getNcUrl();//wsdl 的uri
-        String namespace_current = "http://schemas.xmlsoap.org/soap/envelope/";//namespace
-        String methodName = "sendToWISE";//要调用的方法名称
-        SharedPreferences proxySp = getSharedPreferences("configInfo", 0);
-        if (proxySp.getString("WSDL_URI", WSDL_URI_current).equals("") || proxySp.getString("namespace", namespace_current).equals("")) {
-            WSDL_URI = WSDL_URI_current;
-            namespace = namespace_current;
-        } else {
-            WSDL_URI = proxySp.getString("WSDL_URI", WSDL_URI_current);
-            namespace = proxySp.getString("namespace", namespace_current);
-        }
 
-        SoapObject request = new SoapObject(namespace, methodName);
-        // 设置需调用WebService接口需要传入的两个参数string、string1
-        SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestAllocateTransferTSInfo", 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "2019-02-02 00:00:01");
-        String endtime = getDefaultEndTime();
-        SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
-        String cwhsmanagercode = currentAccount.getString("current_account","");
-        CommonSendAllocateBean userSend = new CommonSendAllocateBean(begintime, endtime, cwhsmanagercode,pagenum);
-        Gson gson = new Gson();
-        String userSendBean = gson.toJson(userSend);
-        request.addProperty("string", workCode);
-        request.addProperty("string1", userSendBean);
-        //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
-        //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
-        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
-
-        envelope.bodyOut = request;
-        envelope.dotNet = false;
-
-        HttpTransportSE se = new HttpTransportSE(WSDL_URI);
-        //  se.call(null, envelope);//调用 version1.2
-        //version1.1 需要如下soapaction
-        se.call(namespace + "sendToWISE", envelope);
-        // 获取返回的数据
-        SoapObject object = (SoapObject) envelope.bodyIn;
-        // 获取返回的结果
-        saleDelivDataResp = object.getProperty(0).toString();
-        return saleDelivDataResp;
-    }
 
     public boolean isNetworkConnected(Context context) {
         if (context != null) {

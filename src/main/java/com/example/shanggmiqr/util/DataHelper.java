@@ -87,17 +87,18 @@ public class DataHelper {
         int count=0;
         switch (type){
             case 0:
-                cursor = db.rawQuery("select count(prodcutcode) from OtherEntryScanResult  where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
-                        new String[]{code, materialcode, vcooporderbcode_b});
-                break;
-            case 1:
-                cursor = db.rawQuery("select  count(prodcutcode) from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
-                        new String[]{code,materialcode, vcooporderbcode_b});
-                break;
-            case 2:
                 cursor = db.rawQuery("select count(prodcutcode) from SaleDeliveryScanResult where vbillcode=? and matrcode=? and vcooporderbcode_b=? ",
                         new String[]{code, materialcode,vcooporderbcode_b});
                 break;
+            case 1:
+                cursor = db.rawQuery("select count(prodcutcode) from OtherEntryScanResult  where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
+                        new String[]{code, materialcode, vcooporderbcode_b});
+                break;
+            case 2:
+                cursor = db.rawQuery("select  count(prodcutcode) from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
+                        new String[]{code,materialcode, vcooporderbcode_b});
+                break;
+
         }
         while (cursor.moveToNext()){
             count = cursor.getInt(0);
@@ -174,11 +175,11 @@ public class DataHelper {
         String otherTable="";
         String otherbodyTable="";
         switch (type){
-            case 0:
+            case 1:
                 otherTable="OtherEntry";
                 otherbodyTable="OtherEntryBody";
                 break;
-            case 1:
+            case 2:
                 otherTable="OtherOutgoing";
                 otherbodyTable="OtherOutgoingBody";
                 break;
@@ -269,12 +270,13 @@ public class DataHelper {
                 .show();
     }
 
-    public  static String downloadDatabase(String workCode, String pagenum, Context context,int type) throws Exception {
+    public  static String downloadDatabase(String pagenum, Context context,int type) throws Exception {
         String WSDL_URI;
         String namespace;
         String WSDL_URI_current = BaseConfig.getNcUrl();//wsdl 的uri
         String namespace_current = "http://schemas.xmlsoap.org/soap/envelope/";//namespace
         String methodName = "sendToWISE";//要调用的方法名称
+        String workCode=null;
         SharedPreferences proxySp = context.getSharedPreferences("configInfo", 0);
         if (proxySp.getString("WSDL_URI", WSDL_URI_current).equals("") || proxySp.getString("namespace", namespace_current).equals("")) {
             WSDL_URI = WSDL_URI_current;
@@ -288,20 +290,38 @@ public class DataHelper {
         String name="";
         switch (type){
             case 0:
-                name="LatestOtherEntryTSInfo";
+                name="LatestSaleDeliveryTSInfo";
+                workCode="R07";
                 break;
             case 1:
-                name="LatestOtherOutgoingTSInfo";
+                name="LatestOtherEntryTSInfo";
+                workCode="R09";
                 break;
             case 2:
-                name="LatestSaleDeliveryTSInfo";
+                name="LatestOtherOutgoingTSInfo";
+                workCode="R11";
                 break;
             case 3:
-                name="LatestLoanTSInfo";
+                name="LatestProductEntryTSInfo";
+                workCode="R35";
                 break;
             case 4:
-                name="LatestProductEntryTSInfo";
+                name="LatestLoanTSInfo";
+                workCode="R37";
                 break;
+            case 5:
+                 name="LatestAllocateTransferTSInfo";
+                workCode="R42";
+                break;
+            case 6:
+                name="LatestPurchaseArrivalTSInfo";
+                workCode="R40";
+                break;
+            case 7:
+                name="LatestPurchaseReturnTSInfo";
+                workCode="R39";
+                break;
+
         }
         SharedPreferences latestDBTimeInfo = context.getSharedPreferences(name, 0);
         String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
@@ -330,6 +350,73 @@ public class DataHelper {
 
         return otherOutgoingDataResp;
     }
+    public  static  void  setLatestdownloadtime(String begin,int type,Context context){
+        String name=null;
+        switch (type){
+            case 0:
+                name="LatestSaleDeliveryTSInfo";
+                break;
+            case 1:
+                name="LatestOtherEntryTSInfo";
+                break;
+            case 2:
+                name="LatestOtherOutgoingTSInfo";
+                break;
+            case 3:
+                name="LatestProductEntryTSInfo";
+                break;
+            case 4:
+                name="LatestLoanTSInfo";
+                break;
+            case 5:
+                name="LatestAllocateTransferTSInfo";
+                break;
+            case 6:
+                name="LatestPurchaseArrivalTSInfo";
+                break;
+            case 7:
+                name="LatestPurchaseReturnTSInfo";
+                break;
+
+        }
+        SharedPreferences latestDBTimeInfo5 = context.getSharedPreferences(name, 0);
+        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
+        editor5.putString("latest_download_ts_begintime", begin);
+        editor5.commit();
+    }
+    public  static  String getLatestdownloadbegintime(int type,Context context){
+        String name=null;
+        switch (type){
+            case 0:
+                name="LatestSaleDeliveryTSInfo";
+                break;
+            case 1:
+                name="LatestOtherEntryTSInfo";
+                break;
+            case 2:
+                name="LatestOtherOutgoingTSInfo";
+                break;
+            case 3:
+                name="LatestProductEntryTSInfo";
+                break;
+            case 4:
+                name="LatestLoanTSInfo";
+                break;
+            case 5:
+                name="LatestAllocateTransferTSInfo";
+                break;
+            case 6:
+                name="LatestPurchaseArrivalTSInfo";
+                break;
+            case 7:
+                name="LatestPurchaseReturnTSInfo";
+                break;
+
+        }
+        SharedPreferences latestDBTimeInfo = context.getSharedPreferences(name, 0);
+        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
+        return  begintime;
+    }
     public static boolean isWarehouseDBDownloaed(SQLiteDatabase db) {
         Cursor cursor = db.rawQuery("select name from Warehouse",
                 null);
@@ -343,20 +430,21 @@ public class DataHelper {
         Cursor cursor=null;
         switch (type){
             case 0:
-                cursor = db.rawQuery("SELECT count(pobillcode) FROM OtherEntry WHERE pobillcode=? and "+
-                                "dbilldate>=? and dbilldate<?",
-                        new String[] { code,startTime, endTime});
-                break;
-            case 1:
-                cursor = db.rawQuery("SELECT count(pobillcode) FROM OtherOutgoing WHERE pobillcode=? and "+
-                                "dbilldate>=? and dbilldate<?",
-                        new String[] { code,startTime, endTime});
-                break;
-            case 2:
                 cursor = db.rawQuery("SELECT count(vbillcode) FROM SaleDelivery WHERE vbillcode=? and "+
                                 "dbilldate>=? and dbilldate<?",
                         new String[] { code,startTime, endTime});
                 break;
+            case 1:
+                cursor = db.rawQuery("SELECT count(pobillcode) FROM OtherEntry WHERE pobillcode=? and "+
+                                "dbilldate>=? and dbilldate<?",
+                        new String[] { code,startTime, endTime});
+                break;
+            case 2:
+                cursor = db.rawQuery("SELECT count(pobillcode) FROM OtherOutgoing WHERE pobillcode=? and "+
+                                "dbilldate>=? and dbilldate<?",
+                        new String[] { code,startTime, endTime});
+                break;
+
         }
         while (cursor.moveToNext()){
             if(cursor.getInt(0)!=0){
@@ -385,15 +473,14 @@ public class DataHelper {
         String name="";
         switch (type){
             case 0:
-                name="query_otherentry";
-                break;
-            case 1:
-                name="query_otheroutgoing";
-                break;
-            case 2:
                 name="query_saledelivery";
                 break;
-
+            case 1:
+                name="query_otherentry";
+                break;
+            case 2:
+                name="query_otheroutgoing";
+                break;
         }
         SharedPreferences currentTimePeriod= context.getSharedPreferences(name, 0);
         String tempperiod =currentTimePeriod.getString("current_account","2018-09-01 至 2018-12-17");

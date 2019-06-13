@@ -205,7 +205,7 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
                                         }
                                     });
                                     //R07发货单
-                                    String productEntryData = DataHelper.downloadDatabase("R35", "1",ProductEntry.this,4);
+                                    String productEntryData = DataHelper.downloadDatabase( "1",ProductEntry.this,3);
 
                                     if (null == productEntryData) {
                                         dialog.dismiss();
@@ -229,7 +229,7 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
                                     } else {
                                         insertDownloadDataToDB(productEntryQuery);
                                         for (int pagenum = 2; pagenum <= pagetotal; pagenum++) {
-                                            String saleDeliveryData2 = DataHelper.downloadDatabase("R35", String.valueOf(pagenum),ProductEntry.this,4);
+                                            String saleDeliveryData2 = DataHelper.downloadDatabase(String.valueOf(pagenum),ProductEntry.this,3);
                                             ProductEntryQuery saleDeliveryQuery2 =new Gson().fromJson(saleDeliveryData2, ProductEntryQuery.class);
                                             insertDownloadDataToDB(saleDeliveryQuery2);
                                         }

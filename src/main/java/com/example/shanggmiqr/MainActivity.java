@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
                                         mHandler.sendMessage(msg);
                                         return;
                                     }
-                                    //  Log.d("debug", result);
+
                                     Gson gsonUser = new Gson();
                                     User user = gsonUser.fromJson(userData, User.class);
                                 if (user.getPagetotal() ==1){
@@ -221,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
                                         @Override
                                         public void run() {
 
-
+                                        Toast.makeText(MainActivity.this,result,Toast.LENGTH_SHORT).show();
                                             dialog.dismiss();
                                         }
                                     });
@@ -393,6 +393,7 @@ public class MainActivity extends AppCompatActivity {
         String userSendBean = gson.toJson(userSend);
         request.addProperty("string", workcode);
         request.addProperty("string1", userSendBean);
+        Log.i("request-->",request.toString());
         //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
         //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
@@ -406,6 +407,7 @@ public class MainActivity extends AppCompatActivity {
             se.call(namespace + "sendToWISE", envelope);
             // 获取返回的数据
             SoapObject object = (SoapObject) envelope.bodyIn;
+            Log.i("object-->",object.toString());
             // 获取返回的结果
             result = object.getProperty(0).toString();
             //   JSONObject jsonObject = new JSONObject(result);

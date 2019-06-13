@@ -204,7 +204,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                                         }
                                     });
                                     //R07发货单
-                                    String loanData = DataHelper.downloadDatabase("R37", "1",LoanBill.this,3);
+                                    String loanData = DataHelper.downloadDatabase( "1",LoanBill.this,4);
                                     if (null == loanData) {
                                         dialog.dismiss();
                                         return;
@@ -228,8 +228,8 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                                     } else {
                                         insertDownloadDataToDB(loanQuery);
                                         for (int pagenum = 2; pagenum <= pagetotal; pagenum++) {
-                                            String saleDeliveryData2 = DataHelper.downloadDatabase("R37", String.valueOf(pagenum),
-                                                    LoanBill.this,3);
+                                            String saleDeliveryData2 = DataHelper.downloadDatabase(String.valueOf(pagenum),
+                                                    LoanBill.this,4);
                                             LoanQuery saleDeliveryQuery2 = gson7.fromJson(saleDeliveryData2, LoanQuery.class);
                                             insertDownloadDataToDB(saleDeliveryQuery2);
                                         }

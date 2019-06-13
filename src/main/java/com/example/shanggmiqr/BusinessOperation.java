@@ -112,6 +112,7 @@ public class BusinessOperation extends AppCompatActivity implements MyImageView.
                 }
                 intent=new Intent(BusinessOperation.this,SaleDelivery.class);
                 intent.putExtra("from_business_operation", "Y");
+                intent.putExtra("type",0);
                 startActivity(intent);
                 break;
             case R.id.other_entry:
@@ -120,7 +121,7 @@ public class BusinessOperation extends AppCompatActivity implements MyImageView.
                 }
                 intent=new Intent(BusinessOperation.this,OtherEntry.class);
                 intent.putExtra("from_business_operation", "Y");
-                intent.putExtra("type",0);
+                intent.putExtra("type",1);
                 startActivity(intent);
                 break;
             case R.id.other_outgoing:
@@ -129,7 +130,7 @@ public class BusinessOperation extends AppCompatActivity implements MyImageView.
                 }
                 intent=new Intent(BusinessOperation.this,OtherEntry.class);
                 intent.putExtra("from_business_operation", "Y");
-                intent.putExtra("type",1);
+                intent.putExtra("type",2);
                 startActivity(intent);
                 break;
             case R.id.product_entry:
@@ -137,14 +138,6 @@ public class BusinessOperation extends AppCompatActivity implements MyImageView.
                     return;
                 }
                 intent=new Intent(BusinessOperation.this,ProductEntry.class);
-                intent.putExtra("from_business_operation", "Y");
-                startActivity(intent);
-                break;
-            case R.id.allocate:
-                if (Utils.isFastDoubleClick()) {
-                    return;
-                }
-                intent=new Intent(BusinessOperation.this,AllocateTransfer.class);
                 intent.putExtra("from_business_operation", "Y");
                 startActivity(intent);
                 break;
@@ -157,6 +150,15 @@ public class BusinessOperation extends AppCompatActivity implements MyImageView.
                 intent.putExtra("from_business_operation", "Y");
                 startActivity(intent);
                 break;
+            case R.id.allocate:
+                if (Utils.isFastDoubleClick()) {
+                    return;
+                }
+                intent=new Intent(BusinessOperation.this,AllocateTransfer.class);
+                intent.putExtra("from_business_operation", "Y");
+                startActivity(intent);
+                break;
+
             case R.id.purchase_arrival:
                 if (Utils.isFastDoubleClick()) {
                     return;
@@ -164,6 +166,7 @@ public class BusinessOperation extends AppCompatActivity implements MyImageView.
                 intent=new Intent(BusinessOperation.this,PurchaseArrival.class);
                 intent.putExtra("from_business_operation", "Y");
                 startActivity(intent);
+
                 break;
             case R.id.purchase_return:
                 if (Utils.isFastDoubleClick()) {
@@ -172,6 +175,7 @@ public class BusinessOperation extends AppCompatActivity implements MyImageView.
                 intent=new Intent(BusinessOperation.this,PurchaseReturn.class);
                 intent.putExtra("from_business_operation", "Y");
                 startActivity(intent);
+
                 break;
 
         }

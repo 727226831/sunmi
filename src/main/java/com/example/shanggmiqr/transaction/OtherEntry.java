@@ -71,7 +71,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
     private TextView lst_downLoad_ts;
     private Button buttonexport;
     int type;
-    String workcode;
+
     String name="";
     String title="";
     @Override
@@ -88,17 +88,17 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
        TextView textViewCwarecode=findViewById(R.id.text_codeBar_otherentry);
         downloadOtherEntryButton = (Button) findViewById(R.id.download_other_entry);
         switch (type){
-            case 0:
+            case 1:
                 name="LatestOtherEntryTSInfo";
-                workcode="R09";
+
                 title="其他入库";
                 textViewPobillcode.setText("入库单号");
                 textViewCwarename.setText("入库仓库名称");
                 textViewCwarecode.setText("入库仓库编号");
                 downloadOtherEntryButton.setText("下载其他入库单");
                 break;
-            case 1:
-                workcode="R11";
+            case 2:
+
                 name="LatestOtherOutgoingTSInfo";
                 title="其他出库";
                 textViewPobillcode.setText("出库单号");
@@ -114,7 +114,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
             actionBar.setTitle(title);
         }
         SharedPreferences latestDBTimeInfo = getSharedPreferences(name, 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_systime", iUrl.begintime);
+        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
         lst_downLoad_ts.setText("最后一次下载:"+begintime);
 
         helper3 = new MyDataBaseHelper(OtherEntry.this, "ShangmiData", null, 1);
@@ -236,7 +236,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                                         }
                                     });
                                     //其他入库查询，嵌套json,使用两张表存储，通过pobillcode关联
-                                    String outEntryData = DataHelper.downloadDatabase(workcode, "1",OtherEntry.this,type);
+                                    String outEntryData = DataHelper.downloadDatabase("1",OtherEntry.this,type);
                                     if (null == outEntryData) {
                                         dialog.dismiss();
                                         return;
@@ -261,7 +261,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                                         Log.i("otherEntryBean",new Gson().toJson(otherEntryBean));
                                         DataHelper.insertOtherDataToDB(db3,otherEntryBean,type);
                                         for (int pagenum = 2; pagenum <= otherEntryBean.getPagetotal(); pagenum++) {
-                                            String outGoingData2 = DataHelper.downloadDatabase(workcode, String.valueOf(pagenum),OtherEntry.this,type);
+                                            String outGoingData2 = DataHelper.downloadDatabase( String.valueOf(pagenum),OtherEntry.this,type);
                                             OtherQueryBean outGoingBean2 = gson7.fromJson(outGoingData2, OtherQueryBean.class);
                                             DataHelper.insertOtherDataToDB(db3,outGoingBean2,type);
                                         }
@@ -275,7 +275,6 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                                     SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
 
                                     editor5.putString("latest_download_ts_begintime",systime);
-                                    editor5.putString("latest_download_ts_systime", systime);
                                     editor5.commit();
                                     runOnUiThread(new Runnable() {
                                         @Override

@@ -32,6 +32,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.shanggmiqr.BusinessOperation;
+import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.PurchaseArrivalAdapter;
 import com.example.shanggmiqr.bean.CommonSendAllocateBean;
@@ -202,7 +203,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                                         }
                                     });
                                     //R07发货单
-                                    String saleDeliveryData = downloadDatabase("R40", "1");
+                                    String saleDeliveryData = DataHelper.downloadDatabase("1",PurchaseArrival.this,6);
                                     if (null == saleDeliveryData) {
                                         dialog.dismiss();
                                         return;
@@ -226,7 +227,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                                     } else {
                                         insertDownloadDataToDB(saleDeliveryQuery);
                                         for (int pagenum = 2; pagenum <= pagetotal; pagenum++) {
-                                            String saleDeliveryData2 = downloadDatabase("R40", String.valueOf(pagenum));
+                                            String saleDeliveryData2 = DataHelper.downloadDatabase(pagenum+"",PurchaseArrival.this,6);
                                             PurchaseArrivalQuery saleDeliveryQuery2 = gson7.fromJson(saleDeliveryData2, PurchaseArrivalQuery.class);
                                             insertDownloadDataToDB(saleDeliveryQuery2);
                                         }
@@ -682,53 +683,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
         return false;
     }
 
-    /**
-     * webservice查询下载
-     */
-    public String downloadDatabase(String workCode, String pagenum) throws Exception {
-        String WSDL_URI;
-        String namespace;
-        String WSDL_URI_current = BaseConfig.getNcUrl();//wsdl 的uri
-        String namespace_current = "http://schemas.xmlsoap.org/soap/envelope/";//namespace
-        String methodName = "sendToWISE";//要调用的方法名称
-        SharedPreferences proxySp = getSharedPreferences("configInfo", 0);
-        if (proxySp.getString("WSDL_URI", WSDL_URI_current).equals("") || proxySp.getString("namespace", namespace_current).equals("")) {
-            WSDL_URI = WSDL_URI_current;
-            namespace = namespace_current;
-        } else {
-            WSDL_URI = proxySp.getString("WSDL_URI", WSDL_URI_current);
-            namespace = proxySp.getString("namespace", namespace_current);
-        }
 
-        SoapObject request = new SoapObject(namespace, methodName);
-        // 设置需调用WebService接口需要传入的两个参数string、string1
-        SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestPurchaseArrivalTSInfo", 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "2018-09-01 00:00:01");
-        String endtime = getDefaultEndTime();
-        SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
-        String cwhsmanagercode = currentAccount.getString("current_account","");
-        CommonSendAllocateBean userSend = new CommonSendAllocateBean(begintime, endtime, cwhsmanagercode,pagenum);
-        Gson gson = new Gson();
-        String userSendBean = gson.toJson(userSend);
-        request.addProperty("string", workCode);
-        request.addProperty("string1", userSendBean);
-        //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
-        //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
-        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
-
-        envelope.bodyOut = request;
-        envelope.dotNet = false;
-
-        HttpTransportSE se = new HttpTransportSE(WSDL_URI);
-        //  se.call(null, envelope);//调用 version1.2
-        //version1.1 需要如下soapaction
-        se.call(namespace + "sendToWISE", envelope);
-        // 获取返回的数据
-        SoapObject object = (SoapObject) envelope.bodyIn;
-        // 获取返回的结果
-        saleDelivDataResp = object.getProperty(0).toString();
-        return saleDelivDataResp;
-    }
 
     public boolean isNetworkConnected(Context context) {
         if (context != null) {
@@ -745,8 +700,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
     public ArrayList<PurchaseArrivalBean> querySaleDelivery() {
         ArrayList<PurchaseArrivalBean> list = new ArrayList<PurchaseArrivalBean>();
         List<String> list_update = new ArrayList<String>();
-       // String sql2 = "select " + "vbillcode" + "," + "dbilldate" + "," + "dr" + " from " + "SaleDelivery";//注意：这里有单引号
-      //  Cursor cursor = db3.rawQuery(sql2, null);
+
         Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr from PurchaseArrival where flag=? order by dbilldate desc", new String[]{"N"});
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
