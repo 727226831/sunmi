@@ -186,7 +186,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                                         }
                                     });
                                     //R07发货单
-                                    String saleDeliveryData =DataHelper.downloadDatabase("R07", "1",SaleDelivery.this,type);
+                                    String saleDeliveryData =DataHelper.downloadDatabase("1",SaleDelivery.this,type);
                                     if (null == saleDeliveryData) {
                                         dialog.dismiss();
                                         return;
@@ -208,7 +208,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                                     } else {
                                         insertDownloadDataToDB(saleDeliveryQuery);
                                         for (int pagenum = 2; pagenum <= saleDeliveryQuery.getPagetotal(); pagenum++) {
-                                            String saleDeliveryData2 = DataHelper.downloadDatabase("R07", String.valueOf(pagenum),
+                                            String saleDeliveryData2 = DataHelper.downloadDatabase( String.valueOf(pagenum),
                                                     SaleDelivery.this,2);
                                             SaleDeliveryQuery saleDeliveryQuery2 = new Gson().fromJson(saleDeliveryData2, SaleDeliveryQuery.class);
                                             insertDownloadDataToDB(saleDeliveryQuery2);
@@ -336,9 +336,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         List<SaleDeliveryQuery.DataBean> saleDeliveryBeanList = saleDeliveryQuery.getData();
         for (SaleDeliveryQuery.DataBean ob : saleDeliveryBeanList) {
           //  Log.i("SaleDelivery",ob.getVbillcode());
-             if(isUploadflag(ob.getVbillcode())){
-                 return;
-             }
+
 
             //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
              switch (ob.getDr()){
