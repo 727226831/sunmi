@@ -81,6 +81,17 @@ public class DataHelper {
         }
         return false;
     }
+    public static String getCwarehousecode(String cwarename,SQLiteDatabase db) {
+        Cursor cursor = db.rawQuery("select code from Warehouse where name=?",
+                new String[]{cwarename});
+        String cwarehousecode = null;
+            while (cursor.moveToNext()) {
+                cwarehousecode = cursor.getString(cursor.getColumnIndex("code"));
+            }
+            cursor.close();
+
+        return cwarehousecode;
+    }
 
     public static int queryScanResultcount(SQLiteDatabase db, String code, String materialcode, String vcooporderbcode_b, int type) {
         Cursor cursor=null;
