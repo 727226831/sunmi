@@ -75,11 +75,11 @@ public class OtherEntryDetail extends AppCompatActivity {
         setContentView(R.layout.other_entry_detail);
         type=getIntent().getIntExtra("type",-1);
         switch (type){
-            case 0:
+            case 1:
                 workcode="R10";
                 title="其他入库明细";
                 break;
-            case 1:
+            case 2:
                 workcode="R12";
                 title="其他出库明细";
                 break;
@@ -284,11 +284,11 @@ public class OtherEntryDetail extends AppCompatActivity {
     public boolean isAlreadyUpload() {
         Cursor cursor=null;
         switch (type){
-            case 0:
+            case 1:
                 cursor = db4.rawQuery("select * from OtherEntryBody where pobillcode=? and uploadflag=?",
                         new String[]{current_pobillcodeRecv, "N"});
                 break;
-            case 1:
+            case 2:
                 cursor = db4.rawQuery("select * from OtherOutgoingBody where pobillcode=? and uploadflag=?",
                         new String[]{current_pobillcodeRecv, "N"});
                 break;
@@ -303,7 +303,7 @@ public class OtherEntryDetail extends AppCompatActivity {
     private void updateAllUploadStatus(String current_pobillcodeRecv) {
         Cursor cursor=null;
         switch (type){
-            case 0:
+            case 1:
                 db4.execSQL("update OtherEntryScanResult set itemuploadflag=? where pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
                 //所有行号发送状态全部置为Y
                 db4.execSQL("update OtherEntryBody set uploadflag=? where pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
@@ -319,7 +319,7 @@ public class OtherEntryDetail extends AppCompatActivity {
                     cursor.close();
                 }
                 break;
-            case 1:
+            case 2:
                 //单个item扫描结果全部置为Y
                 db4.execSQL("update OtherOutgoingScanResult set itemuploadflag=? where pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
                 //所有行号发送状态全部置为Y
@@ -346,11 +346,11 @@ public class OtherEntryDetail extends AppCompatActivity {
         ArrayList<OtherBodyBean> list = new ArrayList<OtherBodyBean>();
         Cursor cursor=null;
         switch (type){
-            case 0:
+            case 1:
                 cursor = db4.rawQuery("select vcooporderbcode_b,materialcode,maccode,nnum,uploadnum,scannum,uploadflag from OtherEntryBody where pobillcode=?",
                         new String[]{current_pobillcodeRecv});
                 break;
-            case 1:
+            case 2:
               cursor = db4.rawQuery("select vcooporderbcode_b,materialcode,maccode,nnum,uploadnum,scannum,uploadflag from OtherOutgoingBody where pobillcode=?",
                         new String[]{current_pobillcodeRecv});
                 break;
@@ -417,11 +417,11 @@ public class OtherEntryDetail extends AppCompatActivity {
         ArrayList<OtherOutgoingSendBean.BodyBean> bodylist = new ArrayList<OtherOutgoingSendBean.BodyBean>();
         Cursor cursor2=null;
         switch (type){
-            case 0:
+            case 1:
                 cursor2 = db4.rawQuery("select materialcode,nnum,pch,vcooporderbcode_b,scannum from OtherEntryBody where pobillcode=?",
                         new String[]{current_pobillcodeRecv});
                 break;
-            case 1:
+            case 2:
                 cursor2 = db4.rawQuery("select materialcode,nnum,pch,vcooporderbcode_b,scannum from OtherOutgoingBody where pobillcode=?",
                         new String[]{current_pobillcodeRecv});
                 break;
@@ -439,11 +439,11 @@ public class OtherEntryDetail extends AppCompatActivity {
                 ArrayList<OtherOutgoingSendBean.BodyBean.SnBean> snlist = new ArrayList<OtherOutgoingSendBean.BodyBean.SnBean>();
                 Cursor cursor3=null;
                 switch (type){
-                    case 0:
+                    case 1:
                         cursor3 = db4.rawQuery("select platecode,boxcode,prodcutcode,xlh from OtherEntryScanResult where pobillcode=? and vcooporderbcode_b=? and materialcode=?",
                                 new String[]{current_pobillcodeRecv, bean.vcooporderbcode_b, bean.materialcode});
                         break;
-                    case 1:
+                    case 2:
                         cursor3 = db4.rawQuery("select platecode,boxcode,prodcutcode,xlh from OtherOutgoingScanResult where pobillcode=? and vcooporderbcode_b=? and materialcode=?",
                                 new String[]{current_pobillcodeRecv, bean.vcooporderbcode_b, bean.materialcode});
                         break;

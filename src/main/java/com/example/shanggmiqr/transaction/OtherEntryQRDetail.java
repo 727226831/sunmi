@@ -53,10 +53,10 @@ public class OtherEntryQRDetail extends AppCompatActivity {
 
         type=getIntent().getIntExtra("type",-1);
         switch (type){
-            case 0:
+            case 1:
                 title="其他入库扫码明细";
                 break;
-            case 1:
+            case 2:
                 title="其他出库扫码明细";
                 break;
         }
@@ -125,11 +125,11 @@ public class OtherEntryQRDetail extends AppCompatActivity {
         ArrayList<OtherOutgoingQrDetailBean> list = new ArrayList<OtherOutgoingQrDetailBean>();
         Cursor cursor=null;
         switch (type){
-            case 0:
+            case 1:
                 cursor = db5.rawQuery("select platecode,boxcode,prodcutcode,itemuploadflag from OtherEntryScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
                         new String[]{current_pobillcodeRecv,materialcode,current_vcooporderbcode_b_qrRecv});
                 break;
-            case 1:
+            case 2:
                 cursor = db5.rawQuery("select platecode,boxcode,prodcutcode,itemuploadflag from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
                         new String[]{current_pobillcodeRecv,materialcode,current_vcooporderbcode_b_qrRecv});
                 break;
@@ -153,11 +153,11 @@ public class OtherEntryQRDetail extends AppCompatActivity {
         String count = "0";
         Cursor cursor2=null;
         switch (type){
-            case 0:
+            case 1:
                 cursor2= db5.rawQuery("select prodcutcode from OtherEntryScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=? ",
                         new String[]{pobillcode,materialcode,current_vcooporderbcode_b_qrRecv});
                 break;
-            case 1:
+            case 2:
                 cursor2= db5.rawQuery("select prodcutcode from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=? ",
                         new String[]{pobillcode,materialcode,current_vcooporderbcode_b_qrRecv});
                 break;
@@ -173,11 +173,11 @@ public class OtherEntryQRDetail extends AppCompatActivity {
     }
     private void insertCountOfScannedQRCode(String scannum) {
         switch (type){
-            case 0:
+            case 1:
                 db5.execSQL("update OtherEntryBody set scannum=? where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
                         new String[]{scannum,current_pobillcode_qrRecv,current_materialcode_qrRecv,current_vcooporderbcode_b_qrRecv});
                 break;
-            case 1:
+            case 2:
                 db5.execSQL("update OtherOutgoingBody set scannum=? where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
                         new String[]{scannum,current_pobillcode_qrRecv,current_materialcode_qrRecv,current_vcooporderbcode_b_qrRecv});
                 break;
@@ -205,11 +205,11 @@ public class OtherEntryQRDetail extends AppCompatActivity {
     public boolean isAlreadyUpload() {
         Cursor cursor3=null;
         switch (type){
-            case 0:
+            case 1:
                 cursor3 = db5.rawQuery("select pobillcode from OtherEntryBody where pobillcode=? and uploadflag=?",
                         new String[]{current_pobillcode_qrRecv, "N"});
                 break;
-            case 1:
+            case 2:
                 cursor3 = db5.rawQuery("select pobillcode from OtherOutgoingBody where pobillcode=? and uploadflag=?",
                         new String[]{current_pobillcode_qrRecv, "N"});
                 break;
@@ -230,11 +230,11 @@ public class OtherEntryQRDetail extends AppCompatActivity {
         public void myOnClick(int position, View v) {
             if(!isAlreadyUpload()){
                 switch (type){
-                    case 0:
+                    case 1:
                         db5.execSQL("delete from OtherEntryScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=? and prodcutcode=?",
                                 new Object[] { current_pobillcode_qrRecv,current_materialcode_qrRecv,current_vcooporderbcode_b_qrRecv,listAllBodyPostition.get(position).getProdcutcode() });
                         break;
-                    case 1:
+                    case 2:
                         db5.execSQL("delete from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=? and prodcutcode=?",
                                 new Object[] { current_pobillcode_qrRecv,current_materialcode_qrRecv,current_vcooporderbcode_b_qrRecv,listAllBodyPostition.get(position).getProdcutcode() });
                         break;

@@ -133,6 +133,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         buttonexport=findViewById(R.id.b_export);
         buttonexport.setOnClickListener(this);
         List<OtherBean> list = queryAll();
+        Log.i("other list-->",list.size()+"");
         listAllPostition = list;
         final OtherEntryTableAdapter adapter1 = new OtherEntryTableAdapter(OtherEntry.this, list, mListener);
         tableListView.setAdapter(adapter1);
@@ -334,32 +335,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
 
 
 
-    private String getLatestDbilldate() throws ParseException {
-        Cursor cursor=null;
-        switch (type){
-            case 0:
-                cursor = db3.rawQuery("select dbilldate from OtherEntry order by dbilldate desc", null);
-                break;
-            case 1:
-                cursor = db3.rawQuery("select dbilldate from otheroutgoing order by dbilldate desc", null);
-                break;
-        }
 
-        ArrayList<String> date = new ArrayList<String>();
-        if (cursor != null && cursor.getCount() > 0) {
-            while (cursor.moveToNext()) {
-                date.add(cursor.getString(cursor.getColumnIndex("dbilldate")));
-            }
-        } else {
-            date.add(iUrl.begintime);
-        }
-        //加1秒
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date datetemp = df.parse(date.get(0));
-        datetemp.setTime(datetemp.getTime() + 1000);
-        String addone = df.format(datetemp);
-        return addone;
-    }
 
 
     private TextView time;
@@ -514,10 +490,10 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                 String et = year_endTime+"-" + month_endTime+"-" + day_endTime;
                 SharedPreferences currentTimePeriod=null;
                 switch (type){
-                    case 0:
+                    case 1:
                         currentTimePeriod= getSharedPreferences("query_otherentry", 0);
                       break;
-                    case 1:
+                    case 2:
                         currentTimePeriod= getSharedPreferences("query_otheroutgoing", 0);
                         break;
                 }
@@ -581,7 +557,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         String start_temp="";
         String end_temp="";
         switch (type){
-            case 0:
+            case 1:
                 currentTimePeriod= getSharedPreferences("query_otherentry", 0);
                 start_temp = currentTimePeriod.getString("starttime", iUrl.begintime);
                 end_temp = currentTimePeriod.getString("endtime", Utils.getDefaultEndTime());
@@ -602,7 +578,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
 
                 }
               break;
-            case 1:
+            case 2:
                currentTimePeriod= getSharedPreferences("query_otheroutgoing", 0);
                 start_temp = currentTimePeriod.getString("starttime", iUrl.begintime);
                 end_temp = currentTimePeriod.getString("endtime", Utils.getDefaultEndTime());
@@ -656,11 +632,11 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         ArrayList<OtherBean> list = new ArrayList<OtherBean>();
         Cursor cursor=null;
          switch (type){
-             case 0:
+             case 1:
                  cursor = db3.rawQuery("select pobillcode,dbilldate,cwarecode,cwarename,dr from OtherEntry where flag=? order by dbilldate desc",
                          new String[]{"N"});
                  break;
-             case 1:
+             case 2:
                  cursor = db3.rawQuery("select pobillcode,dbilldate,cwarecode,cwarename,dr from OtherOutgoing where flag=? order by dbilldate desc", new String[]{"N"});
                  break;
          }
@@ -685,11 +661,11 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         ArrayList<OtherBean> list = new ArrayList<OtherBean>();
         Cursor cursor = null;
         switch (type){
-            case 0:
+            case 1:
                 cursor = db3.rawQuery("select pobillcode,dbilldate,cwarecode,cwarename,dr from OtherEntry order by dbilldate desc",
                         null);
                 break;
-            case 1:
+            case 2:
                 cursor = db3.rawQuery("select pobillcode,dbilldate,cwarecode,cwarename,dr from OtherOutgoing order by dbilldate desc",
                         null);
                 break;

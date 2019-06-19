@@ -74,10 +74,10 @@ public class OtherEntryQrScanner extends AppCompatActivity {
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         type=getIntent().getIntExtra("type",-1);
         switch (type){
-            case 0:
+            case 1:
                 title="其他入库扫码";
                 break;
-            case 1:
+            case 2:
                 title="其他出库扫码";
                 break;
         }
@@ -238,7 +238,7 @@ public class OtherEntryQrScanner extends AppCompatActivity {
     };
      private List<String> listcode;
     private void getData() {
-
+        Log.i("content-->",boxCodeEditText.getText().toString());
         listcode= Arrays.asList(boxCodeEditText.getText().toString().split("\\s+"));
 
         for (int i = 0; i <listcode.size() ; i++) {
@@ -262,6 +262,7 @@ public class OtherEntryQrScanner extends AppCompatActivity {
                 Toast.makeText(OtherEntryQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
                 return;
             }
+
             if(!isValidQr()){
                 Toast.makeText(OtherEntryQrScanner.this, "条码不合法", Toast.LENGTH_LONG).show();
                 return;
@@ -279,10 +280,10 @@ public class OtherEntryQrScanner extends AppCompatActivity {
         contentValues.put("scannum",scannum);
         String table="";
         switch (type){
-            case 0:
+            case 1:
                table="OtherEntryBody";
                 break;
-            case 1:
+            case 2:
                 table="OtherOutgoingBody";
                 break;
 
@@ -316,11 +317,11 @@ public class OtherEntryQrScanner extends AppCompatActivity {
         ArrayList<OtherEntryScanResultBean> list = new ArrayList<OtherEntryScanResultBean>();
         Cursor cursor=null;
         switch (type){
-            case 0:
+            case 1:
                 cursor = db5.rawQuery("select platecode,boxcode,prodcutcode,itemuploadflag from OtherEntryScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
                         new String[]{current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv});
                 break;
-            case 1:
+            case 2:
                 cursor = db5.rawQuery("select platecode,boxcode,prodcutcode,itemuploadflag from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
                         new String[]{current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv});
                 break;
@@ -343,7 +344,7 @@ public class OtherEntryQrScanner extends AppCompatActivity {
     }
 
     private boolean isValidQr() {
-        //String category =productCodeEditText.getText().toString().substring(0,3);
+
         String scannedMaccode = DataHelper.getMaccode(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv);
         if (scannedMaccode == null || scannedMaccode.length() == 0) {
             Toast.makeText(OtherEntryQrScanner.this, "请检查物料信息及条码规则数据是否下载，或者是否为有效的条码", Toast.LENGTH_SHORT).show();
@@ -352,17 +353,19 @@ public class OtherEntryQrScanner extends AppCompatActivity {
         }
         Cursor cursor = db5.rawQuery("select code from Material where materialbarcode=?",
                 new String[]{scannedMaccode});
-        if (cursor != null && cursor.getCount() > 0) {
+
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
+
                 current_material_code = cursor.getString(cursor.getColumnIndex("code"));
+
                 if (current_material_code.equals(current_materialcode_qrRecv)) {
                     return true;
                 }
 
             }
-            cursor.close();
-        }
+
+
         return false;
     }
 
@@ -392,10 +395,10 @@ public class OtherEntryQrScanner extends AppCompatActivity {
                     // 插入第一条数据
                     String table="";
                     switch (type){
-                        case 0:
+                        case 1:
                             table="OtherEntryScanResult";
                             break;
-                        case 1:
+                        case 2:
                             table="OtherOutgoingScanResult";
                             break;
 
@@ -434,12 +437,12 @@ public class OtherEntryQrScanner extends AppCompatActivity {
     private boolean isAlreadyUpload(String prodcutcode) {
         Cursor cursor31=null;
         switch (type){
-            case 0:
+            case 1:
                 cursor31 = db5.rawQuery("select prodcutcode  from OtherEntryScanResult",
                         new String[]{});
 
                 break;
-            case 1:
+            case 2:
                 cursor31 = db5.rawQuery("select prodcutcode  from OtherOutgoingScanResult",
                         new String[]{});
                 break;
@@ -449,12 +452,12 @@ public class OtherEntryQrScanner extends AppCompatActivity {
             Cursor cursor3 =null;
             // Cursor cursor3 = db3.rawQuery(sql3, null);
             switch (type){
-                case 0:
+                case 1:
                     cursor3 = db5.rawQuery("select prodcutcode  from OtherEntryScanResult where pobillcode=? and vcooporderbcode_b=? and materialcode=? and prodcutcode=? and itemuploadflag=?",
                             new String[]{current_pobillcode_qrRecv, current_vcooporderbcode_b_qrRecv, current_materialcode_qrRecv, prodcutcode, "N"});
 
                     break;
-                case 1:
+                case 2:
                     cursor3 = db5.rawQuery("select prodcutcode  from OtherOutgoingScanResult where pobillcode=? and vcooporderbcode_b=? and materialcode=? and prodcutcode=? and itemuploadflag=?",
                             new String[]{current_pobillcode_qrRecv, current_vcooporderbcode_b_qrRecv, current_materialcode_qrRecv, prodcutcode, "N"});
                     break;
@@ -482,12 +485,12 @@ public class OtherEntryQrScanner extends AppCompatActivity {
             List<OtherEntryScanResultBean> listDel = showScannedQR();
             if (!isAlreadyUpload(listDel.get(position).getProdcutcode())) {
                 switch (type){
-                    case 0:
+                    case 1:
                         db5.execSQL("delete from OtherEntryScanResult where pobillcode=? and vcooporderbcode_b=? and prodcutcode=?",
                                 new Object[]{current_pobillcode_qrRecv, current_vcooporderbcode_b_qrRecv, listDel.get(position).getProdcutcode()});
 
                         break;
-                    case 1:
+                    case 2:
                         db5.execSQL("delete from OtherOutgoingScanResult where pobillcode=? and vcooporderbcode_b=? and prodcutcode=?",
                                 new Object[]{current_pobillcode_qrRecv, current_vcooporderbcode_b_qrRecv, listDel.get(position).getProdcutcode()});
                         break;
