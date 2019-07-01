@@ -29,7 +29,7 @@
                 android:textSize="17sp" />
 
             <EditText
-                android:text="张苏红"
+                android:text="郭存富"
                 android:id="@+id/accountEdittext"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -61,7 +61,7 @@
                 android:textSize="17sp" />
 
             <EditText
-                android:text="SM0425"
+                android:text="SM0890"
                 android:id="@+id/pwdEdittext"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"

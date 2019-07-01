@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -123,8 +124,7 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
     private void myadapter() {
         cars = new ArrayList<>();
         cars = queryWarehouseInfo();
-        String default_value = current_cwarename_qrRecv;
-        if (default_value.length() == 0) {
+        if (current_cwarename_qrRecv==null) {
             cars.add("请选择仓库");
         } else {
             cars.add(current_cwarename_qrRecv);
@@ -133,23 +133,19 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
         spinner.setAdapter(myadapter);
         //默认选中最后一项
         spinner.setSelection(cars.size() - 1, true);
-        if (!isOriginaWarehouse()) {
-            if(!allowChangeWarehousename()) {
-                spinner.setEnabled(false);
-            }else{
+        if(current_cwarename_qrRecv!=null){
+            spinner.setEnabled(false);
+        }else{
             spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                        String name = myadapter.getItem(i).toString();
-                            updateWarehouseInfo(name, current_vbillcode_qrRecv, current_vcooporderbcode_b_qrRecv);
-                        }
+                    String name = myadapter.getItem(i).toString();
+                    updateWarehouseInfo(name, current_vbillcode_qrRecv, current_vcooporderbcode_b_qrRecv);
+                }
                 @Override
                 public void onNothingSelected(AdapterView<?> adapterView) {
                 }
             });
-            }
-        } else {
-            spinner.setEnabled(false);
         }
 
     }
@@ -229,13 +225,27 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
     //下面的方法内容需要根据实际更新
     public ArrayList<SaleDeliveryQrDetailBean> QuerySaleDeliveryBody(String current_matrcode_qrRecv) {
         ArrayList<SaleDeliveryQrDetailBean> list = new ArrayList<SaleDeliveryQrDetailBean>();
-        Cursor cursor = db5.rawQuery("select platecode,boxcode,prodcutcode,itemuploadflag from SaleDeliveryScanResult where vbillcode=? and matrcode=? and vcooporderbcode_b=?", new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv, current_vcooporderbcode_b_qrRecv});
+        Cursor cursor=null;
+        Log.i("bill",current_vbillcode_qrRecv);
+        Log.i("matrcode",current_matrcode_qrRecv);
+        Log.i("itempk",current_vcooporderbcode_b_qrRecv);
+        switch (getIntent().getIntExtra("type",-1)){
+            case 7:
+                cursor = db5.rawQuery("select prodcutcode,itemuploadflag from PurchaseReturnScanResult where vbillcode=? and materialcode=? " +
+                        "and itempk=?", new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv,
+                        current_vcooporderbcode_b_qrRecv});
+                break;
+                default:
+                    cursor = db5.rawQuery("select prodcutcode,itemuploadflag from SaleDeliveryScanResult where vbillcode=? and matrcode=? " +
+                            "and vcooporderbcode_b=?", new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv,
+                            current_vcooporderbcode_b_qrRecv});
+                    break;
+        }
+
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
                 SaleDeliveryQrDetailBean bean = new SaleDeliveryQrDetailBean();
-                bean.platecode = cursor.getString(cursor.getColumnIndex("platecode"));
-                bean.boxcode = cursor.getString(cursor.getColumnIndex("boxcode"));
                 bean.prodcutcode = cursor.getString(cursor.getColumnIndex("prodcutcode"));
                 bean.itemuploadflag = cursor.getString(cursor.getColumnIndex("itemuploadflag"));
                 list.add(bean);

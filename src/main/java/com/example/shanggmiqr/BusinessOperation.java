@@ -139,6 +139,7 @@ public class BusinessOperation extends AppCompatActivity implements MyImageView.
                 }
                 intent=new Intent(BusinessOperation.this,ProductEntry.class);
                 intent.putExtra("from_business_operation", "Y");
+                intent.putExtra("type",3);
                 startActivity(intent);
                 break;
             case R.id.loan:
@@ -148,6 +149,7 @@ public class BusinessOperation extends AppCompatActivity implements MyImageView.
                 }
                 intent=new Intent(BusinessOperation.this,LoanBill.class);
                 intent.putExtra("from_business_operation", "Y");
+                intent.putExtra("type",4);
                 startActivity(intent);
                 break;
             case R.id.allocate:

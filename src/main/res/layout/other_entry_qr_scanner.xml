@@ -82,7 +82,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
-                android:text="箱码:" />
+                android:text="箱码/产品码:" />
             <scut.carson_ho.diy_view.SuperEditText
                 android:id="@+id/otherentry_boxcode_scanner"
                 android:layout_marginLeft="33dp"
@@ -108,12 +108,14 @@
             android:orientation="horizontal">
 
             <TextView
+                android:visibility="invisible"
                 android:id="@+id/otherentry_platecode_scanner_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:text="托盘码:" />
             <scut.carson_ho.diy_view.SuperEditText
+                android:visibility="invisible"
                 android:id="@+id/otherentry_platecode_scanner"
                 android:layout_width="180dp"
                 android:layout_height="wrap_content"

@@ -744,7 +744,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
             Intent intent = new Intent(PurchaseArrival.this, PurchaseReturnDetail.class);
             intent.putExtra("current_sale_delivery_vbillcode", listAllPostition.get(position).getVbillcode());
             intent.putExtra("current_sale_delivery_dbilldate", listAllPostition.get(position).getDbilldate());
-            intent.putExtra("type",0);
+            intent.putExtra("type",6);
             startActivity(intent);
 
         }

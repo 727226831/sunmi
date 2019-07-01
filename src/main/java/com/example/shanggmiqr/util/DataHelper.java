@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -15,16 +16,23 @@ import com.example.shanggmiqr.Url.iUrl;
 import com.example.shanggmiqr.bean.CommonSendBean;
 import com.example.shanggmiqr.bean.OtherQueryBean;
 import com.example.shanggmiqr.bean.QrcodeRule;
+import com.example.shanggmiqr.bean.SaleDeliveryBean;
+import com.example.shanggmiqr.transaction.SaleDelivery;
 import com.example.shanggmiqr.transaction.SaleDeliveryQrScanner;
 import com.google.gson.Gson;
 import com.zyao89.view.zloading.ZLoadingDialog;
 import com.zyao89.view.zloading.Z_TYPE;
 
+import org.ksoap2.SoapFault;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static com.example.shanggmiqr.util.Utils.getDefaultEndTime;
@@ -92,6 +100,17 @@ public class DataHelper {
 
         return cwarehousecode;
     }
+    public static String getCwarename(String cwarehousecode,SQLiteDatabase db) {
+        Cursor cursor = db.rawQuery("select name from Warehouse where code=?",
+                new String[]{cwarehousecode});
+        String cwarename=null;
+            while (cursor.moveToNext()) {
+                cwarename = cursor.getString(cursor.getColumnIndex("name"));
+            }
+            cursor.close();
+
+        return cwarename;
+    }
 
     public static int queryScanResultcount(SQLiteDatabase db, String code, String materialcode, String vcooporderbcode_b, int type) {
         Cursor cursor=null;
@@ -157,7 +176,7 @@ public class DataHelper {
         cursor.close();
         return false;
     }
-    public static void updateSaleDeliveryBodyscannum(SQLiteDatabase db, String scannum, String vbillcode, String vcooporderbcode_b) {
+    public static void updateSaleDeliveryBodyscannum(SQLiteDatabase db, int scannum, String vbillcode, String vcooporderbcode_b) {
 
         ContentValues contentValues=new ContentValues();
         contentValues.put("scannum",scannum);
@@ -208,7 +227,7 @@ public class DataHelper {
                 try {
                     db.delete(otherTable, "pobillcode=?", new String[]{ob.getPobillcode()});
                     db.delete(otherbodyTable, "pobillcode=?", new String[]{ob.getPobillcode()});
-                    //  db3.delete("OtherEntryScanResult", "pobillcode=?", new String[]{pobillcode});
+                   // db.delete(otherbodyTable, "pobillcode=?", new String[]{ob.getPobillcode()});
                    db.setTransactionSuccessful();
                 }
                 catch (Exception ex)
@@ -354,11 +373,11 @@ public class DataHelper {
         //version1.1 需要如下soapaction
         se.call(namespace + "sendToWISE", envelope);
         // 获取返回的数据
+        Log.i("response-->",envelope.bodyIn.toString());
         SoapObject object = (SoapObject) envelope.bodyIn;
-        Log.i("object-->",object.toString());
+
         // 获取返回的结果
        String otherOutgoingDataResp = object.getProperty(0).toString();
-
         return otherOutgoingDataResp;
     }
     public  static  void  setLatestdownloadtime(String begin,int type,Context context){

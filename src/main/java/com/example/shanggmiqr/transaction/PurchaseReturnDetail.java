@@ -100,7 +100,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
     //nnum为正 bisreturn为N 为负则为Y
     private String current_bisreturn = "N";
     private ZLoadingDialog dialog;
-
+     PurchaseReturnBodyTableAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -108,10 +108,10 @@ public class PurchaseReturnDetail extends AppCompatActivity {
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             switch (getIntent().getIntExtra("type",-1)){
-                case 0:
+                case 6:
                    actionBar.setTitle("采购到货明细");
                     break;
-                case 1:
+                case 7:
                     actionBar.setTitle("采购退货明细");
                     break;
             }
@@ -146,7 +146,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
         //加载数据
         myadapter();
         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
-        final PurchaseReturnBodyTableAdapter adapter = new PurchaseReturnBodyTableAdapter(PurchaseReturnDetail.this, listAllBodyPostition, mListener);
+       adapter = new PurchaseReturnBodyTableAdapter(PurchaseReturnDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
         tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -154,33 +154,34 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                 adapter.select(position);
                 saleDeliveryScanButton.setEnabled(true);
                 uploadSingleButton.setEnabled(true);
-//                PurchaseReturnBodyBean local_saleDeliveryBodyBean = (PurchaseReturnBodyBean) adapter.getItem(position);
-//                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getItempk();
-//                chosen_line_matrname = local_saleDeliveryBodyBean.getMaterialname();
-//                chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
-//                chosen_line_matrcode = local_saleDeliveryBodyBean.getMaterialcode();
-//                chosen_line_maccode = local_saleDeliveryBodyBean.getMaccode();
-//                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-//                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannnum();
-//                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-//
-//                Toast.makeText(PurchaseReturnDetail.this, chosen_line_matrcode, Toast.LENGTH_LONG).show();
+                PurchaseReturnBodyBean local_saleDeliveryBodyBean = (PurchaseReturnBodyBean) adapter.getItem(position);
+                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getItempk();
+                chosen_line_matrname = local_saleDeliveryBodyBean.getMaterialname();
+                chosen_line_cwarename = local_saleDeliveryBodyBean.getWarehouse();
+                chosen_line_matrcode = local_saleDeliveryBodyBean.getMaterialcode();
+                chosen_line_maccode = local_saleDeliveryBodyBean.getMaccode();
+                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
+                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannnum();
+                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
+
+                Toast.makeText(PurchaseReturnDetail.this, chosen_line_matrcode, Toast.LENGTH_LONG).show();
             }
         });
         saleDeliveryScanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Intent intent = new Intent(PurchaseReturnDetail.this, SaleDeliveryQrScanner.class);
-//                intent.putExtra("current_vcooporderbcode_b_qrRecv", chosen_line_vcooporderbcode_b);
-//                intent.putExtra("current_matrname_qrRecv", chosen_line_matrname);
-//                intent.putExtra("current_cwarename_qrRecv", chosen_line_cwarename);
-//                intent.putExtra("current_matrcode_qrRecv", chosen_line_matrcode);
-//                intent.putExtra("current_maccode_qrRecv", chosen_line_maccode);
-//                intent.putExtra("current_nnum_qrRecv", chosen_line_nnum);
-//                intent.putExtra("current_uploadflag_qrRecv", chosen_line_uploadflag);
-//                intent.putExtra("current_vbillcode_qrRecv", current_sale_delivery_vbillcodeRecv);
-//
-//                startActivity(intent);
+                Intent intent = new Intent(PurchaseReturnDetail.this, SaleDeliveryQrScanner.class);
+                intent.putExtra("current_vcooporderbcode_b_qrRecv", chosen_line_vcooporderbcode_b);
+                intent.putExtra("current_matrname_qrRecv", chosen_line_matrname);
+                intent.putExtra("current_cwarename_qrRecv", chosen_line_cwarename);
+                intent.putExtra("current_matrcode_qrRecv", chosen_line_matrcode);
+                intent.putExtra("current_maccode_qrRecv", chosen_line_maccode);
+                Log.i("maccode-->",chosen_line_maccode);
+                intent.putExtra("current_nnum_qrRecv", chosen_line_nnum);
+                intent.putExtra("current_uploadflag_qrRecv", chosen_line_uploadflag);
+                intent.putExtra("current_vbillcode_qrRecv", current_sale_delivery_vbillcodeRecv);
+
+                startActivity(intent);
             }
         });
         uploadAll_saleDeliveryButton.setOnClickListener(new View.OnClickListener() {
@@ -518,28 +519,9 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                             finish();
                         }
                         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
-                        final PurchaseReturnBodyTableAdapter adapterNew = new PurchaseReturnBodyTableAdapter(PurchaseReturnDetail.this, listAllBodyPostition, mListener);
-                        tableBodyListView.setAdapter(adapterNew);
-                        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                adapterNew.select(position);
-                                saleDeliveryScanButton.setEnabled(true);
-                                uploadSingleButton.setEnabled(true);
-                                SaleDeliveryBodyBean local_saleDeliveryBodyBean = (SaleDeliveryBodyBean) adapterNew.getItem(position);
+                        adapter = new PurchaseReturnBodyTableAdapter(PurchaseReturnDetail.this, listAllBodyPostition, mListener);
+                        tableBodyListView.setAdapter(adapter);
 
-                                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getVcooporderbcode_b();
-                                chosen_line_matrname = local_saleDeliveryBodyBean.getMatrname();
-                                chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
-                                chosen_line_matrcode = local_saleDeliveryBodyBean.getMatrcode();
-                                chosen_line_maccode = QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, local_saleDeliveryBodyBean.getVcooporderbcode_b(), local_saleDeliveryBodyBean.getMatrcode());
-                                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannnum();
-                                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-
-                                //        Toast.makeText(SaleDeliveryDetail.this,chosen_line_matrcode,Toast.LENGTH_LONG).show();
-                            }
-                        });
 
                         break;
                     case 0x12:
@@ -564,25 +546,9 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                             finish();
                         }
                         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
-                        final PurchaseReturnBodyTableAdapter adapterNew2 = new PurchaseReturnBodyTableAdapter(PurchaseReturnDetail.this, listAllBodyPostition, mListener);
-                        tableBodyListView.setAdapter(adapterNew2);
-                        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                adapterNew2.select(position);
-                                saleDeliveryScanButton.setEnabled(true);
-                                uploadSingleButton.setEnabled(true);
-                                SaleDeliveryBodyBean local_saleDeliveryBodyBean = (SaleDeliveryBodyBean) adapterNew2.getItem(position);
-                                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getVcooporderbcode_b();
-                                chosen_line_matrname = local_saleDeliveryBodyBean.getMatrname();
-                                chosen_line_matrcode = local_saleDeliveryBodyBean.getMatrcode();
-                                chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
-                                chosen_line_maccode = QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, local_saleDeliveryBodyBean.getVcooporderbcode_b(), local_saleDeliveryBodyBean.getMatrcode());
-                                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannnum();
-                                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-                            }
-                        });
+                        adapter = new PurchaseReturnBodyTableAdapter(PurchaseReturnDetail.this, listAllBodyPostition, mListener);
+                        tableBodyListView.setAdapter(adapter);
+
                         break;
                     case 0x16:
                         Toast.makeText(PurchaseReturnDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
@@ -993,37 +959,20 @@ public class PurchaseReturnDetail extends AppCompatActivity {
         saleDeliveryScanButton.setEnabled(false);
         uploadSingleButton.setEnabled(false);
         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
-        final PurchaseReturnBodyTableAdapter adapterNew = new PurchaseReturnBodyTableAdapter(PurchaseReturnDetail.this, listAllBodyPostition, mListener);
-        tableBodyListView.setAdapter(adapterNew);
-        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapterNew.select(position);
-                saleDeliveryScanButton.setEnabled(true);
-                uploadSingleButton.setEnabled(true);
+        adapter = new PurchaseReturnBodyTableAdapter(PurchaseReturnDetail.this, listAllBodyPostition, mListener);
+        tableBodyListView.setAdapter(adapter);
 
-                PurchaseReturnBodyBean local_saleDeliveryBodyBean = (PurchaseReturnBodyBean) adapterNew.getItem(position);
- //               chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getVcooporderbcode_b();
-                chosen_line_matrname = local_saleDeliveryBodyBean.getMaterialname();
-                chosen_line_cwarename = local_saleDeliveryBodyBean.getWarehouse();
-                chosen_line_matrcode = local_saleDeliveryBodyBean.getMaterialcode();
- //               chosen_line_maccode = QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, local_saleDeliveryBodyBean.getVcooporderbcode_b(), local_saleDeliveryBodyBean.getMatrcode());
-                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannnum();
-                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-            }
-        });
     }
 
     public ArrayList<PurchaseReturnBodyBean> QuerySaleDeliveryBody(String current_sale_delivery_vbillcodeRecv) {
         ArrayList<PurchaseReturnBodyBean> list = new ArrayList<PurchaseReturnBodyBean>();
         Cursor cursor=null;
         switch (getIntent().getIntExtra("type",-1)){
-            case 0:
+            case 6:
                 cursor = db4.rawQuery("select * from PurchaseArrivalBody where vbillcode=?",
                         new String[]{current_sale_delivery_vbillcodeRecv});
                 break;
-            case 1:
+            case 7:
                 cursor = db4.rawQuery("select * from PurchaseReturnBody where vbillcode=?",
                         new String[]{current_sale_delivery_vbillcodeRecv});
                 break;
@@ -1040,6 +989,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                 bean.materialname=cursor.getString(cursor.getColumnIndex("materialname"));
                 bean.materialcode=cursor.getString(cursor.getColumnIndex("materialcode"));
                 bean.warehouse=cursor.getString(cursor.getColumnIndex("warehouse"));
+                bean.maccode=cursor.getString(cursor.getColumnIndex("maccode"));
                 list.add(bean);
             }
             cursor.close();
@@ -1062,17 +1012,17 @@ public class PurchaseReturnDetail extends AppCompatActivity {
         return cwarehousecode;
     }
 
-    public String QueryMaccodeFromDB(String vbillcode, String vcooporderbcode_b, String matrcode) {
+    public String queryMaccodeFromDB(String vbillcode, String vcooporderbcode_b, String matrcode) {
         String maccode = "error";
         Cursor cursor=null;
         switch (getIntent().getIntExtra("type",-1)){
-            case 0:
+            case 6:
                 cursor = db4.rawQuery("select maccode from PurchaseArrivalBody where vbillcode=? " +
-                        "and vcooporderbcode_b=? and matrcode=? ", new String[]{vbillcode, vcooporderbcode_b, matrcode});
+                        "and itempk=? and materialcode=? ", new String[]{vbillcode, vcooporderbcode_b, matrcode});
                 break;
-            case 1:
+            case 7:
                 cursor = db4.rawQuery("select maccode from PurchaseReturnBody where vbillcode=? " +
-                        "and vcooporderbcode_b=? and matrcode=? ", new String[]{vbillcode, vcooporderbcode_b, matrcode});
+                        "and itempk=? and materialcode=? ", new String[]{vbillcode, vcooporderbcode_b, matrcode});
                 break;
         }
 
@@ -1094,14 +1044,15 @@ public class PurchaseReturnDetail extends AppCompatActivity {
         @Override
         public void myOnClick(int position, View v) {
             Intent intent = new Intent(PurchaseReturnDetail.this, SaleDeliveryQRDetail.class);
+            intent.putExtra("type",7);
             intent.putExtra("current_nnum_qr", listAllBodyPostition.get(position).getNnum());
-            intent.putExtra("current_maccode_qr", QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(position).getItempk(), listAllBodyPostition.get(position).getMaterialcode()));
+            intent.putExtra("current_maccode_qr", queryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(position).getItempk(), listAllBodyPostition.get(position).getMaterialcode()));
             intent.putExtra("current_vbillcode_qr", current_sale_delivery_vbillcodeRecv);
 
-          //  intent.putExtra("current_vcooporderbcode_b_qr", listAllBodyPostition.get(position).getVcooporderbcode_b());
-          //  intent.putExtra("current_cwarename_qr", listAllBodyPostition.get(position).getCwarename());
+            intent.putExtra("current_vcooporderbcode_b_qr", listAllBodyPostition.get(position).getItempk());
+            intent.putExtra("current_cwarename_qr", listAllBodyPostition.get(position).getWarehouse());
             intent.putExtra("current_matrname_qr", listAllBodyPostition.get(position).getMaterialname());
-            intent.putExtra("current_matrcode_qr", listAllBodyPostition.get(position).getMaccode());
+            intent.putExtra("current_matrcode_qr", listAllBodyPostition.get(position).getMaterialcode());
           //  intent.putExtra("current_customer_qr", listAllBodyPostition.get(position).getCustomer());
             startActivity(intent);
         }

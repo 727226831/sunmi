@@ -739,7 +739,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
             Intent intent = new Intent(PurchaseReturn.this, PurchaseReturnDetail.class);
             intent.putExtra("current_sale_delivery_vbillcode", listAllPostition.get(position).getVbillcode());
             intent.putExtra("current_sale_delivery_dbilldate", listAllPostition.get(position).getDbilldate());
-            intent.putExtra("type",1);
+            intent.putExtra("type",7);
             startActivity(intent);
 
         }

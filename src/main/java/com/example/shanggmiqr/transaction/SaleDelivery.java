@@ -114,6 +114,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
         tableListView = (ListView) findViewById(R.id.list_sale_delivery);
         saleDeliveryBeanList = querySaleDelivery();
+        Log.i("saleDeliveryBeanList-->",saleDeliveryBeanList.size()+"");
 
 
        adapter = new SaleDeliveryAdapter(SaleDelivery.this, saleDeliveryBeanList, mListener);
@@ -336,7 +337,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
         List<SaleDeliveryQuery.DataBean> saleDeliveryBeanList = saleDeliveryQuery.getData();
         for (SaleDeliveryQuery.DataBean ob : saleDeliveryBeanList) {
-          //  Log.i("SaleDelivery",ob.getVbillcode());
+            Log.i("SaleDelivery",ob.getVbillcode()+"/"+ob.getDr());
 
 
             //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
@@ -701,18 +702,36 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
 
         Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr from SaleDelivery where flag=? order by dbilldate desc", new String[]{"N"});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
+        Log.i("exportList",new Gson().toJson(exportList));
+        String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+        SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("日志yyyy年MM月dd日HH时mm分ss秒");
+        File file=new File(sdCardDir+"/sunmi");
+        if(!file.exists()){
+            file.mkdir();
+        }
+        Date curDate =  new Date(System.currentTimeMillis());
+        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        Toast.makeText(SaleDelivery.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
+        FileOutputStream outputStream=null;
+        try {
+            outputStream=new FileOutputStream(file);
             while (cursor.moveToNext()) {
                 SaleDeliveryBean bean = new SaleDeliveryBean();
                 bean.vbillcode = cursor.getString(cursor.getColumnIndex("vbillcode"));
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
                 list.add(bean);
+                outputStream.write("\r\n".getBytes());
+                outputStream.write((bean.vbillcode+"/"+bean.dr).getBytes());
             }
+            outputStream.close();
 
-            cursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+            //判断cursor中是否存在数据
+
+        cursor.close();
         return list;
     }
     public ArrayList<SaleDeliveryBean> displayAllSaleDelivery() {

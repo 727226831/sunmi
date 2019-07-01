@@ -13,7 +13,6 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -25,11 +24,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.shanggmiqr.adapter.SaleDeliveryScannerAdapter;
 import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.LoanScannerAdapter;
-import com.example.shanggmiqr.bean.OutgoingScanResultBean;
 import com.example.shanggmiqr.bean.SaleDeliveryScanResultBean;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
@@ -102,7 +99,7 @@ public class LoanQrScanner extends AppCompatActivity {
         //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。
         db5 = helper5.getWritableDatabase();//获取到了 SQLiteDatabase 对象
         tableBodyListView = (ListView) findViewById(R.id.list_body_loan_qrdetail_scanner);
-        scannnumText.setText("已扫码数量：" + countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv));
+        scannnumText.setText("已扫码数量：" + countSum());
         spinner = findViewById(R.id.loan_spinner_scanner_text);
         myadapter();
         List<SaleDeliveryScanResultBean> list = showScannedQR();
@@ -159,7 +156,8 @@ public class LoanQrScanner extends AppCompatActivity {
                         List<SaleDeliveryScanResultBean> list = showScannedQR();
                         LoanScannerAdapter adapter = new LoanScannerAdapter(LoanQrScanner.this, list, mListener2);
                         tableBodyListView.setAdapter(adapter);
-                        String current_scanSum = countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv);
+
+                        int current_scanSum =countSum();
                         scannnumText.setText("已扫码数量：" + current_scanSum);
                         DataHelper.updateSaleDeliveryBodyscannum(db5,current_scanSum,current_vbillcode_qrRecv,
                                 current_vcooporderbcode_b_qrRecv);
@@ -221,7 +219,7 @@ public class LoanQrScanner extends AppCompatActivity {
                 return;
             }
 
-            InsertintoTempQrDBForSaleDelivery(productcode);
+            insertintoTempQrDBForSaleDelivery(productcode);
             boxCodeEditText.setText("");
         }
 
@@ -336,17 +334,7 @@ public class LoanQrScanner extends AppCompatActivity {
         return 0;
     }
 
-    private String countScannedQRCode(String vbillcode, String matrcode) {
-        String count = "0";
-        Cursor cursor2 = db5.rawQuery("select prodcutcode from LoanScanResult where pobillcode=? and materialcode=? and itempk=?", new String[]{vbillcode, matrcode, current_vcooporderbcode_b_qrRecv});
-        if (cursor2 != null && cursor2.getCount() > 0) {
-            //判断cursor中是否存在数据
-            count = String.valueOf(cursor2.getCount());
-            cursor2.close();
-            return count;
-        }
-        return count;
-    }
+
 
     private boolean isAlreadyScanned(String s) {
         Cursor cursor = db5.rawQuery("select * from LoanScanResult where pobillcode=? and prodcutcode=? and itempk=?",
@@ -386,7 +374,7 @@ public class LoanQrScanner extends AppCompatActivity {
         return list;
     }
 
-    private void InsertintoTempQrDBForSaleDelivery(String productcode) {
+    private void insertintoTempQrDBForSaleDelivery(String productcode) {
 //插入临时数据库保持条码信息并显示在此页面
 
         new Thread(new Runnable() {
@@ -452,12 +440,12 @@ public class LoanQrScanner extends AppCompatActivity {
             if (!isAlreadyUpload(listDel.get(position).getProdcutcode())) {
                 db5.execSQL("delete from LoanScanResult where pobillcode=? and prodcutcode=? and itempk=?", new Object[]{current_vbillcode_qrRecv, listDel.get(position).getProdcutcode(), current_vcooporderbcode_b_qrRecv});
                 count = countSum();
-                String current_scanSum = countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv);
-                insertCountOfScannedQRCode(current_scanSum);
+
+                insertCountOfScannedQRCode(count+"");
                 List<SaleDeliveryScanResultBean> list = showScannedQR();
                 LoanScannerAdapter adapter = new LoanScannerAdapter(LoanQrScanner.this, list, mListener2);
                 tableBodyListView.setAdapter(adapter);
-                scannnumText.setText("已扫码数量：" + countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv));
+                scannnumText.setText("已扫码数量：" + count);
             } else {
                 Toast.makeText(LoanQrScanner.this, "已经执行发货操作的行号不允许再进行操作", Toast.LENGTH_LONG).show();
             }
