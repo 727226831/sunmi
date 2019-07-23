@@ -20,6 +20,16 @@ public class SaleDeliveryQuery {
     private int errno;
     private int pagenum;
     private int pagetotal;
+
+    public String getErrmsg() {
+        return errmsg;
+    }
+
+    public void setErrmsg(String errmsg) {
+        this.errmsg = errmsg;
+    }
+
+    private String errmsg;
     private List<DataBean> data;
 
     public void setTs(String ts) {
@@ -92,6 +102,8 @@ public class SaleDeliveryQuery {
         private String vmemo;
         private String country;
 
+
+
         public int getDr() {
             return dr;
         }
@@ -101,7 +113,16 @@ public class SaleDeliveryQuery {
         }
 
         private int dr;
-        private List<BodysBean> bodys;
+
+        public List<BodysBean> getBody() {
+            return body;
+        }
+
+        public void setBody(List<BodysBean> body) {
+            this.body = body;
+        }
+
+        private List<BodysBean> body;
 
         public void setVtrantypecode(String vtrantypecode) {
             this.vtrantypecode = vtrantypecode;
@@ -147,9 +168,7 @@ public class SaleDeliveryQuery {
             this.country = country;
         }
 
-        public void setBodys(List<BodysBean> bodys) {
-            this.bodys = bodys;
-        }
+
 
         public String getVtrantypecode() {
             return vtrantypecode;
@@ -195,9 +214,7 @@ public class SaleDeliveryQuery {
             return country;
         }
 
-        public List<BodysBean> getBodys() {
-            return bodys;
-        }
+
 
         public static class BodysBean {
             /**
@@ -218,6 +235,15 @@ public class SaleDeliveryQuery {
             private String rackcode;
             private String Customer;
             private String cwarehousecode;
+            private String issn;
+            public String getIssn() {
+                return issn;
+            }
+
+            public void setIssn(String issn) {
+                this.issn = issn;
+            }
+
 
             public void setVcooporderbcode_b(String vcooporderbcode_b) {
                 this.vcooporderbcode_b = vcooporderbcode_b;

@@ -20,6 +20,16 @@ public class CommonSendBean implements Serializable{
     private String pagenum;
     private String pagetotal;
 
+    public String getAppuser() {
+        return appuser;
+    }
+
+    public void setAppuser(String appuser) {
+        this.appuser = appuser;
+    }
+
+    private String appuser;
+
     public CommonSendBean(String begintime,String endtime,String pagenum,String pagetotal){
         this.begintime = begintime;
         this.endtime = endtime;

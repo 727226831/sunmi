@@ -55,7 +55,7 @@ import java.util.Calendar;
 import java.util.List;
 
 /**
- * Created by weiyt.jiang on 2018/8/9.
+ * 采购退货
  */
 
 public class PurchaseReturn extends AppCompatActivity implements OnClickListener {

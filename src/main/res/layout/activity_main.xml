@@ -29,7 +29,7 @@
                 android:textSize="17sp" />
 
             <EditText
-                android:text="郭存富"
+                android:text="APP01"
                 android:id="@+id/accountEdittext"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -61,7 +61,8 @@
                 android:textSize="17sp" />
 
             <EditText
-                android:text="SM0890"
+                android:inputType="textPassword"
+                android:text="123456"
                 android:id="@+id/pwdEdittext"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"

@@ -135,15 +135,16 @@ public class OtherEntryDetail extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (!isAlreadyUpload()) {
-                    Intent intent = new Intent(OtherEntryDetail.this, OtherEntryQrScanner.class);
+                  //  Intent intent = new Intent(OtherEntryDetail.this, OtherEntryQrScanner.class);
+                    Intent intent = new Intent(OtherEntryDetail.this,SaleDeliveryQrScanner.class);
                     intent.putExtra("type",type);
-                    intent.putExtra("current_pobillcode_scanner", current_pobillcodeRecv);
+                    intent.putExtra("current_vbillcode_qrRecv", current_pobillcodeRecv);
                     intent.putExtra("current_cwarename_scanner", current_cwarenameRecv);
-                    intent.putExtra("chosen_line_maccode_scanner", chosen_line_maccode);
-                    intent.putExtra("chosen_line_materialcode_scanner", chosen_line_materialcode);
-                    intent.putExtra("chosen_line_nnum_scanner", String.valueOf(chosen_line_nnum));
+                    intent.putExtra("current_maccode_qrRecv", chosen_line_maccode);
+                    intent.putExtra("current_matrcode_qrRecv", chosen_line_materialcode);
+                    intent.putExtra("current_nnum_qrRecv", String.valueOf(chosen_line_nnum));
                     intent.putExtra("chosen_line_uploadnum_scanner", chosen_line_uploadnum);
-                    intent.putExtra("chosen_line_vcooporderbcode_b_scanner", chosen_line_vcooporderbcode_b);
+                    intent.putExtra("current_vcooporderbcode_b_qrRecv", chosen_line_vcooporderbcode_b);
                     startActivity(intent);
                 } else {
                     Toast.makeText(OtherEntryDetail.this, "此订单已经提交过，不允许再次操作", Toast.LENGTH_LONG).show();

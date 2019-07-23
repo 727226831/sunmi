@@ -394,6 +394,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                 valuesInner.put("rwarehousecode", rwarehousecode);
                 valuesInner.put("cwarehousecode", cwarehousecode);
                 valuesInner.put("scannum", scannum);
+                valuesInner.put("issn",obb.getIssn());
                 //N代表尚未上传
                 valuesInner.put("uploadflag", "N");
                 db3.insert("AllocateTransferBody", null, valuesInner);

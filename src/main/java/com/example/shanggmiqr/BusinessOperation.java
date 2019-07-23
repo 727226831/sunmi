@@ -1,12 +1,14 @@
 package com.example.shanggmiqr;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.example.shanggmiqr.bean.MenuBean;
 import com.example.shanggmiqr.transaction.AllocateTransfer;
 import com.example.shanggmiqr.transaction.LoanBill;
 import com.example.shanggmiqr.transaction.OtherEntry;
@@ -17,6 +19,7 @@ import com.example.shanggmiqr.transaction.SaleDelivery;
 import com.example.shanggmiqr.util.MyImageView;
 import com.example.shanggmiqr.util.Utils;
 import com.example.weiytjiang.shangmiqr.R;
+import com.google.gson.Gson;
 
 /**
  * Created by weiyt.jiang on 2018/8/8.
@@ -72,13 +75,35 @@ public class BusinessOperation extends AppCompatActivity implements MyImageView.
         purchaseReturnButtonView.setOnClickListener(BusinessOperation.this);
        // materialOutButtonView.setOnClickListener(BusinessOperation.this);
         productEntryButtonView.setOnClickListener(BusinessOperation.this);
-      // allocateButtonView.setVisibility(View.INVISIBLE);
-      //  loanReturnButtonView.setVisibility(View.INVISIBLE);
-      //  purchaseReturnButtonView.setVisibility(View.INVISIBLE);
-      //  materialOutButtonView.setVisibility(View.INVISIBLE);
-   //     loanButtonView.setVisibility(View.INVISIBLE);
- //       productEntryButtonView.setVisibility(View.INVISIBLE);
+         initView();
+
     }
+
+    private void initView() {
+        SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
+        MenuBean menuBean=new Gson().fromJson(currentAccount.getString("menubean",""),MenuBean.class);
+        for (int i = 0; i <menuBean.getPower().size() ; i++) {
+            if (menuBean.getPower().get(i).getMenucode().equals("XSCK")){
+                saleDeliveryButtonView.setVisibility(View.VISIBLE);
+            }else if (menuBean.getPower().get(i).getMenucode().equals("CGRK")){
+               purchaseArrivalButtonView.setVisibility(View.VISIBLE);
+            }else if (menuBean.getPower().get(i).getMenucode().equals("JCCK")){
+               loanButtonView.setVisibility(View.VISIBLE);
+            }else if (menuBean.getPower().get(i).getMenucode().equals("CCPRK")){
+              productEntryButtonView.setVisibility(View.VISIBLE);
+            } else if (menuBean.getPower().get(i).getMenucode().equals("QTCK")){
+                otherOutgoingButtonView.setVisibility(View.VISIBLE);
+            } else if (menuBean.getPower().get(i).getMenucode().equals("QTRK")){
+                otherEntryButtonView.setVisibility(View.VISIBLE);
+            } else if (menuBean.getPower().get(i).getMenucode().equals("DBCK")){
+                allocateButtonView.setVisibility(View.VISIBLE);
+            }else if (menuBean.getPower().get(i).getMenucode().equals("CGTH")){
+                purchaseReturnButtonView.setVisibility(View.VISIBLE);
+
+            }
+        }
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {

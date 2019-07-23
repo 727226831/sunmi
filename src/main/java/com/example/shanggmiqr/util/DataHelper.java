@@ -168,11 +168,13 @@ public class DataHelper {
         //判断cursor中是否存在数据
         while (cursor.moveToNext()) {
             String code = cursor.getString(cursor.getColumnIndex("code"));
+
             if (code.equals(matrcode)) {
                 cursor.close();
                 return true;
             }
         }
+
         cursor.close();
         return false;
     }
@@ -259,6 +261,7 @@ public class DataHelper {
                 valuesInner.put("uploadnum", "0");
                 valuesInner.put("scannum", scannum);
                 valuesInner.put("uploadflag", "N");
+
                 valuesInner.put("vcooporderbcode_b", vcooporderbcode_b);
 
                 db.insert(otherbodyTable, null, valuesInner);
@@ -358,6 +361,7 @@ public class DataHelper {
         String endtime = getDefaultEndTime();
 
         CommonSendBean userSend = new CommonSendBean(begintime, endtime, pagenum, "0");
+        userSend.setAppuser(getUser(context));
         Gson gson = new Gson();
         String userSendBean = gson.toJson(userSend);
         request.addProperty("string", workCode);
@@ -380,6 +384,12 @@ public class DataHelper {
        String otherOutgoingDataResp = object.getProperty(0).toString();
         return otherOutgoingDataResp;
     }
+
+    private static String getUser(Context context) {
+        SharedPreferences currentAccount= context.getSharedPreferences("current_account", 0);
+        return  currentAccount.getString("user","");
+    }
+
     public  static  void  setLatestdownloadtime(String begin,int type,Context context){
         String name=null;
         switch (type){

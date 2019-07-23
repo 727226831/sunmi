@@ -188,6 +188,16 @@ public class AllocateTransferQuery {
             private String maccode;
             private String materialcode;
 
+            public String getIssn() {
+                return issn;
+            }
+
+            public void setIssn(String issn) {
+                this.issn = issn;
+            }
+
+            private String issn;
+
             public String getCwarehousecode() {
                 return cwarehousecode;
             }

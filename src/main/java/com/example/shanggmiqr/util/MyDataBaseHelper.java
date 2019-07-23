@@ -70,7 +70,7 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
             + "dbilldate text," + "deptcode text,"+ "Pupsndoccode text,"+ "Transporttypecode text,"+ "billmakercode text,"+ "vmemo text,"+ "flag text,"+ "country text)";
     public static final String SaleDeliveryBody = "create table SaleDeliveryBody ("
             + "id integer primary key autoincrement," + "vbillcode text,"+ "vcooporderbcode_b text," + "matrcode text," + "matrname text,"
-            + "maccode text," + "nnum text," + "scannum text," + "rackcode text,"+ "customer text,"+ "uploadflag text,"+ "cwarename text,"+ "orginal_cwarename text,"+ "cwarehousecode text)";
+            + "maccode text," + "nnum text," + "scannum text," + "rackcode text,"+ "customer text,"+ "uploadflag text,"+ "cwarename text,"+"issn,"+ "orginal_cwarename text,"+ "cwarehousecode text)";
     public static final String SaleDeliveryScanResult = "create table SaleDeliveryScanResult ("
             + "id integer primary key autoincrement," + "vbillcode text,"+ "vcooporderbcode_b text,"+ "matrcode text," + "platecode text,"
             + "boxcode text," + "num text," + "prodcutcode text," + "itemuploadflag text,"+ "xlh text)";

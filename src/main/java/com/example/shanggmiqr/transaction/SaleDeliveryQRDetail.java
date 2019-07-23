@@ -257,7 +257,8 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
 
     private String countScannedQRCode(String vbillcode, String matrcode) {
         String count = "0";
-        Cursor cursor2 = db5.rawQuery("select prodcutcode from SaleDeliveryScanResult where vbillcode=? and matrcode=? and vcooporderbcode_b=?", new String[]{vbillcode, matrcode,current_vcooporderbcode_b_qrRecv});
+        Cursor cursor2 = db5.rawQuery("select prodcutcode from SaleDeliveryScanResult where vbillcode=? and matrcode=? and vcooporderbcode_b=?",
+                new String[]{vbillcode, matrcode,current_vcooporderbcode_b_qrRecv});
         if (cursor2 != null && cursor2.getCount() > 0) {
             //判断cursor中是否存在数据
             count = String.valueOf(cursor2.getCount());

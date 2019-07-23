@@ -54,7 +54,7 @@ import java.util.Calendar;
 import java.util.List;
 
 /**
- * Created by weiyt.jiang on 2018/8/9.
+ * 采购发货
  */
 
 public class PurchaseArrival extends AppCompatActivity implements OnClickListener {

@@ -668,6 +668,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                 chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
 
 
+
             }
         });
 
@@ -861,7 +862,8 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         SoapObject request = new SoapObject(namespace, methodName);
         // 设置需调用WebService接口需要传入的两个参数string、string1
         ArrayList<SaleDeliverySendBean.BodyBean> bodylist = new ArrayList<SaleDeliverySendBean.BodyBean>();
-        Cursor cursor2 = db4.rawQuery("select vcooporderbcode_b,matrcode,cwarename,nnum,scannum from SaleDeliveryBody where vbillcode=? ", new String[]{current_sale_delivery_vbillcodeRecv});
+        Cursor cursor2 = db4.rawQuery("select vcooporderbcode_b,matrcode,cwarename,nnum,scannum from SaleDeliveryBody where vbillcode=? ",
+                new String[]{current_sale_delivery_vbillcodeRecv});
         if (cursor2 != null && cursor2.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor2.moveToNext()) {
@@ -927,7 +929,8 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         List<String> stringList=new ArrayList<>();
         stringList = Arrays.asList(expressCode.split("\\s+"));
         for (int i = 0; i <stringList.size() ; i++) {
-            SaleDeliverySendBean otherOutgoingSend = new SaleDeliverySendBean("APP", "123456",current_user, wlCode,stringList.get(i), upload_all_cwarehousecode, current_bisreturn, current_sale_delivery_vbillcodeRecv, bodylist);
+            SaleDeliverySendBean otherOutgoingSend = new SaleDeliverySendBean("APP", "123456",current_user,
+                    wlCode,stringList.get(i), upload_all_cwarehousecode, current_bisreturn, current_sale_delivery_vbillcodeRecv, bodylist);
             otherOutgoingSend.setCwhsmanagercode( currentAccount.getString("current_account",""));
             Gson gson = new Gson();
             String userSendBean = gson.toJson(otherOutgoingSend);

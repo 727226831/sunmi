@@ -13,6 +13,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -49,6 +50,7 @@ import com.zyao89.view.zloading.ZLoadingDialog;
 
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -194,7 +196,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                                         return;
                                     }
                                     Gson gson7 = new Gson();
-                                    SaleDeliveryQuery saleDeliveryQuery = gson7.fromJson(saleDeliveryData, SaleDeliveryQuery.class);
+                                    final SaleDeliveryQuery saleDeliveryQuery = gson7.fromJson(saleDeliveryData, SaleDeliveryQuery.class);
 
                                     if (saleDeliveryQuery.getPagetotal() == 1) {
                                         insertDownloadDataToDB(saleDeliveryQuery);
@@ -203,9 +205,15 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                                         saleDeliveryHandler.sendMessage(msg);
                                     } else if (saleDeliveryQuery.getPagetotal() < 1) {
 
-                                        Message msg = new Message();
-                                        msg.what = 0x12;
-                                        saleDeliveryHandler.sendMessage(msg);
+                                     runOnUiThread(new Runnable() {
+                                         @Override
+                                         public void run() {
+
+                                             dialog.dismiss();
+                                             Toast.makeText(SaleDelivery.this, saleDeliveryQuery.getErrmsg(), Toast.LENGTH_LONG).show();
+
+                                         }
+                                     });
 
                                     } else {
                                         insertDownloadDataToDB(saleDeliveryQuery);
@@ -336,38 +344,59 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     private void insertDownloadDataToDB(SaleDeliveryQuery saleDeliveryQuery) {
 
         List<SaleDeliveryQuery.DataBean> saleDeliveryBeanList = saleDeliveryQuery.getData();
-        for (SaleDeliveryQuery.DataBean ob : saleDeliveryBeanList) {
-            Log.i("SaleDelivery",ob.getVbillcode()+"/"+ob.getDr());
 
 
-            //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
-             switch (ob.getDr()){
-                 case 0:
-                     setSaleDeliveryData(ob);
-                     setSaleDeliverybodyData(ob);
-                     break;
-                 case 1:
-                     db3.delete("SaleDelivery", "vbillcode=?", new String[]{ob.getVbillcode()});
-                     db3.delete("SaleDeliveryBody", "vbillcode=?", new String[]{ob.getVbillcode()});
-                     db3.delete("SaleDeliveryScanResult", "vbillcode=?", new String[]{ob.getVbillcode()});
-                     break;
-                 case 2:
-                     db3.delete("SaleDelivery", "vbillcode=?", new String[]{ob.getVbillcode()});
-                     db3.delete("SaleDeliveryBody", "vbillcode=?", new String[]{ob.getVbillcode()});
-                     db3.delete("SaleDeliveryScanResult", "vbillcode=?", new String[]{ob.getVbillcode()});
-                     setSaleDeliveryData(ob);
-                     setSaleDeliverybodyData(ob);
-                     break;
-
-             }
-
+        String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+        SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("日志yyyy年MM月dd日HH时mm分ss秒");
+        File file=new File(sdCardDir+"/sunmi");
+        if(!file.exists()){
+            file.mkdir();
         }
+        Date curDate =  new Date(System.currentTimeMillis());
+        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        FileOutputStream outputStream=null;
+        try {
+            outputStream=new FileOutputStream(file);
+            for (SaleDeliveryQuery.DataBean ob : saleDeliveryBeanList) {
+
+                outputStream.write("\r\n".getBytes());
+                outputStream.write((ob.getVbillcode()+"/"+ob.getDr()).getBytes());
+                //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
+                switch (ob.getDr()){
+                    case 0:
+                        setSaleDeliveryData(ob);
+                        setSaleDeliverybodyData(ob);
+                        break;
+                    case 1:
+                        db3.delete("SaleDelivery", "vbillcode=?", new String[]{ob.getVbillcode()});
+                        db3.delete("SaleDeliveryBody", "vbillcode=?", new String[]{ob.getVbillcode()});
+                        db3.delete("SaleDeliveryScanResult", "vbillcode=?", new String[]{ob.getVbillcode()});
+                        break;
+                    case 2:
+                        db3.delete("SaleDelivery", "vbillcode=?", new String[]{ob.getVbillcode()});
+                        db3.delete("SaleDeliveryBody", "vbillcode=?", new String[]{ob.getVbillcode()});
+                        db3.delete("SaleDeliveryScanResult", "vbillcode=?", new String[]{ob.getVbillcode()});
+                        setSaleDeliveryData(ob);
+                        setSaleDeliverybodyData(ob);
+                        break;
+
+                }
+
+            }
+
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
 
 
 
     private void setSaleDeliverybodyData(SaleDeliveryQuery.DataBean ob) {
-        List<SaleDeliveryQuery.DataBean.BodysBean> saleDeliveryDatabodysList = ob.getBodys();
+        List<SaleDeliveryQuery.DataBean.BodysBean> saleDeliveryDatabodysList = ob.getBody();
+
         for (SaleDeliveryQuery.DataBean.BodysBean obb : saleDeliveryDatabodysList) {
             String cwarename = getCwarename(obb.getCwarehousecode());
             String orginal_cwarename = existOriginalCwarename(obb.getCwarehousecode());
@@ -389,6 +418,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
             valuesInner.put("orginal_cwarename", orginal_cwarename);
             //N代表尚未上传
             valuesInner.put("uploadflag", "N");
+            valuesInner.put("issn",obb.getIssn());
 
             db3.insert("SaleDeliveryBody", null, valuesInner);
             valuesInner.clear();
@@ -413,6 +443,8 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         values.put("dr", ob.getDr());
         values.put("flag", "N");
         values.put("vmemo",ob.getVmemo());
+
+
         // 插入第一条数据
         db3.insert("SaleDelivery", null, values);
         values.clear();
@@ -702,34 +734,16 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
 
         Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr from SaleDelivery where flag=? order by dbilldate desc", new String[]{"N"});
-        Log.i("exportList",new Gson().toJson(exportList));
-        String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-        SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("日志yyyy年MM月dd日HH时mm分ss秒");
-        File file=new File(sdCardDir+"/sunmi");
-        if(!file.exists()){
-            file.mkdir();
-        }
-        Date curDate =  new Date(System.currentTimeMillis());
-        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
-        Toast.makeText(SaleDelivery.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
-        FileOutputStream outputStream=null;
-        try {
-            outputStream=new FileOutputStream(file);
+
+
             while (cursor.moveToNext()) {
                 SaleDeliveryBean bean = new SaleDeliveryBean();
                 bean.vbillcode = cursor.getString(cursor.getColumnIndex("vbillcode"));
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
                 list.add(bean);
-                outputStream.write("\r\n".getBytes());
-                outputStream.write((bean.vbillcode+"/"+bean.dr).getBytes());
-            }
-            outputStream.close();
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-            //判断cursor中是否存在数据
+            }
 
         cursor.close();
         return list;
@@ -761,6 +775,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
             Intent intent = new Intent(SaleDelivery.this, SaleDeliveryDetail.class);
             intent.putExtra("current_sale_delivery_vbillcode", saleDeliveryBeanList.get(position).getVbillcode());
             intent.putExtra("current_sale_delivery_dbilldate", saleDeliveryBeanList.get(position).getDbilldate());
+
             startActivity(intent);
 
         }

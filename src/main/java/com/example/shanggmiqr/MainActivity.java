@@ -31,6 +31,8 @@ import android.widget.Toast;
 
 import com.example.shanggmiqr.Url.iUrl;
 import com.example.shanggmiqr.bean.CommonSendNoPagetotalBean;
+import com.example.shanggmiqr.bean.LoginBean;
+import com.example.shanggmiqr.bean.MenuBean;
 import com.example.shanggmiqr.bean.User;
 import com.example.shanggmiqr.util.BaseConfig;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
@@ -41,6 +43,7 @@ import com.google.gson.Gson;
 import com.zyao89.view.zloading.ZLoadingDialog;
 import com.zyao89.view.zloading.Z_TYPE;
 
+import org.json.JSONObject;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
@@ -107,33 +110,61 @@ public class MainActivity extends AppCompatActivity {
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错
         db = helper.getWritableDatabase();//获取到了 SQLiteDatabase 对象
-        if (isUserDBEmpty()) {
-            mlogInButton.setEnabled(false);
-        } else {
-            mlogInButton.setEnabled(true);
-        }
+//        if (isUserDBEmpty()) {
+//            mlogInButton.setEnabled(false);
+//        } else {
+//            mlogInButton.setEnabled(true);
+//        }
         mlogInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Message msgLogin = new Message();
-                        if (searchUser(accountEdittext.getText().toString(), pwdEdittext.getText().toString())) {
-                            SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
-                            SharedPreferences.Editor editor1 = currentAccount.edit();
-                            editor1.putString("current_account",pwdEdittext.getText().toString());
+                        if (isNetworkConnected(MainActivity.this)) {
+                            try {
+                               final MenuBean menuBean=new Gson().fromJson(login(),MenuBean.class);
+                               if(menuBean.getIssuccess().equals("Y")){
+                                   SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
+                                   SharedPreferences.Editor editor1 = currentAccount.edit();
+                                   editor1.putString("user",accountEdittext.getText().toString());
+                                   editor1.putString("password",pwdEdittext.getText().toString());
+                                   editor1.putString("menubean",new Gson().toJson(menuBean));
+                                   editor1.commit();
 
-                            editor1.commit();
-                            msgLogin.what = 0x13;
-                            mHandler.sendMessage(msgLogin);
-                            Intent intent = new Intent(MainActivity.this, TopMenu.class);
-                            intent.putExtra("from_login", "Y");
-                            startActivity(intent);
-                        } else {
-                            msgLogin.what = 0x14;
-                            mHandler.sendMessage(msgLogin);
+                                   Intent intent = new Intent(MainActivity.this, TopMenu.class);
+                                   intent.putExtra("from_login", "Y");
+                                   startActivity(intent);
+
+                               }else {
+                                 runOnUiThread(new Runnable() {
+                                     @Override
+                                     public void run() {
+                                         Toast.makeText(MainActivity.this, menuBean.getErrmsg(), Toast.LENGTH_LONG).show();
+                                     }
+                                 });
+                               }
+                            } catch (Exception e) {
+
+                            }
                         }
+//                        Message msgLogin = new Message();
+//                        if (searchUser(accountEdittext.getText().toString(), pwdEdittext.getText().toString())) {
+//                            SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
+//                            SharedPreferences.Editor editor1 = currentAccount.edit();
+//                            editor1.putString("user",accountEdittext.getText().toString());
+//                            editor1.putString("password",pwdEdittext.getText().toString());
+//                            editor1.commit();
+//                            msgLogin.what = 0x13;
+//                            mHandler.sendMessage(msgLogin);
+//                            Intent intent = new Intent(MainActivity.this, TopMenu.class);
+//                            intent.putExtra("from_login", "Y");
+//                            startActivity(intent);
+//                        } else {
+//                            msgLogin.what = 0x14;
+//                            mHandler.sendMessage(msgLogin);
+//                        }
                     }
                 }).start();
 
@@ -419,6 +450,72 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (IOException e) {
            // e.printStackTrace();
+            Bundle bundle = new Bundle();
+            bundle.putString("Exception333", e.toString());
+            Message msg = new Message();
+            msg.what = 0x16;
+            msg.setData(bundle);
+            mHandler.sendMessage(msg);
+        } catch (XmlPullParserException e) {
+            //e.printStackTrace();
+            Bundle bundle = new Bundle();
+            bundle.putString("Exception333", e.toString());
+            Message msg = new Message();
+            msg.what = 0x16;
+            msg.setData(bundle);
+            mHandler.sendMessage(msg);
+        }
+        return result;
+    }
+    public String login() throws Exception {
+        String WSDL_URI;
+        String namespace;
+
+        String WSDL_URI_current = BaseConfig.getNcUrl();//wsdl 的uri
+        String namespace_current = "http://schemas.xmlsoap.org/soap/envelope/";//namespace
+        String methodName = "sendToWISE";//要调用的方法名称
+        SharedPreferences proxySp = getSharedPreferences("configInfo", 0);
+        if (proxySp.getString("WSDL_URI", WSDL_URI_current).equals("") || proxySp.getString("namespace", namespace_current).equals("")) {
+            WSDL_URI = WSDL_URI_current;
+            namespace = namespace_current;
+        } else {
+            WSDL_URI = proxySp.getString("WSDL_URI", WSDL_URI_current);
+            namespace = proxySp.getString("namespace", namespace_current);
+        }
+        SoapObject request = new SoapObject(namespace, methodName);
+
+
+        request.addProperty("string", "R74");
+        LoginBean loginBean=new LoginBean();
+        loginBean.setAppuser(accountEdittext.getText().toString());
+        loginBean.setApppassword(pwdEdittext.getText().toString());
+        request.addProperty("string1",new Gson().toJson(loginBean));
+        Log.i("request-->",request.toString());
+
+        //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
+        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
+
+        envelope.bodyOut = request;
+        envelope.dotNet = false;
+
+        HttpTransportSE se = new HttpTransportSE(WSDL_URI);
+        try {
+            //   se.call(null, envelope);//调用
+            se.call(namespace + "sendToWISE", envelope);
+            // 获取返回的数据
+            SoapObject object = (SoapObject) envelope.bodyIn;
+            Log.i("response-->",object.toString());
+            // 获取返回的结果
+            result = object.getProperty(0).toString();
+            //   JSONObject jsonObject = new JSONObject(result);
+            Log.i("result-->",result);
+
+            //等login后再关闭
+            // db.close();
+            return result;
+
+        } catch (IOException e) {
+            // e.printStackTrace();
             Bundle bundle = new Bundle();
             bundle.putString("Exception333", e.toString());
             Message msg = new Message();

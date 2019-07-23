@@ -13,6 +13,7 @@
         android:weightSum="1">
 
         <com.example.shanggmiqr.util.MyImageView
+            android:visibility="gone"
             android:id="@+id/sale_delivery"
             android:layout_width="170dp"
             android:layout_height="108dp"
@@ -23,6 +24,7 @@
             android:layout_weight="0.29" />
 
         <com.example.shanggmiqr.util.MyImageView
+            android:visibility="gone"
             android:id="@+id/other_entry"
             android:layout_width="170dp"
             android:layout_height="108dp"
@@ -37,6 +39,7 @@
         android:orientation="horizontal" >
 
         <com.example.shanggmiqr.util.MyImageView
+            android:visibility="gone"
             android:id="@+id/other_outgoing"
             android:layout_width="170dp"
             android:layout_height="108dp"
@@ -45,7 +48,7 @@
             android:scaleType="matrix"
             android:src="@drawable/other_outgoing" />
         <com.example.shanggmiqr.util.MyImageView
-
+            android:visibility="gone"
             android:id="@+id/product_entry"
             android:layout_width="170dp"
             android:layout_height="108dp"
@@ -59,7 +62,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal" >
         <com.example.shanggmiqr.util.MyImageView
-
+            android:visibility="gone"
             android:id="@+id/loan"
             android:layout_width="170dp"
             android:layout_height="108dp"
@@ -67,7 +70,7 @@
             android:scaleType="matrix"
             android:src="@drawable/loan" />
         <com.example.shanggmiqr.util.MyImageView
-
+            android:visibility="gone"
             android:id="@+id/allocate"
             android:layout_width="170dp"
             android:layout_height="108dp"
@@ -83,7 +86,7 @@
         android:orientation="horizontal" >
 
         <com.example.shanggmiqr.util.MyImageView
-
+            android:visibility="gone"
             android:id="@+id/purchase_arrival"
             android:layout_width="170dp"
             android:layout_height="108dp"
@@ -92,7 +95,7 @@
             android:scaleType="matrix"
             android:src="@drawable/purchase_arrival" />
         <com.example.shanggmiqr.util.MyImageView
-
+            android:visibility="gone"
             android:id="@+id/purchase_return"
             android:layout_width="170dp"
             android:layout_height="108dp"
