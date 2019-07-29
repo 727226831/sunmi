@@ -4,9 +4,19 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.OrientationHelper;
+import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.example.shanggmiqr.bean.MenuBean;
 import com.example.shanggmiqr.transaction.AllocateTransfer;
@@ -21,31 +31,16 @@ import com.example.shanggmiqr.util.Utils;
 import com.example.weiytjiang.shangmiqr.R;
 import com.google.gson.Gson;
 
+import java.util.List;
+
 /**
  * Created by weiyt.jiang on 2018/8/8.
  */
 
-public class BusinessOperation extends AppCompatActivity implements MyImageView.OnClickListener{
-    //销售发货
-    private MyImageView saleDeliveryButtonView;
-    //其他入库
-    private MyImageView otherEntryButtonView;
-    //其他出库
-    private MyImageView otherOutgoingButtonView;
-    //调拨出库
-    private MyImageView allocateButtonView;
-    //借出还回
-    private MyImageView loanReturnButtonView;
-    //采购退货R39
-    private MyImageView purchaseReturnButtonView;
-    //采购到货R40
-    private MyImageView purchaseArrivalButtonView;
-    //材料出库
-  //  private MyImageView materialOutButtonView;
-    //产成品入库
-    private MyImageView productEntryButtonView;
-    //借出
-    private MyImageView loanButtonView;
+public class BusinessOperation extends AppCompatActivity {
+
+    private RecyclerView recyclerView;
+    Intent intent;
     @Override
     protected void onCreate( Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,157 +50,114 @@ public class BusinessOperation extends AppCompatActivity implements MyImageView.
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-        saleDeliveryButtonView = (MyImageView)findViewById(R.id.sale_delivery);
-        otherEntryButtonView = (MyImageView)findViewById(R.id.other_entry);
-        otherOutgoingButtonView = (MyImageView)findViewById(R.id.other_outgoing);
-        allocateButtonView = (MyImageView)findViewById(R.id.allocate);
-        purchaseArrivalButtonView = (MyImageView)findViewById(R.id.purchase_arrival) ;
-       // loanReturnButtonView = (MyImageView)findViewById(R.id.loan_return);
-        purchaseReturnButtonView = (MyImageView)findViewById(R.id.purchase_return);
-      //  materialOutButtonView = (MyImageView)findViewById(R.id.material_out);
-        productEntryButtonView = (MyImageView)findViewById(R.id.product_entry);
-        loanButtonView = (MyImageView)findViewById(R.id.loan);
-        saleDeliveryButtonView.setOnClickListener(BusinessOperation.this);
-        purchaseArrivalButtonView.setOnClickListener(BusinessOperation.this);
-        otherEntryButtonView.setOnClickListener(BusinessOperation.this);
-        otherOutgoingButtonView.setOnClickListener(BusinessOperation.this);
-        allocateButtonView.setOnClickListener(BusinessOperation.this);
-        loanButtonView.setOnClickListener(BusinessOperation.this);
-      //  loanReturnButtonView.setOnClickListener(BusinessOperation.this);
-        purchaseReturnButtonView.setOnClickListener(BusinessOperation.this);
-       // materialOutButtonView.setOnClickListener(BusinessOperation.this);
-        productEntryButtonView.setOnClickListener(BusinessOperation.this);
-         initView();
+        recyclerView=findViewById(R.id.rv_list);
 
-    }
-
-    private void initView() {
         SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
         MenuBean menuBean=new Gson().fromJson(currentAccount.getString("menubean",""),MenuBean.class);
-        for (int i = 0; i <menuBean.getPower().size() ; i++) {
-            if (menuBean.getPower().get(i).getMenucode().equals("XSCK")){
-                saleDeliveryButtonView.setVisibility(View.VISIBLE);
-            }else if (menuBean.getPower().get(i).getMenucode().equals("CGRK")){
-               purchaseArrivalButtonView.setVisibility(View.VISIBLE);
-            }else if (menuBean.getPower().get(i).getMenucode().equals("JCCK")){
-               loanButtonView.setVisibility(View.VISIBLE);
-            }else if (menuBean.getPower().get(i).getMenucode().equals("CCPRK")){
-              productEntryButtonView.setVisibility(View.VISIBLE);
-            } else if (menuBean.getPower().get(i).getMenucode().equals("QTCK")){
-                otherOutgoingButtonView.setVisibility(View.VISIBLE);
-            } else if (menuBean.getPower().get(i).getMenucode().equals("QTRK")){
-                otherEntryButtonView.setVisibility(View.VISIBLE);
-            } else if (menuBean.getPower().get(i).getMenucode().equals("DBCK")){
-                allocateButtonView.setVisibility(View.VISIBLE);
-            }else if (menuBean.getPower().get(i).getMenucode().equals("CGTH")){
-                purchaseReturnButtonView.setVisibility(View.VISIBLE);
 
+        NormalAdapter normalAdapter=new NormalAdapter(menuBean.getPower());
+        //设置Adapter
+        recyclerView.setAdapter(normalAdapter);
+        //设置分隔线
+        recyclerView.setLayoutManager(new GridLayoutManager(this,2));
+//设置增加或删除条目的动画
+        recyclerView.setItemAnimator( new DefaultItemAnimator());
+
+
+
+
+    }
+    public class NormalAdapter extends RecyclerView.Adapter<NormalAdapter.VH>{
+        //② 创建ViewHolder
+        public  class VH extends RecyclerView.ViewHolder{
+            ImageView imageView;
+            LinearLayout linearLayout;
+            public VH(View v) {
+                super(v);
+               linearLayout=v.findViewById(R.id.l_layout);
+               imageView=v.findViewById(R.id.iv_menu);
             }
         }
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                Intent intent = new Intent(BusinessOperation.this, TopMenu.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                finish();
-                return true;
+        private List<MenuBean.Power> mDatas;
+        public NormalAdapter(List<MenuBean.Power> data) {
+            this.mDatas = data;
         }
-        return super.onOptionsItemSelected(item);
-    }
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            //点击完返回键，执行的动作
-            Intent intent = new Intent(BusinessOperation.this, TopMenu.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-            finish();
-        }
-        return true;
-    }
-    Intent intent;
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()){
-            case R.id.sale_delivery:
-                if (Utils.isFastDoubleClick()) {
-                    return;
-                }
-                intent=new Intent(BusinessOperation.this,SaleDelivery.class);
-                intent.putExtra("from_business_operation", "Y");
-                intent.putExtra("type",0);
-                startActivity(intent);
-                break;
-            case R.id.other_entry:
-                if (Utils.isFastDoubleClick()) {
-                    return;
-                }
-                intent=new Intent(BusinessOperation.this,OtherEntry.class);
-                intent.putExtra("from_business_operation", "Y");
-                intent.putExtra("type",1);
-                startActivity(intent);
-                break;
-            case R.id.other_outgoing:
-                if (Utils.isFastDoubleClick()) {
-                    return;
-                }
-                intent=new Intent(BusinessOperation.this,OtherEntry.class);
-                intent.putExtra("from_business_operation", "Y");
-                intent.putExtra("type",2);
-                startActivity(intent);
-                break;
-            case R.id.product_entry:
-                if (Utils.isFastDoubleClick()) {
-                    return;
-                }
-                intent=new Intent(BusinessOperation.this,ProductEntry.class);
-                intent.putExtra("from_business_operation", "Y");
-                intent.putExtra("type",3);
-                startActivity(intent);
-                break;
-            case R.id.loan:
-                //借出
-                if (Utils.isFastDoubleClick()) {
-                    return;
-                }
-                intent=new Intent(BusinessOperation.this,LoanBill.class);
-                intent.putExtra("from_business_operation", "Y");
-                intent.putExtra("type",4);
-                startActivity(intent);
-                break;
-            case R.id.allocate:
-                if (Utils.isFastDoubleClick()) {
-                    return;
-                }
-                intent=new Intent(BusinessOperation.this,AllocateTransfer.class);
-                intent.putExtra("from_business_operation", "Y");
-                startActivity(intent);
-                break;
 
-            case R.id.purchase_arrival:
-                if (Utils.isFastDoubleClick()) {
-                    return;
-                }
-                intent=new Intent(BusinessOperation.this,PurchaseArrival.class);
-                intent.putExtra("from_business_operation", "Y");
-                startActivity(intent);
+        //③ 在Adapter中实现3个方法
+        @Override
+        public void onBindViewHolder(VH holder,final int position) {
+            if (mDatas.get(position).getMenucode().equals("XSCK")){
+                holder.imageView.setBackgroundResource(R.drawable.sale_delivery);
+            } else if (mDatas.get(position).getMenucode().equals("QTCK")){
+                holder.imageView.setBackgroundResource(R.drawable.other_outgoing);
+            } else if (mDatas.get(position).getMenucode().equals("QTRK")){
+                holder.imageView.setBackgroundResource(R.drawable.other_entry);
+            }else if (mDatas.get(position).getMenucode().equals("CGRK")){
+                holder.imageView.setBackgroundResource(R.drawable.purchase_arrival);
+            }else if (mDatas.get(position).getMenucode().equals("JCCK")){
+                holder.imageView.setBackgroundResource(R.drawable.loan);
+            }else if (mDatas.get(position).getMenucode().equals("CCPRK")){
+                holder.imageView.setBackgroundResource(R.drawable.product_entry);
+            } else if (mDatas.get(position).getMenucode().equals("DBCK")){
+                holder.imageView.setBackgroundResource(R.drawable.allocate);
+            }else if (mDatas.get(position).getMenucode().equals("CGTH")){
+                holder.imageView.setBackgroundResource(R.drawable.purchase_return);
 
-                break;
-            case R.id.purchase_return:
-                if (Utils.isFastDoubleClick()) {
-                    return;
-                }
-                intent=new Intent(BusinessOperation.this,PurchaseReturn.class);
-                intent.putExtra("from_business_operation", "Y");
-                startActivity(intent);
+            }
+            holder.linearLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (mDatas.get(position).getMenucode().equals("XSCK")){
+                        intent=new Intent(BusinessOperation.this,SaleDelivery.class);
+                        intent.putExtra("type",0);
+                    }else if (mDatas.get(position).getMenucode().equals("QTCK")){
+                        intent=new Intent(BusinessOperation.this,OtherEntry.class);
+                        intent.putExtra("type",2);
+                    } else if (mDatas.get(position).getMenucode().equals("QTRK")){
+                        intent=new Intent(BusinessOperation.this,OtherEntry.class);
+                        intent.putExtra("type",1);
+                    }else if (mDatas.get(position).getMenucode().equals("CGRK")){
+                        intent=new Intent(BusinessOperation.this,PurchaseArrival.class);
+                        intent.putExtra("type",6);
+                    }else if (mDatas.get(position).getMenucode().equals("JCCK")){
+                        intent=new Intent(BusinessOperation.this,LoanBill.class);
+                        intent.putExtra("type",4);
+                    }else if (mDatas.get(position).getMenucode().equals("CCPRK")){
+                        intent=new Intent(BusinessOperation.this,ProductEntry.class);
+                        intent.putExtra("type",3);
+                    }  else if (mDatas.get(position).getMenucode().equals("DBCK")){
+                        intent=new Intent(BusinessOperation.this,AllocateTransfer.class);
+                        intent.putExtra("type",5);
+                    }else if (mDatas.get(position).getMenucode().equals("CGTH")){
+                        intent=new Intent(BusinessOperation.this,PurchaseReturn.class);
+                        intent.putExtra("type",7);
 
-                break;
+                    }
+                    intent.putExtra("from_business_operation", "Y");
+                    startActivity(intent);
+                }
+            });
 
         }
+
+        @Override
+        public int getItemCount() {
+            return mDatas.size();
+        }
+
+        @Override
+        public VH onCreateViewHolder(ViewGroup parent, int viewType) {
+            //LayoutInflater.from指定写法
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_menu, parent, false);
+            return new VH(v);
+        }
     }
+
+
+
+
+
+
 
 }

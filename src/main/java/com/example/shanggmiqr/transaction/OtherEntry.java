@@ -90,7 +90,6 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         switch (type){
             case 1:
                 name="LatestOtherEntryTSInfo";
-
                 title="其他入库";
                 textViewPobillcode.setText("入库单号");
                 textViewCwarename.setText("入库仓库名称");
@@ -208,16 +207,6 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            //点击完返回键，执行的动作
-            Intent intent = new Intent(OtherEntry.this, BusinessOperation.class);
-            startActivity(intent);
-            finish();
-        }
-        return true;
     }
 
     @Override

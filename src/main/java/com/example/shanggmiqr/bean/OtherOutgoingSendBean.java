@@ -72,6 +72,16 @@ public class OtherOutgoingSendBean implements Serializable {
         public String pch;
         public List<SnBean> sn;
         public String vcooporderbcode_b;
+
+        public String getItempk() {
+            return itempk;
+        }
+
+        public void setItempk(String itempk) {
+            this.itempk = itempk;
+        }
+
+        private String itempk;
         public void setMaterialcode(String materialcode) {
             this.materialcode = materialcode;
         }

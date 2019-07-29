@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -69,6 +70,7 @@ public class LoanQRDetail extends AppCompatActivity {
         db5 = helper5.getWritableDatabase();//获取到了 SQLiteDatabase 对象
         tableBodyListView = (ListView) findViewById(R.id.list_body_loan_qrdetail);
         Intent _intent = getIntent();
+        Log.i("detail-->",getIntent().getIntExtra("type",-1)+"");
         //从Intent当中根据key取得value
         if (_intent != null) {
             current_vcooporderbcode_b_qrRecv = _intent.getStringExtra("current_vcooporderbcode_b_qr");
@@ -102,6 +104,8 @@ public class LoanQRDetail extends AppCompatActivity {
                     intent.putExtra("current_customer_qrRecv", current_customer_qrRecv);
                     intent.putExtra("current_nnum_qrRecv", current_nnum_qrRecv);
                     intent.putExtra("current_vbillcode_qrRecv", current_vbillcode_qrRecv);
+                    intent.putExtra("type",getIntent().getIntExtra("type",-1));
+
                     startActivity(intent);
                 } else {
                     Toast.makeText(LoanQRDetail.this, "已经执行发货操作的行号不允许再进行操作", Toast.LENGTH_LONG).show();

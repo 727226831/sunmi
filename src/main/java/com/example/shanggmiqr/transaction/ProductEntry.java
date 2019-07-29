@@ -317,16 +317,7 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
             return false;
         }
     }
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            //点击完返回键，执行的动作
-            Intent intent = new Intent(ProductEntry.this, BusinessOperation.class);
-            startActivity(intent);
-            finish();
-        }
-        return true;
-    }
+
     private void insertDownloadDataToDB(ProductEntryQuery productEntryQuery) {
 
         List<ProductEntryQuery.DataBean> saleDeliveryBeanList = productEntryQuery.getData();
@@ -386,6 +377,7 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
                 valuesInner.put("nnum", nnum);
                 valuesInner.put("ysnum", ysnum);
                 valuesInner.put("scannum", scannum);
+                valuesInner.put("maccode",obb.getMaccode());
                 //N代表尚未上传
                 valuesInner.put("uploadflag", "N");
                 db3.insert("ProductEntryBody", null, valuesInner);
@@ -418,38 +410,7 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
         }
     }
 
-    private String existOriginalCwarename(String cwarehousecode) {
-        String flag;
-        if (cwarehousecode.equals("")){
-            flag ="N";
-        }else{
-            flag ="Y";
-        }
-        return flag;
-    }
 
-    private String getCwarename(String cwarehousecode) {
-        Cursor cursor = db3.rawQuery("select name from Warehouse where code=?",
-                new String[]{cwarehousecode});
-        String cwarename=null;
-        if (cursor != null && cursor.getCount() > 0) {
-            while (cursor.moveToNext()) {
-                cwarename = cursor.getString(cursor.getColumnIndex("name"));
-            }
-            cursor.close();
-        }else{
-            cwarename = "";
-        }
-        return cwarename;
-    }
-
-    private String getDefaultEndTime() {
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        return String.valueOf(year) + "-" + String.valueOf(month) + "-" + String.valueOf(day) + " " + "23:59:59";
-    }
 
     private String countScannedQRCode(String billcode, String materialcode,String itempk) {
         String count = "0";
@@ -746,6 +707,7 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
             Intent intent = new Intent(ProductEntry.this, ProductEntryDetail.class);
             intent.putExtra("current_sale_delivery_vbillcode", listAllPostition.get(position).getBillcode());
             intent.putExtra("current_sale_delivery_dbilldate", listAllPostition.get(position).getDbilldate());
+
             startActivity(intent);
 
         }

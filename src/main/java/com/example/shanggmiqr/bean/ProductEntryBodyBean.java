@@ -24,6 +24,16 @@ public class ProductEntryBodyBean {
     public String ysnum;
     public String uploadflag;
     public String scannum;
+
+    public String getMaccode() {
+        return maccode;
+    }
+
+    public void setMaccode(String maccode) {
+        this.maccode = maccode;
+    }
+
+    private String maccode;
     public ProductEntryBodyBean(){
         super();
     }

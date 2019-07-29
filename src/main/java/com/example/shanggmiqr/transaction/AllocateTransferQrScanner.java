@@ -9,6 +9,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +30,7 @@ import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -41,7 +45,7 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
     private String current_materialcode_qrRecv;
     private String current_cwarehousecode_qrRecv;
     private String current_uploadflag_qrRecv;
-    private String current_maccode_qrRecv;
+
     private String current_rwarehousecode_qrRecv;
     private String current_address_qrRecv;
     private String current_materialclasscode_qrRecv;
@@ -62,7 +66,7 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
     private EditText plateCodeEditText;
     private String plateCodeEditTextContent;
     private EditText boxCodeEditText;
-    private String boxCodeEditTextContent;
+
     private EditText productCodeEditText;
     private String productCodeEditTextContent;
     private Button scanCheckButton;
@@ -78,6 +82,7 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
     private TextView scannnumText;
     //用true代表托盘码箱码非空且不需要更新只需要更新产品码的状态，false代表第一次进入此页面或者箱码托盘码有更新
     private boolean scanStatus = true;
+    private String maccode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,25 +99,26 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
         boxCodeEditText = (EditText) findViewById(R.id.allocatetransfer_boxcode_scanner);
         productCodeEditText = (EditText) findViewById(R.id.allocatetransfer_productcode_scanner);
         scannnumText = (TextView) findViewById(R.id.allocatetransfer_scannednum_text);
-        Intent _intent = getIntent();
+        Intent intent = getIntent();
         //从Intent当中根据key取得value
-        if (_intent != null) {
-            current_itempk_qrRecv = _intent.getStringExtra("current_itempk_qrRecv");
-            current_nnum_qrRecv =  Integer.parseInt(_intent.getStringExtra("current_nnum_qr"));
-            current_scannum_qrRecv = _intent.getStringExtra("current_scannum_qrRecv");
-            current_materialcode_qrRecv = _intent.getStringExtra("current_materialcode_qrRecv");
-            current_cwarehousecode_qrRecv = _intent.getStringExtra("current_cwarehousecode_qrRecv");
-            current_rwarehousecode_qrRecv = _intent.getStringExtra("current_rwarehousecode_qrRecv");
-            current_address_qrRecv = _intent.getStringExtra("current_address_qrRecv");
-            current_materialclasscode_qrRecv = _intent.getStringExtra("current_materialclasscode_qrRecv");
-            current_uploadflag_qrRecv = _intent.getStringExtra("current_uploadflag_qrRecv");
-            current_vbillcode_qrRecv = _intent.getStringExtra("current_vbillcode_qr");
+        if (intent != null) {
+            current_itempk_qrRecv = intent.getStringExtra("current_itempk_qrRecv");
+            current_nnum_qrRecv =  Integer.parseInt(intent.getStringExtra("current_nnum_qrRecv"));
+            current_scannum_qrRecv = intent.getStringExtra("current_scannum_qrRecv");
+            current_materialcode_qrRecv = intent.getStringExtra("current_materialcode_qrRecv");
+            current_cwarehousecode_qrRecv = intent.getStringExtra("current_cwarehousecode_qrRecv");
+            current_rwarehousecode_qrRecv = intent.getStringExtra("current_rwarehousecode_qrRecv");
+            current_address_qrRecv = intent.getStringExtra("current_address_qrRecv");
+            current_materialclasscode_qrRecv = intent.getStringExtra("current_materialclasscode_qrRecv");
+            current_uploadflag_qrRecv = intent.getStringExtra("current_uploadflag_qrRecv");
+            current_vbillcode_qrRecv = intent.getStringExtra("current_vbillcode_qrRecv");
+            maccode=intent.getStringExtra("maccode");
         }
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。
         db5 = helper5.getWritableDatabase();//获取到了 SQLiteDatabase 对象
         tableBodyListView = (ListView) findViewById(R.id.list_body_allocatetransfer_qrdetail_scanner);
-        scannnumText.setText("已扫码数量：" + countScannedQRCode(current_vbillcode_qrRecv, current_materialcode_qrRecv));
+        scannnumText.setText("已扫码数量：" + countSum());
         List<SaleDeliveryScanResultBean> list = showScannedQR();
         SaleDeliveryScannerAdapter adapter = new SaleDeliveryScannerAdapter(AllocateTransferQrScanner.this, list, mListener2);
         tableBodyListView.setAdapter(adapter);
@@ -121,23 +127,7 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //截取产品码的第五位到第九位，查看是否与物料大类匹配
-                count = countSum();
-                //    if((productCodeEditText.getText().toString().length() == 13) &&productCodeEditText.getText().toString().substring(4,9).equals(current_maccode_qrRecv) && count<current_nnum_qrRecv ){
-                if ((!isAlreadyScanned(productCodeEditText.getText().toString()) && !isEditTextEmpty() && (productCodeEditText.getText().toString().length() == getLengthInQrRule())) && count < Math.abs(current_nnum_qrRecv) && isValidQr() && !isCwarenameEmpty())
-                {
-                    InsertintoTempQrDBForSaleDelivery();
-                    //scanStatus = true;
-                } else if (count >= Math.abs(current_nnum_qrRecv)) {
-                    Toast.makeText(AllocateTransferQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
-                } else if (isEditTextEmpty()) {
-                    Toast.makeText(AllocateTransferQrScanner.this, "二维码区域不可以为空", Toast.LENGTH_LONG).show();
-                } else if (isAlreadyScanned(productCodeEditText.getText().toString())) {
-                    Toast.makeText(AllocateTransferQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
-                } else if (isCwarenameEmpty()) {
-                    Toast.makeText(AllocateTransferQrScanner.this, "请选择仓库信息", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(AllocateTransferQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
-                }
+              getData();
             }
         });
         productCodeEditText.setOnEditorActionListener(new TextView.OnEditorActionListener()
@@ -156,6 +146,25 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
                 }
             }
 
+        });
+        boxCodeEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(mHandler.hasMessages(0x19)){
+                    mHandler.removeMessages(0x19);
+                }
+                mHandler.sendEmptyMessageDelayed(0x19,1000);
+            }
         });
         mHandler = new Handler() {
             @Override
@@ -179,12 +188,12 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
                         productCodeEditText.setText("");
                         //boxCodeEditText.setText("");
                         //plateCodeEditText.setText("");
-                        scannnumText.setText("已扫码数量：" + countScannedQRCode(current_vbillcode_qrRecv, current_materialcode_qrRecv));
+                        scannnumText.setText("已扫码数量：" +  countSum());
                         productCodeEditText.requestFocus();
                         List<SaleDeliveryScanResultBean> list = showScannedQR();
                         SaleDeliveryScannerAdapter adapter = new SaleDeliveryScannerAdapter(AllocateTransferQrScanner.this, list, mListener2);
                         tableBodyListView.setAdapter(adapter);
-                        String current_scanSum = countScannedQRCode(current_vbillcode_qrRecv, current_materialcode_qrRecv);
+                        String current_scanSum = countSum()+"";
                         insertCountOfScannedQRCode(current_scanSum);
                         break;
                     case 0x14:
@@ -197,6 +206,12 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
                         String exception = msg.getData().getString("Exception");
                         Toast.makeText(AllocateTransferQrScanner.this, "错误："+exception, Toast.LENGTH_LONG).show();
                         break;
+                    case 0x19:
+                        mHandler.removeMessages(0x19);
+
+                            getData();
+
+                        break;
                     default:
                         break;
                 }
@@ -204,25 +219,54 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
         };
     }
 
-    private int getLengthInQrRule() {
-        Cursor cursor = db5.rawQuery("select length from QrcodeRule where Matbasclasscode=?",
-                new String[]{current_maccode_qrRecv});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-                current_qrcode_rule_length = cursor.getInt(cursor.getColumnIndex("length"));
+    private List<String> boxCodeEditTextContent;
+    private void getData() {
+        boxCodeEditTextContent= Arrays.asList(boxCodeEditText.getText().toString().split("\\s"));
+        Log.i("qr-->",boxCodeEditTextContent.toString()+"/"+boxCodeEditTextContent.size());
+
+
+        for (int i = 0; i <boxCodeEditTextContent.size() ; i++) {
+
+            String productcode=boxCodeEditTextContent.get(i);
+
+            count = countSum();
+
+
+
+
+            if (isAlreadyScanned(productcode)) {
+                Toast.makeText(AllocateTransferQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
+                return;
             }
-            cursor.close();
+            if (isCwarenameEmpty()) {
+                Toast.makeText(AllocateTransferQrScanner.this, "请选择仓库信息", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if(productcode.isEmpty()){
+                return;
+            }
+            Log.i("maccode-->",maccode);
+            if(productcode.length() != DataHelper.getLengthInQrRule(maccode,db5)){
+                Toast.makeText(AllocateTransferQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if(!DataHelper.isValidQr(productcode,maccode,current_materialcode_qrRecv,db5,getApplicationContext())){
+                Toast.makeText(AllocateTransferQrScanner.this, "条码不合法", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+           insertintoTempQrDBForSaleDelivery(productcode);
+            boxCodeEditText.setText("");
         }
-        return current_qrcode_rule_length;
     }
 
+
     private boolean isCwarenameEmpty() {
-        Cursor cursornew = db5.rawQuery("select cwarename from AllocateTransferBody where billno=? and itempk=?",
+        Cursor cursornew = db5.rawQuery("select cwarehousecode from AllocateTransferBody where billno=? and itempk=?",
                 new String[]{current_vbillcode_qrRecv, current_itempk_qrRecv});
-        if (cursornew != null && cursornew.getCount() > 0) {
+
             while (cursornew.moveToNext()) {
-                String temp = cursornew.getString(cursornew.getColumnIndex("cwarename"));
+                String temp = cursornew.getString(cursornew.getColumnIndex("cwarehousecode"));
                 if (temp.equals("") || temp.equals("请选择仓库")) {
                     return true;
                 } else {
@@ -230,33 +274,10 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
                 }
             }
             cursornew.close();
-        }
+
         return false;
     }
 
-    private boolean isValidQr() {
-        //String category =productCodeEditText.getText().toString().substring(0,3);
-        String scannedMaccode = DataHelper.getMaccode(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv);
-        if (scannedMaccode == null || scannedMaccode.length() == 0) {
-            Toast.makeText(AllocateTransferQrScanner.this, "请检查物料信息及条码规则数据是否下载，或者是否为有效的条码", Toast.LENGTH_SHORT).show();
-            return false;
-
-        }
-        Cursor cursor = db5.rawQuery("select code from Material where materialbarcode=?",
-                new String[]{scannedMaccode});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-                current_material_code = cursor.getString(cursor.getColumnIndex("code"));
-                if (current_material_code.equals(current_materialcode_qrRecv)) {
-                    return true;
-                }
-
-            }
-            cursor.close();
-        }
-        return false;
-    }
 
 
 
@@ -271,17 +292,7 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
         return 0;
     }
 
-    private String countScannedQRCode(String vbillcode, String matrcode) {
-        String count = "0";
-        Cursor cursor2 = db5.rawQuery("select prodcutcode from AllocateTransferScanResult where billno=? and materialcode=? and itempk=?", new String[]{vbillcode, matrcode, current_itempk_qrRecv});
-        if (cursor2 != null && cursor2.getCount() > 0) {
-            //判断cursor中是否存在数据
-            count = String.valueOf(cursor2.getCount());
-            cursor2.close();
-            return count;
-        }
-        return count;
-    }
+
 
     private boolean isAlreadyScanned(String s) {
         Cursor cursor = db5.rawQuery("select * from AllocateTransferScanResult where billno=? and prodcutcode=? and itempk=?",
@@ -297,16 +308,10 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
     }
 
     private void insertCountOfScannedQRCode(String scannum) {
-        db5.execSQL("update AllocateTransferBody set scannum=? where billno=? and materialcode=? and itempk=?", new String[]{scannum, current_vbillcode_qrRecv, current_materialcode_qrRecv, current_itempk_qrRecv});
+        db5.execSQL("update AllocateTransferBody set scannum=? where billno=?  and itempk=?",
+                new String[]{scannum, current_vbillcode_qrRecv,current_itempk_qrRecv});
     }
 
-    private boolean isEditTextEmpty() {
-
-        if (("").equals(productCodeEditText.getText().toString()) || null == productCodeEditText.getText().toString()) {
-            return true;// //有城市在数据库已存在，返回false
-        }
-        return false;
-    }
 
     private List<SaleDeliveryScanResultBean> showScannedQR() {
         ArrayList<SaleDeliveryScanResultBean> list = new ArrayList<SaleDeliveryScanResultBean>();
@@ -330,7 +335,7 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
         return list;
     }
 
-    private void InsertintoTempQrDBForSaleDelivery() {
+    private void insertintoTempQrDBForSaleDelivery(final String productcode) {
 //插入临时数据库保持条码信息并显示在此页面
 
         new Thread(new Runnable() {
@@ -344,12 +349,12 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
                         values.put("billno", current_vbillcode_qrRecv);
                         values.put("itempk", current_itempk_qrRecv);
                         values.put("materialcode", current_materialcode_qrRecv);
-                        values.put("platecode", plateCodeEditText.getText().toString());
-                        values.put("boxcode", boxCodeEditText.getText().toString());
-                        values.put("prodcutcode", productCodeEditText.getText().toString());
+                        values.put("platecode", "");
+                        values.put("boxcode", "");
+                        values.put("prodcutcode", productcode);
                         values.put("num", current_nnum_qrRecv);
                         values.put("itemuploadflag", "N");
-                        values.put("xlh", DataHelper.getXlh(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv));
+                        values.put("xlh", DataHelper.getXlh(db5,productcode,maccode));
                         // 插入第一条数据
                         db5.insert("AllocateTransferScanResult", null, values);
                         values.clear();
@@ -396,12 +401,12 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
             if (!isAlreadyUpload(listDel.get(position).getProdcutcode())) {
                 db5.execSQL("delete from AllocateTransferScanResult where billno=? and prodcutcode=? and itempk=?", new Object[]{current_vbillcode_qrRecv, listDel.get(position).getProdcutcode(), current_itempk_qrRecv});
                 count = countSum();
-                String current_scanSum = countScannedQRCode(current_vbillcode_qrRecv, current_materialcode_qrRecv);
+                String current_scanSum =  countSum()+"";
                 insertCountOfScannedQRCode(current_scanSum);
                 List<SaleDeliveryScanResultBean> list = showScannedQR();
                 SaleDeliveryScannerAdapter adapter = new SaleDeliveryScannerAdapter(AllocateTransferQrScanner.this, list, mListener2);
                 tableBodyListView.setAdapter(adapter);
-                scannnumText.setText("已扫码数量：" + countScannedQRCode(current_vbillcode_qrRecv, current_materialcode_qrRecv));
+                scannnumText.setText("已扫码数量：" +  countSum());
             } else {
                 Toast.makeText(AllocateTransferQrScanner.this, "已经执行发货操作的行号不允许再进行操作", Toast.LENGTH_LONG).show();
             }

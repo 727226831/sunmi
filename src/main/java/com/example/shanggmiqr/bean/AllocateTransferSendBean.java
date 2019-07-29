@@ -26,6 +26,26 @@ public class AllocateTransferSendBean {
     public String num;
     public List<BodyBean> body;
 
+    public String getWlbillcode() {
+        return wlbillcode;
+    }
+
+    public void setWlbillcode(String wlbillcode) {
+        this.wlbillcode = wlbillcode;
+    }
+
+    private String wlbillcode;
+
+    public String getWlorgcode() {
+        return wlorgcode;
+    }
+
+    public void setWlorgcode(String wlorgcode) {
+        this.wlorgcode = wlorgcode;
+    }
+
+    private String wlorgcode;
+
     public AllocateTransferSendBean(String lyxt, String cwhsmanagercode,  String pobillcode,String cwarehousecode, String org, String drwarehouse, String num, List<BodyBean> body) {
         this.lyxt = lyxt;
         this.cwhsmanagercode = cwhsmanagercode;
@@ -115,6 +135,25 @@ public class AllocateTransferSendBean {
         public String yfnum;
         public String sfnum;
         public List<SnBean> sn;
+        private String drwarehouse;
+
+        public String getDrwarehouse() {
+            return drwarehouse;
+        }
+
+        public void setDrwarehouse(String drwarehouse) {
+            this.drwarehouse = drwarehouse;
+        }
+
+        public String getCwarehousecode() {
+            return cwarehousecode;
+        }
+
+        public void setCwarehousecode(String cwarehousecode) {
+            this.cwarehousecode = cwarehousecode;
+        }
+
+        private String cwarehousecode;
 
         public String getItempk() {
             return itempk;

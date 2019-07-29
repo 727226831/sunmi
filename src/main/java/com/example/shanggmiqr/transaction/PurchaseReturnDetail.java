@@ -3,10 +3,8 @@ package com.example.shanggmiqr.transaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -25,29 +23,19 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.PurchaseReturnBodyTableAdapter;
 import com.example.shanggmiqr.bean.PurchaseReturnBodyBean;
-import com.example.shanggmiqr.bean.SaleDeliveryBodyBean;
-import com.example.shanggmiqr.bean.SaleDeliverySendBean;
 import com.example.shanggmiqr.bean.SaleDeliveryUploadFlagBean;
 import com.example.shanggmiqr.bean.SalesRespBean;
 import com.example.shanggmiqr.bean.SalesRespBeanValue;
-import com.example.shanggmiqr.util.BaseConfig;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
 import com.google.gson.Gson;
 import com.zyao89.view.zloading.ZLoadingDialog;
-import com.zyao89.view.zloading.Z_TYPE;
 
-import org.ksoap2.serialization.SoapObject;
-import org.ksoap2.serialization.SoapSerializationEnvelope;
-import org.ksoap2.transport.HttpTransportSE;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 ;
@@ -69,10 +57,10 @@ public class PurchaseReturnDetail extends AppCompatActivity {
     private Button saleDeliveryScanButton;
     private Button uploadAll_saleDeliveryButton;
     private Button uploadSingleButton;
-    private String chosen_line_vcooporderbcode_b;
+    private String itempk;
     private String chosen_line_nnum;
     private String chosen_line_cwarename;
-    private String chosen_line_scannnum;
+
     private String chosen_line_maccode;
     private String chosen_line_matrname;
     private String chosen_line_matrcode;
@@ -135,7 +123,9 @@ public class PurchaseReturnDetail extends AppCompatActivity {
         if (_intent != null) {
             current_sale_delivery_vbillcodeRecv = _intent.getStringExtra("current_sale_delivery_vbillcode");
             current_sale_delivery_dbilldateRecv = _intent.getStringExtra("current_sale_delivery_dbilldate");
+
         }
+        Log.i("vbillcode-->",current_sale_delivery_vbillcodeRecv);
         vbillcodText = (TextView) findViewById(R.id.vbillcode_purchaseReturn);
         dbilldateText = (TextView) findViewById(R.id.dbilldate_purchaseReturn);
 
@@ -155,13 +145,12 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                 saleDeliveryScanButton.setEnabled(true);
                 uploadSingleButton.setEnabled(true);
                 PurchaseReturnBodyBean local_saleDeliveryBodyBean = (PurchaseReturnBodyBean) adapter.getItem(position);
-                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getItempk();
+                itempk = local_saleDeliveryBodyBean.getItempk();
                 chosen_line_matrname = local_saleDeliveryBodyBean.getMaterialname();
                 chosen_line_cwarename = local_saleDeliveryBodyBean.getWarehouse();
                 chosen_line_matrcode = local_saleDeliveryBodyBean.getMaterialcode();
                 chosen_line_maccode = local_saleDeliveryBodyBean.getMaccode();
                 chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannnum();
                 chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
 
                 Toast.makeText(PurchaseReturnDetail.this, chosen_line_matrcode, Toast.LENGTH_LONG).show();
@@ -171,12 +160,13 @@ public class PurchaseReturnDetail extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(PurchaseReturnDetail.this, SaleDeliveryQrScanner.class);
-                intent.putExtra("current_vcooporderbcode_b_qrRecv", chosen_line_vcooporderbcode_b);
+                intent.putExtra("type",getIntent().getIntExtra("type",-1));
+                intent.putExtra("current_vcooporderbcode_b_qrRecv", itempk);
                 intent.putExtra("current_matrname_qrRecv", chosen_line_matrname);
                 intent.putExtra("current_cwarename_qrRecv", chosen_line_cwarename);
                 intent.putExtra("current_matrcode_qrRecv", chosen_line_matrcode);
                 intent.putExtra("current_maccode_qrRecv", chosen_line_maccode);
-                Log.i("maccode-->",chosen_line_maccode);
+
                 intent.putExtra("current_nnum_qrRecv", chosen_line_nnum);
                 intent.putExtra("current_uploadflag_qrRecv", chosen_line_uploadflag);
                 intent.putExtra("current_vbillcode_qrRecv", current_sale_delivery_vbillcodeRecv);
@@ -210,7 +200,8 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                                                         msg.what = 0x12;
                                                         saleDeliveryDetailHandler.sendMessage(msg);
                                                     } else if (isCwarenameSame()) {
-                                                        String uploadResp = uploadSaleDeliveryVBill("R08", list);
+                                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R41",db4, current_sale_delivery_vbillcodeRecv,
+                                                                PurchaseReturnDetail.this,"",expressCode,getIntent().getIntExtra("type",-1));
                                                         if (!(null == uploadResp)) {
                                                             if (!(null == lisitemtall)) {
                                                                 Gson gson = new Gson();
@@ -242,24 +233,10 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                                                         saleDeliveryDetailHandler.sendMessage(msg);
                                                     }
 
-                                                } catch (IOException e) {
-                                                    //e.printStackTrace();
-                                                    Bundle bundle = new Bundle();
-                                                    bundle.putString("Exception111", e.toString());
-                                                    Message msg = new Message();
-                                                    msg.what = 0x17;
-                                                    msg.setData(bundle);
-                                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                                    return;
-                                                } catch (XmlPullParserException e) {
-                                                    //e.printStackTrace();
-                                                    Bundle bundle = new Bundle();
-                                                    bundle.putString("Exception111", e.toString());
-                                                    Message msg = new Message();
-                                                    msg.what = 0x17;
-                                                    msg.setData(bundle);
-                                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                                    return;
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+
+
                                                 }
                                             }
                                         }
@@ -271,7 +248,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     // TODO Auto-generated method stub
-                                    return;
+
                                 }
                             })
                             .show();
@@ -288,7 +265,8 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                                         msg.what = 0x12;
                                         saleDeliveryDetailHandler.sendMessage(msg);
                                     } else if (isCwarenameSame()) {
-                                        String uploadResp = uploadSaleDeliveryVBill("R08", list);
+                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R41",db4, current_sale_delivery_vbillcodeRecv,
+                                                PurchaseReturnDetail.this,"",expressCode,getIntent().getIntExtra("type",-1));
                                         if (!(null == uploadResp)) {
                                             if (!(null == lisitemtall)) {
                                                 Gson gson = new Gson();
@@ -320,17 +298,8 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                                         saleDeliveryDetailHandler.sendMessage(msg);
                                     }
 
-                                } catch (IOException e) {
-                                    //e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                    return;
-                                } catch (XmlPullParserException e) {
-                                    //e.printStackTrace();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                     Bundle bundle = new Bundle();
                                     bundle.putString("Exception111", e.toString());
                                     Message msg = new Message();
@@ -367,12 +336,13 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                                             if (Utils.isNetworkConnected(PurchaseReturnDetail.this)) {
                                                 try {
                                                     //Y代表已经上传过
-                                                    if (iaAlreadyUploadSingle(chosen_line_vcooporderbcode_b)) {
+                                                    if (iaAlreadyUploadSingle(itempk)) {
                                                         Message msg = new Message();
                                                         msg.what = 0x13;
                                                         saleDeliveryDetailHandler.sendMessage(msg);
                                                     } else {
-                                                        String uploadResp = uploadSaleDeliveryVBill("R08", list);
+                                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R41",db4, current_sale_delivery_vbillcodeRecv,
+                                                                PurchaseReturnDetail.this,"",expressCode,getIntent().getIntExtra("type",-1));
                                                         if (!(null == uploadResp)) {
                                                             if (!(null == listitem)) {
                                                                 Gson gson = new Gson();
@@ -400,17 +370,8 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                                                         }
                                                     }
 
-                                                } catch (IOException e) {
-                                                    // e.printStackTrace();
-                                                    Bundle bundle = new Bundle();
-                                                    bundle.putString("Exception111", e.toString());
-                                                    Message msg = new Message();
-                                                    msg.what = 0x17;
-                                                    msg.setData(bundle);
-                                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                                    return;
-                                                } catch (XmlPullParserException e) {
-                                                    // e.printStackTrace();
+                                                } catch (Exception e) {
+                                                     e.printStackTrace();
                                                     Bundle bundle = new Bundle();
                                                     bundle.putString("Exception111", e.toString());
                                                     Message msg = new Message();
@@ -439,12 +400,14 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                             if (Utils.isNetworkConnected(PurchaseReturnDetail.this)) {
                                 try {
                                     //Y代表已经上传过
-                                    if (iaAlreadyUploadSingle(chosen_line_vcooporderbcode_b)) {
+                                    if (iaAlreadyUploadSingle(itempk)) {
                                         Message msg = new Message();
                                         msg.what = 0x13;
                                         saleDeliveryDetailHandler.sendMessage(msg);
                                     } else {
-                                        String uploadResp = uploadSaleDeliveryVBill("R08", list);
+                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R41" +
+                                                        "",db4, current_sale_delivery_vbillcodeRecv,
+                                                PurchaseReturnDetail.this,"",expressCode,getIntent().getIntExtra("type",-1));
                                         if (!(null == uploadResp)) {
                                             if (!(null == listitem)) {
                                                 Gson gson = new Gson();
@@ -472,17 +435,8 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                                         }
                                     }
 
-                                } catch (IOException e) {
-                                    // e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                    return;
-                                } catch (XmlPullParserException e) {
-                                    // e.printStackTrace();
+                                } catch (Exception e) {
+                                     e.printStackTrace();
                                     Bundle bundle = new Bundle();
                                     bundle.putString("Exception111", e.toString());
                                     Message msg = new Message();
@@ -515,6 +469,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                         updateUploadFlag();
                         if (isAllItemUpload()) {
                             Intent intent = new Intent(PurchaseReturnDetail.this, SaleDelivery.class);
+                            intent.putExtra("type",getIntent().getIntExtra("type",-1));
                             startActivity(intent);
                             finish();
                         }
@@ -542,6 +497,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                         updateAllUploadFlag();
                         if (isAllItemUpload()) {
                             Intent intent = new Intent(PurchaseReturnDetail.this, SaleDelivery.class);
+                            intent.putExtra("type",getIntent().getIntExtra("type",-1));
                             startActivity(intent);
                             finish();
                         }
@@ -660,31 +616,32 @@ public class PurchaseReturnDetail extends AppCompatActivity {
     }
 
     private boolean isCwarenameSame() {
-        Cursor cursor3 = db4.rawQuery("select cwarename from SaleDeliveryBody where vbillcode=? ",
-                new String[]{current_sale_delivery_vbillcodeRecv});
-        upload_cwarename = new ArrayList<String>();
-        HashSet<String> hashSet = new HashSet<String>();
-        if (cursor3 != null && cursor3.getCount() > 0) {
-            while (cursor3.moveToNext()) {
-                upload_cwarename.add(cursor3.getString(cursor3.getColumnIndex("cwarename")));
-            }
-            cursor3.close();
-        }
-        for (int i = 0; i < upload_cwarename.size(); i++) {
-            hashSet.add(upload_cwarename.get(i).toString());
-        }
-        if (upload_cwarename.size() == 1) {
-            return true;
-        } else if (hashSet.size() == upload_cwarename.size()) {
-            return false;
-        } else {
-            return true;
-        }
+//        Cursor cursor3 = db4.rawQuery("select cwarename from SaleDeliveryBody where vbillcode=? ",
+//                new String[]{current_sale_delivery_vbillcodeRecv});
+//        upload_cwarename = new ArrayList<String>();
+//        HashSet<String> hashSet = new HashSet<String>();
+//        if (cursor3 != null && cursor3.getCount() > 0) {
+//            while (cursor3.moveToNext()) {
+//                upload_cwarename.add(cursor3.getString(cursor3.getColumnIndex("cwarename")));
+//            }
+//            cursor3.close();
+//        }
+//        for (int i = 0; i < upload_cwarename.size(); i++) {
+//            hashSet.add(upload_cwarename.get(i).toString());
+//        }
+//        if (upload_cwarename.size() == 1) {
+//            return true;
+//        } else if (hashSet.size() == upload_cwarename.size()) {
+//            return false;
+//        } else {
+//            return true;
+//        }
+        return  true;
     }
 
     private void updateItemUploadFlag(List<String> listitem) {
         for (String send : listitem) {
-            db4.execSQL("update SaleDeliveryScanResult set itemuploadflag=? where vbillcode=? and vcooporderbcode_b=? and matrcode=? and prodcutcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, chosen_line_matrcode, send});
+            db4.execSQL("update SaleDeliveryScanResult set itemuploadflag=? where vbillcode=? and vcooporderbcode_b=? and matrcode=? and prodcutcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, itempk, chosen_line_matrcode, send});
         }
     }
 
@@ -784,16 +741,16 @@ public class PurchaseReturnDetail extends AppCompatActivity {
 
     private void updateUploadFlag() {
         Cursor cursor31 = db4.rawQuery("select prodcutcode,itemuploadflag from SaleDeliveryScanResult where vbillcode=? and vcooporderbcode_b=? and itemuploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, "Y"});
+                new String[]{current_sale_delivery_vbillcodeRecv, itempk, "Y"});
         Cursor cursor32 = db4.rawQuery("select nnum from SaleDeliveryBody where vbillcode=? and vcooporderbcode_b=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b});
+                new String[]{current_sale_delivery_vbillcodeRecv, itempk});
         if (cursor31 != null && cursor31.getCount() > 0 && cursor32 != null && cursor32.getCount() > 0) {
             while (cursor32.moveToNext()) {
                 String nnum = cursor32.getString(cursor32.getColumnIndex("nnum"));
                 if (cursor31.getCount() == Math.abs(Integer.parseInt(nnum))) {
-                    db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=? and matrcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, chosen_line_matrcode});
+                    db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=? and matrcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, itempk, chosen_line_matrcode});
                 } else if (cursor31.getCount() < Math.abs(Integer.parseInt(nnum))) {
-                    db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=? and matrcode=?", new String[]{"PY", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, chosen_line_matrcode});
+                    db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=? and matrcode=?", new String[]{"PY", current_sale_delivery_vbillcodeRecv, itempk, chosen_line_matrcode});
                 }
                 cursor31.close();
                 cursor32.close();
@@ -829,129 +786,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
         }
     }
 
-    private String uploadSaleDeliveryVBill(String workcode, List<String> list) throws IOException, XmlPullParserException {
-        String WSDL_URI;
-        String namespace;
-        String WSDL_URI_current = BaseConfig.getNcUrl();//wsdl 的uri
-        String namespace_current = "http://schemas.xmlsoap.org/soap/envelope/";//namespace
-        String methodName = "sendToWISE";//要调用的方法名称
-        SharedPreferences proxySp = getSharedPreferences("configInfo", 0);
-        int upload_num = 0;
-        if (proxySp.getString("WSDL_URI", WSDL_URI_current).equals("") || proxySp.getString("namespace", namespace_current).equals("")) {
-            WSDL_URI = WSDL_URI_current;
-            namespace = namespace_current;
-        } else {
-            WSDL_URI = proxySp.getString("WSDL_URI", WSDL_URI_current);
-            namespace = proxySp.getString("namespace", namespace_current);
-        }
-        SoapObject request = new SoapObject(namespace, methodName);
-        // 设置需调用WebService接口需要传入的两个参数string、string1
-        ArrayList<SaleDeliverySendBean.BodyBean> bodylist = new ArrayList<SaleDeliverySendBean.BodyBean>();
-        Cursor cursor2 = db4.rawQuery("select * from SaleDeliveryBody where vbillcode=? ", new String[]{current_sale_delivery_vbillcodeRecv});
-        if (cursor2 != null && cursor2.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor2.moveToNext()) {
-                SaleDeliverySendBean.BodyBean bean = new SaleDeliverySendBean.BodyBean();
-                bean.vcooporderbcode_b = cursor2.getString(cursor2.getColumnIndex("vcooporderbcode_b"));
-                bean.materialcode = cursor2.getString(cursor2.getColumnIndex("matrcode"));
 
-                String num_check = cursor2.getString(cursor2.getColumnIndex("nnum"));
-                if (Integer.parseInt(num_check) < 0) {
-                    current_bisreturn = "Y";
-                }
-                //因为前面已经筛选过cwarename，因此此处不同行的cwarename是唯一的
-                upload_all_cwarename = cursor2.getString(cursor2.getColumnIndex("cwarename"));
-                bean.pch = "";
-                int scanNum = 0;
-                ArrayList<SaleDeliverySendBean.BodyBean.SnBean> snlist = new ArrayList<SaleDeliverySendBean.BodyBean.SnBean>();
-                if (list.contains(bean.vcooporderbcode_b)) {
-                    Cursor cursor3 = db4.rawQuery("select platecode,boxcode,prodcutcode,xlh from SaleDeliveryScanResult where  vbillcode=? and matrcode=? and vcooporderbcode_b=? and itemuploadflag=?",
-                            new String[]{current_sale_delivery_vbillcodeRecv, bean.materialcode, bean.vcooporderbcode_b, "N"});
-                    if (cursor3 != null && cursor3.getCount() > 0) {
-                        //判断cursor中是否存在数据
-                        while (cursor3.moveToNext()) {
-                            SaleDeliverySendBean.BodyBean.SnBean snbean = new SaleDeliverySendBean.BodyBean.SnBean();
-                            snbean.xlh = cursor3.getString(cursor3.getColumnIndex("xlh"));
-                            snbean.txm = cursor3.getString(cursor3.getColumnIndex("prodcutcode"));
-                            snbean.xm = cursor3.getString(cursor3.getColumnIndex("boxcode"));
-                            snbean.tp = cursor3.getString(cursor3.getColumnIndex("platecode"));
-                            upload_all_cwarehousecode = getCwarehousecode(upload_all_cwarename);
-                            scanNum += 1;
-                            upload_num++;
-                            snlist.add(snbean);
-                        }
-                        cursor3.close();
-                    }
-                    bean.sn = snlist;
-                    //提交过一次的二次提交时不应该被计数
-                    bean.nnum = String.valueOf(scanNum);
-                    bodylist.add(bean);
-                }
-            }
-            cursor2.close();
-        }
-        if (bodylist.size()==0){
-            Message msg = new Message();
-            msg.what = 0x14;
-            saleDeliveryDetailHandler.sendMessage(msg);
-            return null;
-        }
-        //通过物流公司名称计算物流公司编号
-        String wlCode = "";
-        Cursor cursorLogistics = db4.rawQuery("select code from LogisticsCompany where name=?",
-                new String[]{chooseLogisticscompany});
-        if (cursorLogistics != null && cursorLogistics.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursorLogistics.moveToNext()) {
-                wlCode = cursorLogistics.getString(0);
-            }
-            cursorLogistics.close();
-        }
-        SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
-        String current_user = currentAccount.getString("current_account","");
-        SaleDeliverySendBean otherOutgoingSend = new SaleDeliverySendBean("APP", "123456",current_user, wlCode, expressCode, upload_all_cwarehousecode, current_bisreturn, current_sale_delivery_vbillcodeRecv, bodylist);
-        Gson gson = new Gson();
-        String userSendBean = gson.toJson(otherOutgoingSend);
-
-        request.addProperty("string", workcode);
-        request.addProperty("string1", userSendBean);
-        //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
-        //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
-        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
-
-        envelope.bodyOut = request;
-        envelope.dotNet = false;
-        String saleDeliveryUploadDataResp = null;
-        if (upload_num == 0) {
-        } else {
-            HttpTransportSE se = new HttpTransportSE(WSDL_URI, 60000);
-            //  se.call(null, envelope);//调用 version1.2
-            //version1.1 需要如下soapaction
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
-                            .setLoadingColor(Color.BLUE)//颜色
-                            .setHintText("等待服务器返回数据...")
-                            .setCancelable(false)
-                            .setCanceledOnTouchOutside(false)
-                            .setHintTextSize(16) // 设置字体大小 dp
-                            .setHintTextColor(Color.GRAY)  // 设置字体颜色
-                            .setDurationTime(0.5) // 设置动画时间百分比 - 0.5倍
-                            //     .setDialogBackgroundColor(Color.parseColor("#CC111111")) // 设置背景色，默认白色
-                            .show();
-                }
-            });
-            se.call(namespace + "sendToWISE", envelope);
-            // 获取返回的数据
-            // SoapObject object = (SoapObject) envelope.bodyIn;
-            Object object = envelope.getResponse();
-            saleDeliveryUploadDataResp = new Gson().toJson(object);
-        }
-        // 获取返回的结果
-        // saleDeliveryUploadDataResp = object.getProperty(0).toString();
-        return saleDeliveryUploadDataResp;
-    }
 
     @Override
     protected void onResume() {
@@ -977,23 +812,27 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                         new String[]{current_sale_delivery_vbillcodeRecv});
                 break;
         }
-        if (cursor != null && cursor.getCount() > 0) {
+
+
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
-                Log.i("cursor",cursor.getCount()+"/");
+
                 PurchaseReturnBodyBean bean = new PurchaseReturnBodyBean();
                 bean.nnum = cursor.getString(cursor.getColumnIndex("nnum"));
                 bean.itempk=cursor.getString(cursor.getColumnIndex("itempk"));
                 bean.scannnum = cursor.getString(cursor.getColumnIndex("scannum"));
+
                 bean.uploadflag = cursor.getString(cursor.getColumnIndex("uploadflag"));
                 bean.materialname=cursor.getString(cursor.getColumnIndex("materialname"));
                 bean.materialcode=cursor.getString(cursor.getColumnIndex("materialcode"));
-                bean.warehouse=cursor.getString(cursor.getColumnIndex("warehouse"));
+              //  bean.warehouse=cursor.getString(cursor.getColumnIndex("warehouse"));
+                bean.warehouse=DataHelper.getCwarename(cursor.getString(cursor.getColumnIndex("warehouse")),db4);
+                Log.i("ware",bean.warehouse);
                 bean.maccode=cursor.getString(cursor.getColumnIndex("maccode"));
                 list.add(bean);
             }
             cursor.close();
-        }
+
         return list;
     }
 
@@ -1044,7 +883,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
         @Override
         public void myOnClick(int position, View v) {
             Intent intent = new Intent(PurchaseReturnDetail.this, SaleDeliveryQRDetail.class);
-            intent.putExtra("type",7);
+            intent.putExtra("type",getIntent().getIntExtra("type",-1));
             intent.putExtra("current_nnum_qr", listAllBodyPostition.get(position).getNnum());
             intent.putExtra("current_maccode_qr", queryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(position).getItempk(), listAllBodyPostition.get(position).getMaterialcode()));
             intent.putExtra("current_vbillcode_qr", current_sale_delivery_vbillcodeRecv);

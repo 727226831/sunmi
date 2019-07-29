@@ -124,19 +124,20 @@ public class OtherEntryQrScanner extends AppCompatActivity {
         Intent _intent = getIntent();
         //从Intent当中根据key取得value
         if (_intent != null) {
-            current_pobillcode_qrRecv = _intent.getStringExtra("current_pobillcode_scanner");
+            current_pobillcode_qrRecv = _intent.getStringExtra("current_vbillcode_qrRecv");
             current_cwarename_qrRecv = _intent.getStringExtra("current_cwarename_scanner");
-            current_materialcode_qrRecv = _intent.getStringExtra("chosen_line_materialcode_scanner");
-            current_maccode_qrRecv = _intent.getStringExtra("chosen_line_maccode_scanner");
-            current_nnum_qrRecv = Integer.parseInt(_intent.getStringExtra("chosen_line_nnum_scanner"));
+            current_materialcode_qrRecv = _intent.getStringExtra("current_matrcode_qrRecv");
+            current_maccode_qrRecv = _intent.getStringExtra("current_maccode_qrRecv");
+            current_nnum_qrRecv = Integer.parseInt(_intent.getStringExtra("current_nnum_qrRecv"));
             current_uploadnum_qrRecv = _intent.getStringExtra("chosen_line_uploadnum_scanner");
-            current_vcooporderbcode_b_qrRecv = _intent.getStringExtra("chosen_line_vcooporderbcode_b_scanner");
+            current_vcooporderbcode_b_qrRecv = _intent.getStringExtra("current_vcooporderbcode_b_qrRecv");
         }
         pobillcodeText.setText("单号:" + current_pobillcode_qrRecv);
         cwarenameText.setText("仓库:" + current_cwarename_qrRecv);
         materialcodeText.setText("物料编码:" + current_materialcode_qrRecv);
         numText.setText("单据数量:" + current_nnum_qrRecv);
         uploadnumText.setText("提交数量:" + current_uploadnum_qrRecv);
+
         scannumText.setText("已扫码数量: " + DataHelper.queryScanResultcount(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv,
                 current_vcooporderbcode_b_qrRecv,1));
         List<OtherEntryScanResultBean> list = showScannedQR();
@@ -199,7 +200,7 @@ public class OtherEntryQrScanner extends AppCompatActivity {
                         tableBodyListView.setAdapter(adapter);
                         int current_scanSum =  DataHelper.queryScanResultcount(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv,
                                 current_vcooporderbcode_b_qrRecv,type);
-                        insertCountOfScannedQRCode(current_scanSum);
+                        DataHelper.updateScannum(db5,current_scanSum,current_pobillcode_qrRecv,current_vcooporderbcode_b_qrRecv,type);
                         scannumText.setText("已扫码数量: " + current_scanSum);
                         break;
                     case 0x14:
@@ -275,23 +276,7 @@ public class OtherEntryQrScanner extends AppCompatActivity {
         }
 
     }
-    private void insertCountOfScannedQRCode(int scannum) {
-        ContentValues contentValues=new ContentValues();
-        contentValues.put("scannum",scannum);
-        String table="";
-        switch (type){
-            case 1:
-               table="OtherEntryBody";
-                break;
-            case 2:
-                table="OtherOutgoingBody";
-                break;
 
-        }
-        db5.update(table,contentValues,"pobillcode=? and vcooporderbcode_b=?",
-                new String[]{ current_pobillcode_qrRecv,current_vcooporderbcode_b_qrRecv});
-
-    }
 
 
 
@@ -500,7 +485,7 @@ public class OtherEntryQrScanner extends AppCompatActivity {
                 count = DataHelper.queryScanResultcount(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv, current_vcooporderbcode_b_qrRecv,type);
                 int current_scanSum =  DataHelper.queryScanResultcount(db5,current_pobillcode_qrRecv, current_materialcode_qrRecv,
                         current_vcooporderbcode_b_qrRecv,1);
-                insertCountOfScannedQRCode(current_scanSum);
+                DataHelper.updateScannum(db5,current_scanSum,current_pobillcode_qrRecv,current_vcooporderbcode_b_qrRecv,type);
                 scannumText.setText("已扫码数量: " + current_scanSum);
                 List<OtherEntryScanResultBean> list = showScannedQR();
                 OtherEntryScannerAdapter adapter = new OtherEntryScannerAdapter(OtherEntryQrScanner.this, list, mListener21);

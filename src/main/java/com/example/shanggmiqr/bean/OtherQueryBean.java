@@ -125,6 +125,16 @@ public class OtherQueryBean {
                 private String pch;
                 private String vcooporderbcode_b;
 
+                public String getIssn() {
+                    return issn;
+                }
+
+                public void setIssn(String issn) {
+                    this.issn = issn;
+                }
+
+                private String issn;
+
                 public void setMaterialcode(String materialcode) {
                     this.materialcode = materialcode;
                 }

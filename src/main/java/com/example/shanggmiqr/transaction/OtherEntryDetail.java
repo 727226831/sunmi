@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -437,6 +438,7 @@ public class OtherEntryDetail extends AppCompatActivity {
                 bean.nnum = cursor2.getString(cursor2.getColumnIndex("scannum"));
                 bean.pch = cursor2.getString(cursor2.getColumnIndex("pch"));
                 bean.vcooporderbcode_b = cursor2.getString(cursor2.getColumnIndex("vcooporderbcode_b"));
+                bean.setItempk( cursor2.getString(cursor2.getColumnIndex("vcooporderbcode_b")));
                 ArrayList<OtherOutgoingSendBean.BodyBean.SnBean> snlist = new ArrayList<OtherOutgoingSendBean.BodyBean.SnBean>();
                 Cursor cursor3=null;
                 switch (type){
@@ -475,6 +477,7 @@ public class OtherEntryDetail extends AppCompatActivity {
         String userSendBean = gson.toJson(otherOutgoingSend);
         request.addProperty("string", workcode);
         request.addProperty("string1", userSendBean);
+        Log.i("request-->",request.toString());
         //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
         //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
@@ -517,6 +520,7 @@ public class OtherEntryDetail extends AppCompatActivity {
             msg.what = 0x21;
             otherEntryDetailHandler.sendMessage(msg);
         }
+        Log.i("response-->",envelope.bodyIn.toString());
         return otherEntryUploadDataResp;
     }
 

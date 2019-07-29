@@ -26,6 +26,76 @@ public class SaleDeliverySendBean {
     public String wlcode;
     public String wlbill;
     public List<BodyBean> body;
+    private String dbilldate;
+    private String num;
+
+
+
+
+
+
+
+    public String getBillmaker() {
+        return billmaker;
+    }
+
+    public void setBillmaker(String billmaker) {
+        this.billmaker = billmaker;
+    }
+
+    private String billmaker;
+
+    public String getNcode() {
+        return ncode;
+    }
+
+    public void setNcode(String ncode) {
+        this.ncode = ncode;
+    }
+
+    private String ncode;
+
+
+
+    public String getNum() {
+        return num;
+    }
+
+    public void setNum(String num) {
+        this.num = num;
+    }
+
+
+
+    public String getDbilldate() {
+        return dbilldate;
+    }
+
+    public void setDbilldate(String dbilldate) {
+        this.dbilldate = dbilldate;
+    }
+
+
+
+    public String getOrg() {
+        return org;
+    }
+
+    public void setOrg(String org) {
+        this.org = org;
+    }
+
+    private String org;
+
+    public String getAppuser() {
+        return appuser;
+    }
+
+    public void setAppuser(String appuser) {
+        this.appuser = appuser;
+    }
+
+    public String appuser;
 
 
 
@@ -57,6 +127,24 @@ public class SaleDeliverySendBean {
         this.wlcode = wlcode;
     }
 
+    public String getWlorgcode() {
+        return wlorgcode;
+    }
+
+    public void setWlorgcode(String wlorgcode) {
+        this.wlorgcode = wlorgcode;
+    }
+
+    public String getWlbillcode() {
+        return wlbillcode;
+    }
+
+    public void setWlbillcode(String wlbillcode) {
+        this.wlbillcode = wlbillcode;
+    }
+
+    private String wlbillcode;
+    private String wlorgcode;
     public String getWlbill() {
         return wlbill;
     }
@@ -122,15 +210,53 @@ public class SaleDeliverySendBean {
          * sn : [{"xlh":"10342423423","txm":"P06010002","xm":"N1232323","tp":"P0601"}]
          */
 
-        public String vcooporderbcode_b;
+
         public String materialcode;
         public String nnum;
         public String pch;
         public List<SnBean> sn;
 
-        public void setVcooporderbcode_b(String vcooporderbcode_b) {
-            this.vcooporderbcode_b = vcooporderbcode_b;
+        public String getWarehouse() {
+            return warehouse;
         }
+
+        public void setWarehouse(String warehouse) {
+            this.warehouse = warehouse;
+        }
+
+        private String warehouse;
+
+        public String getCwarecode() {
+            return cwarecode;
+        }
+
+        public void setCwarecode(String cwarecode) {
+            this.cwarecode = cwarecode;
+        }
+
+        private String cwarecode;
+        public String getShnum() {
+            return shnum;
+        }
+
+        public void setShnum(String shnum) {
+            this.shnum = shnum;
+        }
+
+        private String shnum;
+
+
+        public String getItempk() {
+            return itempk;
+        }
+
+        public void setItempk(String itempk) {
+            this.itempk = itempk;
+        }
+
+        public String itempk;
+
+
 
         public void setMaterialcode(String materialcode) {
             this.materialcode = materialcode;
@@ -148,9 +274,7 @@ public class SaleDeliverySendBean {
             this.sn = sn;
         }
 
-        public String getVcooporderbcode_b() {
-            return vcooporderbcode_b;
-        }
+
 
         public String getMaterialcode() {
             return materialcode;

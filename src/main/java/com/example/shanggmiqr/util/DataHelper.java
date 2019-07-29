@@ -2,22 +2,29 @@ package com.example.shanggmiqr.util;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.example.shanggmiqr.Url.iUrl;
 import com.example.shanggmiqr.bean.CommonSendBean;
+import com.example.shanggmiqr.bean.LoginBean;
 import com.example.shanggmiqr.bean.OtherQueryBean;
 import com.example.shanggmiqr.bean.QrcodeRule;
 import com.example.shanggmiqr.bean.SaleDeliveryBean;
+import com.example.shanggmiqr.bean.SaleDeliverySendBean;
 import com.example.shanggmiqr.transaction.SaleDelivery;
+import com.example.shanggmiqr.transaction.SaleDeliveryDetail;
 import com.example.shanggmiqr.transaction.SaleDeliveryQrScanner;
 import com.google.gson.Gson;
 import com.zyao89.view.zloading.ZLoadingDialog;
@@ -27,11 +34,14 @@ import org.ksoap2.SoapFault;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
+import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -168,7 +178,7 @@ public class DataHelper {
         //判断cursor中是否存在数据
         while (cursor.moveToNext()) {
             String code = cursor.getString(cursor.getColumnIndex("code"));
-
+            Log.i("isvalid-->",code+"/"+matrcode);
             if (code.equals(matrcode)) {
                 cursor.close();
                 return true;
@@ -178,13 +188,42 @@ public class DataHelper {
         cursor.close();
         return false;
     }
-    public static void updateSaleDeliveryBodyscannum(SQLiteDatabase db, int scannum, String vbillcode, String vcooporderbcode_b) {
-
+    public static void updateScannum(SQLiteDatabase db, int scannum, String vbillcode, String itempk, int type) {
         ContentValues contentValues=new ContentValues();
         contentValues.put("scannum",scannum);
+        Log.i("type-->",type+"");
 
-        db.update("SaleDeliveryBody",contentValues,"vbillcode=? and vcooporderbcode_b=?",
-                new String[]{ vbillcode,vcooporderbcode_b});
+        switch (type){
+            case 0:
+                db.update("SaleDeliveryBody",contentValues,"vbillcode=? and vcooporderbcode_b=?",
+                        new String[]{ vbillcode,itempk});
+                break;
+            case 1:
+                db.update("OtherEntryBody",contentValues,"pobillcode=? and vcooporderbcode_b=?",
+                        new String[]{ vbillcode,itempk});
+                break;
+            case 2:
+                db.update("OtherOutgoingBody",contentValues,"pobillcode=? and vcooporderbcode_b=?",
+                        new String[]{ vbillcode,itempk});
+                break;
+            case 4:
+                db.update("LoanBody",contentValues,"pobillcode=? and itempk=?",
+                        new String[]{ vbillcode,itempk});
+                break;
+            case 6:
+                db.update("PurchaseArrivalBody",contentValues,"vbillcode=? and itempk=?",
+                        new String[]{ vbillcode,itempk});
+                break;
+            case 7:
+                db.update("PurchaseReturnBody",contentValues,"vbillcode=? and itempk=?",
+                        new String[]{ vbillcode,itempk});
+                break;
+
+        }
+
+
+
+
     }
     public static List<String> queryWarehouseInfo(SQLiteDatabase db) {
         List<String> cars = new ArrayList<>();
@@ -261,7 +300,7 @@ public class DataHelper {
                 valuesInner.put("uploadnum", "0");
                 valuesInner.put("scannum", scannum);
                 valuesInner.put("uploadflag", "N");
-
+                valuesInner.put("issn",obb.getIssn());
                 valuesInner.put("vcooporderbcode_b", vcooporderbcode_b);
 
                 db.insert(otherbodyTable, null, valuesInner);
@@ -385,7 +424,7 @@ public class DataHelper {
         return otherOutgoingDataResp;
     }
 
-    private static String getUser(Context context) {
+    public static String getUser(Context context) {
         SharedPreferences currentAccount= context.getSharedPreferences("current_account", 0);
         return  currentAccount.getString("user","");
     }
@@ -526,6 +565,196 @@ public class DataHelper {
         String tempperiod =currentTimePeriod.getString("current_account","2018-09-01 至 2018-12-17");
         return tempperiod;
     }
+
+    public static String uploadSaleDeliveryVBill(String workcode, SQLiteDatabase db,String vbillcode,Context context,String company,
+    String expresscode,int type) {
+        String WSDL_URI = BaseConfig.getNcUrl();//wsdl 的uri
+        String namespace = "http://schemas.xmlsoap.org/soap/envelope/";//namespace
+        String methodName = "sendToWISE";//要调用的方法名称
+        String warehousecode=null;
+        String current_bisreturn="N";
+        String org=null;
+        SoapObject request = new SoapObject(namespace, methodName);
+        String dbilldate=null;
+        String num=null;
+        String shunm=null;
+        // 设置需调用WebService接口需要传入的两个参数string、string1
+        ArrayList<SaleDeliverySendBean.BodyBean> bodylist = new ArrayList<SaleDeliverySendBean.BodyBean>();
+        Cursor cursor = null;
+        switch (type){
+            case 0:
+                cursor=db.rawQuery("select * from SaleDeliveryBody where vbillcode=? ",
+                        new String[]{vbillcode});
+                break;
+            case 6:
+                cursor=db.rawQuery("select * from PurchaseArrivalBody where vbillcode=? ",
+                        new String[]{vbillcode});
+                break;
+            case 7:
+                cursor=db.rawQuery("select * from PurchaseReturnBody where vbillcode=? ",
+                        new String[]{vbillcode});
+                break;
+        }
+
+
+        Log.i("vbillcode-->",vbillcode+"/"+type);
+            //判断cursor中是否存在数据
+            while (cursor.moveToNext()) {
+
+                SaleDeliverySendBean.BodyBean bean = new SaleDeliverySendBean.BodyBean();
+                switch (type){
+                    case 0:
+                        bean.itempk = cursor.getString(cursor.getColumnIndex("vcooporderbcode_b"));
+                        bean.materialcode = cursor.getString(cursor.getColumnIndex("matrcode"));
+                        warehousecode = getCwarehousecode(cursor.getString(cursor.getColumnIndex("cwarename")),db);
+                        break;
+                    case 6:
+                        bean.itempk = cursor.getString(cursor.getColumnIndex("itempk"));
+                        bean.materialcode = cursor.getString(cursor.getColumnIndex("materialcode"));
+                        warehousecode = cursor.getString(cursor.getColumnIndex("warehouse"));
+                        bean.setWarehouse(cursor.getString(cursor.getColumnIndex("warehouse")));
+                        break;
+                    case 7:
+                        bean.itempk = cursor.getString(cursor.getColumnIndex("itempk"));
+                        bean.materialcode = cursor.getString(cursor.getColumnIndex("materialcode"));
+                        bean.setWarehouse(cursor.getString(cursor.getColumnIndex("warehouse")));
+                        warehousecode = cursor.getString(cursor.getColumnIndex("warehouse"));
+
+                        break;
+                }
+
+
+                String num_check = cursor.getString(cursor.getColumnIndex("nnum"));
+                if (Integer.parseInt(num_check) < 0) {
+                    current_bisreturn = "Y";
+                }
+
+
+                bean.pch = "";
+                int scanNum = 0;
+                ArrayList<SaleDeliverySendBean.BodyBean.SnBean> snlist = new ArrayList<SaleDeliverySendBean.BodyBean.SnBean>();
+
+                    Cursor cursor3 = db.rawQuery("select prodcutcode,xlh from SaleDeliveryScanResult where  vbillcode=? and matrcode=? and vcooporderbcode_b=? and itemuploadflag=?",
+                            new String[]{vbillcode, bean.materialcode, bean.itempk, "N"});
+
+                        //判断cursor中是否存在数据
+                        while (cursor3.moveToNext()) {
+                            SaleDeliverySendBean.BodyBean.SnBean snbean = new SaleDeliverySendBean.BodyBean.SnBean();
+                            String prodcutcode=cursor3.getString(cursor3.getColumnIndex("prodcutcode"));
+
+                            snbean.txm = prodcutcode;
+                            if(prodcutcode.length()>5) {
+                                snbean.xlh = prodcutcode.substring(4, prodcutcode.length());
+                            }else {
+                                snbean.xlh="";
+                            }
+                            snbean.xm = "";
+                            snbean.tp = "";
+
+                            scanNum += 1;
+                            snlist.add(snbean);
+                            shunm=cursor3.getCount()+"";
+                        }
+                        cursor3.close();
+
+                    bean.setShnum(shunm);
+                    bean.sn = snlist;
+                    //提交过一次的二次提交时不应该被计数
+                    bean.nnum = String.valueOf(scanNum);
+                    bodylist.add(bean);
+                }
+            cursor.close();
+
+
+
+        if (bodylist.size()==0){
+
+            Toast.makeText(context, "请先扫码再进行发货上传操作", Toast.LENGTH_LONG).show();
+            return null;
+        }
+        //通过物流公司名称计算物流公司编号
+        String wlCode = "";
+        Cursor cursorLogistics = db.rawQuery("select code from LogisticsCompany where name=?",
+                new String[]{company});
+        if (cursorLogistics != null && cursorLogistics.getCount() > 0) {
+            //判断cursor中是否存在数据
+            while (cursorLogistics.moveToNext()) {
+                wlCode = cursorLogistics.getString(0);
+            }
+            cursorLogistics.close();
+        }
+        SharedPreferences currentAccount= context.getSharedPreferences("current_account", 0);
+        String current_user = currentAccount.getString("current_account","");
+        List<String> stringList=new ArrayList<>();
+        stringList = Arrays.asList(expresscode.split("\\s+"));
+         getUser(context);
+
+
+            SaleDeliverySendBean otherOutgoingSend = new SaleDeliverySendBean("APP", "123456",current_user,
+                    wlCode,expresscode, warehousecode, current_bisreturn, vbillcode, bodylist);
+            otherOutgoingSend.setCwhsmanagercode( currentAccount.getString("user",""));
+            otherOutgoingSend.setAppuser(currentAccount.getString("user",""));
+            otherOutgoingSend.setNcode(vbillcode);
+
+            switch (type){
+
+                case 6:
+                   cursor=db.rawQuery("select * from PurchaseArrival where vbillcode=? ",
+                            new String[]{vbillcode});
+
+                    break;
+                case 7:
+                    cursor=db.rawQuery("select * from PurchaseReturn where vbillcode=? ",
+                            new String[]{vbillcode});
+                    break;
+            }
+            while (cursor.moveToNext()){
+                otherOutgoingSend.setDbilldate(cursor.getString(cursor.getColumnIndex("dbilldate")));
+                otherOutgoingSend.setNum(cursor.getString(cursor.getColumnIndex("num")));
+                otherOutgoingSend.setBillmaker(currentAccount.getString("user",""));
+
+            }
+            cursor.close();
+
+            Gson gson = new Gson();
+            String userSendBean = gson.toJson(otherOutgoingSend);
+
+            request.addProperty("string", workcode);
+            request.addProperty("string1", userSendBean);
+
+  //      }
+        Log.i("request-->",request.toString());
+        //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
+        //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
+        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
+
+        envelope.bodyOut = request;
+        envelope.dotNet = false;
+        String saleDeliveryUploadDataResp = null;
+
+            HttpTransportSE se = new HttpTransportSE(WSDL_URI, 60000);
+            //  se.call(null, envelope);//调用 version1.2
+            //version1.1 需要如下soapaction
+        try {
+
+            se.call(namespace + "sendToWISE", envelope);
+            Object object = envelope.getResponse();
+            saleDeliveryUploadDataResp = new Gson().toJson(object);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        }
+        // 获取返回的数据
+            // SoapObject object = (SoapObject) envelope.bodyIn;
+
+
+        Log.i("response-->",envelope.bodyIn.toString());
+        // 获取返回的结果
+        // saleDeliveryUploadDataResp = object.getProperty(0).toString();
+        return saleDeliveryUploadDataResp;
+    }
+
 
 
 }

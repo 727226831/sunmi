@@ -317,16 +317,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
             return false;
         }
     }
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            //点击完返回键，执行的动作
-            Intent intent = new Intent(LoanBill.this, BusinessOperation.class);
-            startActivity(intent);
-            finish();
-        }
-        return true;
-    }
+
     private void insertDownloadDataToDB(LoanQuery loanquery) {
 
         List<LoanQuery.DataBean> loanBeanList = loanquery.getData();
@@ -742,6 +733,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
             Intent intent = new Intent(LoanBill.this, LoanDetail.class);
             intent.putExtra("current_sale_delivery_vbillcode", listAllPostition.get(position).getPobillcode());
             intent.putExtra("current_sale_delivery_dbilldate", listAllPostition.get(position).getDbilldate());
+            intent.putExtra("type",getIntent().getIntExtra("type",-1));
             startActivity(intent);
         }
     };

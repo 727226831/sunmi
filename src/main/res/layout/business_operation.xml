@@ -4,105 +4,111 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.example.shanggmiqr.MainActivity" >
+<android.support.v7.widget.RecyclerView
+    android:id="@+id/rv_list"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal"
-        android:weightSum="1">
+</android.support.v7.widget.RecyclerView>
 
-        <com.example.shanggmiqr.util.MyImageView
-            android:visibility="gone"
-            android:id="@+id/sale_delivery"
-            android:layout_width="170dp"
-            android:layout_height="108dp"
-            android:layout_margin="6dp"
-            android:layout_marginLeft="20dp"
-            android:scaleType="matrix"
-            android:src="@drawable/sale_delivery"
-            android:layout_weight="0.29" />
 
-        <com.example.shanggmiqr.util.MyImageView
-            android:visibility="gone"
-            android:id="@+id/other_entry"
-            android:layout_width="170dp"
-            android:layout_height="108dp"
-            android:layout_margin="6dp"
-            android:scaleType="matrix"
-            android:src="@drawable/other_entry" />
-    </LinearLayout>
+    <!--<LinearLayout-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="10dp"-->
+        <!--android:orientation="horizontal"-->
+        <!--android:weightSum="1">-->
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        <!--<com.example.shanggmiqr.util.MyImageView-->
+            <!--android:id="@+id/sale_delivery"-->
+            <!--android:layout_width="170dp"-->
+            <!--android:layout_height="108dp"-->
+            <!--android:layout_margin="6dp"-->
+            <!--android:layout_marginLeft="20dp"-->
+            <!--android:scaleType="matrix"-->
+            <!--android:src="@drawable/sale_delivery"-->
+            <!--android:layout_weight="0.29" />-->
 
-        <com.example.shanggmiqr.util.MyImageView
-            android:visibility="gone"
-            android:id="@+id/other_outgoing"
-            android:layout_width="170dp"
-            android:layout_height="108dp"
-            android:layout_margin="6dp"
-            android:layout_marginLeft="20dp"
-            android:scaleType="matrix"
-            android:src="@drawable/other_outgoing" />
-        <com.example.shanggmiqr.util.MyImageView
-            android:visibility="gone"
-            android:id="@+id/product_entry"
-            android:layout_width="170dp"
-            android:layout_height="108dp"
-            android:layout_margin="6dp"
-            android:scaleType="matrix"
-            android:src="@drawable/product_entry" />
-    </LinearLayout>
+        <!--<com.example.shanggmiqr.util.MyImageView-->
+            <!--android:visibility="gone"-->
+            <!--android:id="@+id/other_entry"-->
+            <!--android:layout_width="170dp"-->
+            <!--android:layout_height="108dp"-->
+            <!--android:layout_margin="6dp"-->
+            <!--android:scaleType="matrix"-->
+            <!--android:src="@drawable/other_entry" />-->
+    <!--</LinearLayout>-->
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
-        <com.example.shanggmiqr.util.MyImageView
-            android:visibility="gone"
-            android:id="@+id/loan"
-            android:layout_width="170dp"
-            android:layout_height="108dp"
-            android:layout_margin="6dp"
-            android:scaleType="matrix"
-            android:src="@drawable/loan" />
-        <com.example.shanggmiqr.util.MyImageView
-            android:visibility="gone"
-            android:id="@+id/allocate"
-            android:layout_width="170dp"
-            android:layout_height="108dp"
-            android:layout_margin="6dp"
-            android:layout_marginLeft="20dp"
-            android:scaleType="matrix"
-            android:src="@drawable/allocate" />
-    </LinearLayout>
+    <!--<LinearLayout-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:orientation="horizontal" >-->
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        <!--<com.example.shanggmiqr.util.MyImageView-->
+            <!--android:visibility="gone"-->
+            <!--android:id="@+id/other_outgoing"-->
+            <!--android:layout_width="170dp"-->
+            <!--android:layout_height="108dp"-->
+            <!--android:layout_margin="6dp"-->
+            <!--android:layout_marginLeft="20dp"-->
+            <!--android:scaleType="matrix"-->
+            <!--android:src="@drawable/other_outgoing" />-->
+        <!--<com.example.shanggmiqr.util.MyImageView-->
+            <!--android:visibility="gone"-->
+            <!--android:id="@+id/product_entry"-->
+            <!--android:layout_width="170dp"-->
+            <!--android:layout_height="108dp"-->
+            <!--android:layout_margin="6dp"-->
+            <!--android:scaleType="matrix"-->
+            <!--android:src="@drawable/product_entry" />-->
+    <!--</LinearLayout>-->
 
-        <com.example.shanggmiqr.util.MyImageView
-            android:visibility="gone"
-            android:id="@+id/purchase_arrival"
-            android:layout_width="170dp"
-            android:layout_height="108dp"
-            android:layout_margin="6dp"
-            android:layout_marginLeft="20dp"
-            android:scaleType="matrix"
-            android:src="@drawable/purchase_arrival" />
-        <com.example.shanggmiqr.util.MyImageView
-            android:visibility="gone"
-            android:id="@+id/purchase_return"
-            android:layout_width="170dp"
-            android:layout_height="108dp"
-            android:layout_margin="6dp"
-            android:scaleType="matrix"
-            android:src="@drawable/purchase_return" />
+    <!--<LinearLayout-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:orientation="horizontal" >-->
+        <!--<com.example.shanggmiqr.util.MyImageView-->
+            <!--android:visibility="gone"-->
+            <!--android:id="@+id/loan"-->
+            <!--android:layout_width="170dp"-->
+            <!--android:layout_height="108dp"-->
+            <!--android:layout_margin="6dp"-->
+            <!--android:scaleType="matrix"-->
+            <!--android:src="@drawable/loan" />-->
+        <!--<com.example.shanggmiqr.util.MyImageView-->
+            <!--android:visibility="gone"-->
+            <!--android:id="@+id/allocate"-->
+            <!--android:layout_width="170dp"-->
+            <!--android:layout_height="108dp"-->
+            <!--android:layout_margin="6dp"-->
+            <!--android:layout_marginLeft="20dp"-->
+            <!--android:scaleType="matrix"-->
+            <!--android:src="@drawable/allocate" />-->
+    <!--</LinearLayout>-->
 
-    </LinearLayout>
+    <!--<LinearLayout-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:orientation="horizontal" >-->
+
+        <!--<com.example.shanggmiqr.util.MyImageView-->
+            <!--android:visibility="gone"-->
+            <!--android:id="@+id/purchase_arrival"-->
+            <!--android:layout_width="170dp"-->
+            <!--android:layout_height="108dp"-->
+            <!--android:layout_margin="6dp"-->
+            <!--android:layout_marginLeft="20dp"-->
+            <!--android:scaleType="matrix"-->
+            <!--android:src="@drawable/purchase_arrival" />-->
+        <!--<com.example.shanggmiqr.util.MyImageView-->
+            <!--android:visibility="gone"-->
+            <!--android:id="@+id/purchase_return"-->
+            <!--android:layout_width="170dp"-->
+            <!--android:layout_height="108dp"-->
+            <!--android:layout_margin="6dp"-->
+            <!--android:scaleType="matrix"-->
+            <!--android:src="@drawable/purchase_return" />-->
+
+    <!--</LinearLayout>-->
 
 </LinearLayout>

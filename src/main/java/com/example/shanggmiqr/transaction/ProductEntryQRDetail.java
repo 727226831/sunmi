@@ -45,6 +45,7 @@ public class ProductEntryQRDetail extends AppCompatActivity {
     private List<ProductEntryQrDetailBean> listAllBodyPostition;
     private ListView tableBodyListView;
     private Button scanButton;
+    private String maccode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,16 +61,17 @@ public class ProductEntryQRDetail extends AppCompatActivity {
         //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。
         db5 = helper5.getWritableDatabase();//获取到了 SQLiteDatabase 对象
         tableBodyListView = (ListView) findViewById(R.id.list_body_productentry_qrdetail);
-        Intent _intent = getIntent();
+        Intent intent = getIntent();
         //从Intent当中根据key取得value
-        if (_intent != null) {
-            current_itempk_qrRecv = _intent.getStringExtra("current_itempk_qrRecv");
-            current_nnum_qrRecv = _intent.getStringExtra("current_nnum_qrRecv");
-            current_scannum_qrRecv = _intent.getStringExtra("current_scannum_qrRecv");
-            current_materialcode_qrRecv = _intent.getStringExtra("current_materialcode_qrRecv");
-            current_ysnum_qrRecv = _intent.getStringExtra("current_ysnum_qrRecv");
-            current_uploadflag_qrRecv = _intent.getStringExtra("current_uploadflag_qrRecv");
-            current_vbillcode_qrRecv = _intent.getStringExtra("current_vbillcode_qrRecv");
+        if (intent != null) {
+            current_itempk_qrRecv = intent.getStringExtra("current_itempk_qrRecv");
+            current_nnum_qrRecv = intent.getStringExtra("current_nnum_qrRecv");
+            current_scannum_qrRecv = intent.getStringExtra("current_scannum_qrRecv");
+            current_materialcode_qrRecv = intent.getStringExtra("current_materialcode_qrRecv");
+            current_ysnum_qrRecv = intent.getStringExtra("current_ysnum_qrRecv");
+            current_uploadflag_qrRecv = intent.getStringExtra("current_uploadflag_qrRecv");
+            current_vbillcode_qrRecv = intent.getStringExtra("current_vbillcode_qrRecv");
+            maccode=intent.getStringExtra("maccode");
         }
         vcooporderbcode_bText = (TextView) findViewById(R.id.vcooporderbcode_b_productentryqr);
         //matrnameText = (TextView) findViewById(R.id.matrname_productentryqr);
@@ -90,6 +92,7 @@ public class ProductEntryQRDetail extends AppCompatActivity {
                     intent.putExtra("current_ysnum_qrRecv", current_ysnum_qrRecv);
                     intent.putExtra("current_uploadflag_qrRecv", current_uploadflag_qrRecv);
                     intent.putExtra("current_vbillcode_qrRecv", current_vbillcode_qrRecv);
+                    intent.putExtra("maccode",maccode);
                     startActivity(intent);
                 } else {
                     Toast.makeText(ProductEntryQRDetail.this, "已经执行发货操作的行号不允许再进行操作", Toast.LENGTH_LONG).show();

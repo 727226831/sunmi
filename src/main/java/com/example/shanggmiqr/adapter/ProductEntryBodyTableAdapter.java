@@ -7,6 +7,7 @@ package com.example.shanggmiqr.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,8 +47,12 @@ public class ProductEntryBodyTableAdapter extends BaseAdapter{
                 if (i != position) {
                     mContentList.get(i).setSelected(false);
                 }
+
             }
+
         }
+
+
         notifyDataSetChanged();
     }
 
@@ -113,6 +118,7 @@ public class ProductEntryBodyTableAdapter extends BaseAdapter{
         viewHolder.viewBtn.setTextColor(Color.BLUE);
         viewHolder.viewBtn.setTag(position);
         viewHolder.viewBtn.setOnClickListener(mListener);
+
         viewHolder.radioButton.setChecked(saleDeliveryBodyBean.isSelected());
         return convertView;
     }

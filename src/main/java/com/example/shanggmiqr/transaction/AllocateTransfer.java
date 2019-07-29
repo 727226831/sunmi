@@ -16,6 +16,7 @@ import android.os.Message;
 import android.provider.ContactsContract;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -318,16 +319,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
             return false;
         }
     }
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            //点击完返回键，执行的动作
-            Intent intent = new Intent(AllocateTransfer.this, BusinessOperation.class);
-            startActivity(intent);
-            finish();
-        }
-        return true;
-    }
+
     private void insertDownloadDataToDB(AllocateTransferQuery productEntryQuery) {
 
         List<AllocateTransferQuery.DataBean> saleDeliveryBeanList = productEntryQuery.getData();
@@ -390,11 +382,13 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                 valuesInner.put("address", address);
                 valuesInner.put("materialcode", materialcode);
                 valuesInner.put("materialclasscode", materialclasscode);
-                    valuesInner.put("nnum", nnum);
+                valuesInner.put("nnum", nnum);
                 valuesInner.put("rwarehousecode", rwarehousecode);
                 valuesInner.put("cwarehousecode", cwarehousecode);
                 valuesInner.put("scannum", scannum);
                 valuesInner.put("issn",obb.getIssn());
+                valuesInner.put("maccode",obb.getMaccode());
+
                 //N代表尚未上传
                 valuesInner.put("uploadflag", "N");
                 db3.insert("AllocateTransferBody", null, valuesInner);

@@ -329,16 +329,6 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            //点击完返回键，执行的动作
-            Intent intent = new Intent(SaleDelivery.this, BusinessOperation.class);
-            startActivity(intent);
-            finish();
-        }
-        return true;
-    }
 
 
     private void insertDownloadDataToDB(SaleDeliveryQuery saleDeliveryQuery) {
@@ -775,6 +765,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
             Intent intent = new Intent(SaleDelivery.this, SaleDeliveryDetail.class);
             intent.putExtra("current_sale_delivery_vbillcode", saleDeliveryBeanList.get(position).getVbillcode());
             intent.putExtra("current_sale_delivery_dbilldate", saleDeliveryBeanList.get(position).getDbilldate());
+            intent.putExtra("type",type);
 
             startActivity(intent);
 

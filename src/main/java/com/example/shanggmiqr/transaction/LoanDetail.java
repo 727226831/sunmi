@@ -13,6 +13,7 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -24,6 +25,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.bean.DataBean;
+import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.LoanBodyTableAdapter;
 import com.example.shanggmiqr.bean.LoanBodyBean;
@@ -121,6 +124,7 @@ public class LoanDetail extends AppCompatActivity {
         db4 = helper4.getWritableDatabase();//获取到了 SQLiteDatabase 对象
         tableBodyListView = (ListView) findViewById(R.id.list_body_loanDetail_detail);
         Intent _intent = getIntent();
+        Log.i("detail-->",getIntent().getIntExtra("type",-1)+"");
         //从Intent当中根据key取得value
         if (_intent != null) {
             current_sale_delivery_vbillcodeRecv = _intent.getStringExtra("current_sale_delivery_vbillcode");
@@ -162,7 +166,7 @@ public class LoanDetail extends AppCompatActivity {
         saleDeliveryScanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(LoanDetail.this, SaleDeliveryQrScanner.class);
+                Intent intent = new Intent(LoanDetail.this, LoanQrScanner.class);
                 intent.putExtra("current_vcooporderbcode_b_qrRecv", chosen_line_vcooporderbcode_b);
                 intent.putExtra("current_matrname_qrRecv", chosen_line_matrname);
                 intent.putExtra("current_cwarename_qrRecv", chosen_line_cwarename);
@@ -172,6 +176,7 @@ public class LoanDetail extends AppCompatActivity {
                 intent.putExtra("current_nnum_qrRecv", chosen_line_nnum);
                 intent.putExtra("current_uploadflag_qrRecv", chosen_line_uploadflag);
                 intent.putExtra("current_vbillcode_qrRecv", current_sale_delivery_vbillcodeRecv);
+                intent.putExtra("type",getIntent().getIntExtra("type",-1));
 
                 startActivity(intent);
             }
@@ -202,7 +207,7 @@ public class LoanDetail extends AppCompatActivity {
                                                         msg.what = 0x12;
                                                         saleDeliveryDetailHandler.sendMessage(msg);
                                                     } else if (isCwarenameSame()) {
-                                                        String uploadResp = uploadSaleDeliveryVBill("R08", list);
+                                                        String uploadResp = uploadSaleDeliveryVBill("R38", list);
                                                         if (!(null == uploadResp)) {
                                                             if (!(null == lisitemtall)) {
                                                                 Gson gson = new Gson();
@@ -280,7 +285,7 @@ public class LoanDetail extends AppCompatActivity {
                                         msg.what = 0x12;
                                         saleDeliveryDetailHandler.sendMessage(msg);
                                     } else if (isCwarenameSame()) {
-                                        String uploadResp = uploadSaleDeliveryVBill("R08", list);
+                                        String uploadResp = uploadSaleDeliveryVBill("R38", list);
                                         if (!(null == uploadResp)) {
                                             if (!(null == lisitemtall)) {
                                                 Gson gson = new Gson();
@@ -364,7 +369,7 @@ public class LoanDetail extends AppCompatActivity {
                                                         msg.what = 0x13;
                                                         saleDeliveryDetailHandler.sendMessage(msg);
                                                     } else {
-                                                        String uploadResp = uploadSaleDeliveryVBill("R08", list);
+                                                        String uploadResp = uploadSaleDeliveryVBill("R38", list);
                                                         if (!(null == uploadResp)) {
                                                             if (!(null == listitem)) {
                                                                 Gson gson = new Gson();
@@ -436,7 +441,7 @@ public class LoanDetail extends AppCompatActivity {
                                         msg.what = 0x13;
                                         saleDeliveryDetailHandler.sendMessage(msg);
                                     } else {
-                                        String uploadResp = uploadSaleDeliveryVBill("R08", list);
+                                        String uploadResp = uploadSaleDeliveryVBill("R38", list);
                                         if (!(null == uploadResp)) {
                                             if (!(null == listitem)) {
                                                 Gson gson = new Gson();
@@ -881,8 +886,9 @@ public class LoanDetail extends AppCompatActivity {
             //判断cursor中是否存在数据
             while (cursor2.moveToNext()) {
                 SaleDeliverySendBean.BodyBean bean = new SaleDeliverySendBean.BodyBean();
-                bean.vcooporderbcode_b = cursor2.getString(cursor2.getColumnIndex("itempk"));
+                bean.itempk = cursor2.getString(cursor2.getColumnIndex("itempk"));
                 bean.materialcode = cursor2.getString(cursor2.getColumnIndex("materialcode"));
+                bean.setCwarecode(DataHelper.getCwarehousecode(cursor2.getString(cursor2.getColumnIndex("cwarename")),db4));
 
                 String num_check = cursor2.getString(cursor2.getColumnIndex("nnum"));
                 if (Integer.parseInt(num_check) < 0) {
@@ -893,9 +899,9 @@ public class LoanDetail extends AppCompatActivity {
                 bean.pch = "";
                 int scanNum = 0;
                 ArrayList<SaleDeliverySendBean.BodyBean.SnBean> snlist = new ArrayList<SaleDeliverySendBean.BodyBean.SnBean>();
-                if (list.contains(bean.vcooporderbcode_b)) {
+                if (list.contains(bean.getItempk())) {
                     Cursor cursor3 = db4.rawQuery("select platecode,boxcode,prodcutcode,xlh from LoanScanResult where  pobillcode=? and materialcode=? and itempk=? and itemuploadflag=?",
-                            new String[]{current_sale_delivery_vbillcodeRecv, bean.materialcode, bean.vcooporderbcode_b, "N"});
+                            new String[]{current_sale_delivery_vbillcodeRecv, bean.materialcode, bean.getItempk(), "N"});
                     if (cursor3 != null && cursor3.getCount() > 0) {
                         //判断cursor中是否存在数据
                         while (cursor3.moveToNext()) {
@@ -939,11 +945,16 @@ public class LoanDetail extends AppCompatActivity {
         SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
         String current_user = currentAccount.getString("current_account","");
         SaleDeliverySendBean otherOutgoingSend = new SaleDeliverySendBean("APP", "123456",current_user, wlCode, expressCode, upload_all_cwarehousecode, current_bisreturn, current_sale_delivery_vbillcodeRecv, bodylist);
+        otherOutgoingSend.setAppuser(DataHelper.getUser(LoanDetail.this));
+        otherOutgoingSend.setBillmaker(DataHelper.getUser(LoanDetail.this));
+        otherOutgoingSend.setWlorgcode(wlCode);
+        otherOutgoingSend.setWlbillcode(expressCode);
         Gson gson = new Gson();
         String userSendBean = gson.toJson(otherOutgoingSend);
 
         request.addProperty("string", workcode);
         request.addProperty("string1", userSendBean);
+        Log.i("request-->",request.toString());
         //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
         //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
@@ -977,6 +988,7 @@ public class LoanDetail extends AppCompatActivity {
             Object object = envelope.getResponse();
             saleDeliveryUploadDataResp = new Gson().toJson(object);
         }
+        Log.i("response-->",envelope.bodyIn.toString());
         // 获取返回的结果
         // saleDeliveryUploadDataResp = object.getProperty(0).toString();
         return saleDeliveryUploadDataResp;

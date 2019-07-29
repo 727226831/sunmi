@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -52,11 +53,12 @@ public class AllocateTransferQRDetail extends AppCompatActivity {
     private Spinner spinner;
     private List<String> cars;
     private String temp_code;
+    private String maccode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.product_entry_qr_detail);
+        setContentView(R.layout.allocate_transfer_qr_detail);
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setHomeButtonEnabled(true);
@@ -67,19 +69,20 @@ public class AllocateTransferQRDetail extends AppCompatActivity {
         //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。
         db5 = helper5.getWritableDatabase();//获取到了 SQLiteDatabase 对象
         tableBodyListView = (ListView) findViewById(R.id.list_body_allocatetransfer_qrdetail);
-        Intent _intent = getIntent();
+        Intent intent = getIntent();
         //从Intent当中根据key取得value
-        if (_intent != null) {
-            current_itempk_qrRecv = _intent.getStringExtra("current_itempk_qrRecv");
-            current_nnum_qrRecv = _intent.getStringExtra("current_nnum_qr");
-            current_scannum_qrRecv = _intent.getStringExtra("current_scannum_qrRecv");
-            current_materialcode_qrRecv = _intent.getStringExtra("current_materialcode_qrRecv");
-            current_materialclasscode_qrRecv = _intent.getStringExtra("current_materialclasscode_qrRecv");
-            current_address_qrRecv = _intent.getStringExtra("current_address_qrRecv");
-            current_uploadflag_qrRecv = _intent.getStringExtra("current_uploadflag_qrRecv");
-            current_vbillcode_qrRecv = _intent.getStringExtra("current_vbillcode_qr");
-            current_cwarehousecode_qrRecv = _intent.getStringExtra("current_cwarehousecode_qrRecv");
-            current_rwarehousecode_qrRecv = _intent.getStringExtra("current_rwarehousecode_qrRecv");
+        if (intent != null) {
+            current_itempk_qrRecv = intent.getStringExtra("current_itempk_qrRecv");
+            current_nnum_qrRecv = intent.getStringExtra("current_nnum_qrRecv");
+            current_scannum_qrRecv = intent.getStringExtra("current_scannum_qrRecv");
+            current_materialcode_qrRecv = intent.getStringExtra("current_materialcode_qrRecv");
+            current_materialclasscode_qrRecv = intent.getStringExtra("current_materialclasscode_qrRecv");
+            current_address_qrRecv = intent.getStringExtra("current_address_qrRecv");
+            current_uploadflag_qrRecv = intent.getStringExtra("current_uploadflag_qrRecv");
+            current_vbillcode_qrRecv = intent.getStringExtra("current_vbillcode_qrRecv");
+            current_cwarehousecode_qrRecv = intent.getStringExtra("current_cwarehousecode_qrRecv");
+            current_rwarehousecode_qrRecv = intent.getStringExtra("current_rwarehousecode_qrRecv");
+            maccode=intent.getStringExtra("maccode");
 
         }
         vcooporderbcode_bText = (TextView) findViewById(R.id.vcooporderbcode_b_allocatetransferqr);
@@ -105,6 +108,8 @@ public class AllocateTransferQRDetail extends AppCompatActivity {
                     intent.putExtra("current_materialclasscode_qrRecv", current_materialclasscode_qrRecv);
                     intent.putExtra("current_uploadflag_qrRecv", current_uploadflag_qrRecv);
                     intent.putExtra("current_vbillcode_qrRecv", current_vbillcode_qrRecv);
+                    intent.putExtra("maccode",maccode);
+                    Log.i("maccode-->",maccode);
                     startActivity(intent);
                 } else {
                     Toast.makeText(AllocateTransferQRDetail.this, "已经执行发货操作的行号不允许再进行操作", Toast.LENGTH_LONG).show();
@@ -140,8 +145,12 @@ public class AllocateTransferQRDetail extends AppCompatActivity {
 
     //下面的方法内容需要根据实际更新
     public ArrayList<AllocateTransferQrDetailBean> QueryAllocateTransferBody(String current_matrcode_qrRecv) {
+        Log.i("str1-->",current_vbillcode_qrRecv);
+        Log.i("str2-->",current_matrcode_qrRecv);
+        Log.i("str3-->",current_itempk_qrRecv);
         ArrayList<AllocateTransferQrDetailBean> list = new ArrayList<AllocateTransferQrDetailBean>();
-        Cursor cursor = db5.rawQuery("select platecode,boxcode,prodcutcode,itemuploadflag from AllocateTransferScanResult where billno=? and materialcode=? and itempk=?", new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv, current_itempk_qrRecv});
+        Cursor cursor = db5.rawQuery("select platecode,boxcode,prodcutcode,itemuploadflag from AllocateTransferScanResult where billno=? " +
+                "and materialcode=? and itempk=?", new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv, current_itempk_qrRecv});
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
@@ -159,7 +168,7 @@ public class AllocateTransferQRDetail extends AppCompatActivity {
 
     private String countScannedQRCode(String vbillcode, String matrcode) {
         String count = "0";
-        Cursor cursor2 = db5.rawQuery("select prodcutcode from AllocateTransferScanResult where billno=? and matrcode=? and itempk=?", new String[]{vbillcode, matrcode,current_itempk_qrRecv});
+        Cursor cursor2 = db5.rawQuery("select prodcutcode from AllocateTransferScanResult where billno=? and materialcode=? and itempk=?", new String[]{vbillcode, matrcode,current_itempk_qrRecv});
         if (cursor2 != null && cursor2.getCount() > 0) {
             //判断cursor中是否存在数据
             count = String.valueOf(cursor2.getCount());
@@ -170,7 +179,7 @@ public class AllocateTransferQRDetail extends AppCompatActivity {
     }
 
     private void insertCountOfScannedQRCode(String scannum) {
-        db5.execSQL("update AllocateTransferBody set scannum=? where billno=? and matrcode=? and itempk=?", new String[]{scannum, current_vbillcode_qrRecv, current_materialcode_qrRecv,current_itempk_qrRecv});
+        db5.execSQL("update AllocateTransferBody set scannum=? where billno=? and materialcode=? and itempk=?", new String[]{scannum, current_vbillcode_qrRecv, current_materialcode_qrRecv,current_itempk_qrRecv});
     }
 
     @Override

@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -32,6 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.shanggmiqr.BusinessOperation;
+import com.example.shanggmiqr.bean.DataBean;
 import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.PurchaseArrivalAdapter;
@@ -67,9 +69,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
     private Handler saleDeliveryHandler = null;
     private ListView tableListView;
     private List<PurchaseArrivalBean> listAllPostition;
-    private String chosen_line_vbillcode;
-    private String chosen_line_dbilldate;
-    private String saleDeliveryUploadDataResp;
+
     private ZLoadingDialog dialog;
     private String query_cwarename;
     private String query_uploadflag;
@@ -116,8 +116,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 adapter1.select(position);
                 PurchaseArrivalBean saleDelivery1Bean = (PurchaseArrivalBean) adapter1.getItem(position);
-                chosen_line_vbillcode = saleDelivery1Bean.getVbillcode();
-                chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
+
 
             }
         });
@@ -141,9 +140,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                                 adapter.select(position);
                                 PurchaseArrivalBean saleDelivery1Bean = (PurchaseArrivalBean) adapter.getItem(position);
-                                chosen_line_vbillcode = saleDelivery1Bean.getVbillcode();
-                                chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
-                                //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
+
                             }
                         });
                         Toast.makeText(PurchaseArrival.this, "采购到货单下载完成", Toast.LENGTH_LONG).show();
@@ -210,6 +207,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                                     }
                                     Gson gson7 = new Gson();
                                     PurchaseArrivalQuery saleDeliveryQuery = gson7.fromJson(saleDeliveryData, PurchaseArrivalQuery.class);
+
                                     int pagetotal = Integer.parseInt(saleDeliveryQuery.getPagetotal());
                                     if (pagetotal == 1) {
                                         insertDownloadDataToDB(saleDeliveryQuery);
@@ -229,6 +227,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                                         for (int pagenum = 2; pagenum <= pagetotal; pagenum++) {
                                             String saleDeliveryData2 = DataHelper.downloadDatabase(pagenum+"",PurchaseArrival.this,6);
                                             PurchaseArrivalQuery saleDeliveryQuery2 = gson7.fromJson(saleDeliveryData2, PurchaseArrivalQuery.class);
+
                                             insertDownloadDataToDB(saleDeliveryQuery2);
                                         }
                                         Message msg = new Message();
@@ -287,9 +286,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         adapter.select(position);
                         PurchaseArrivalBean saleDelivery1Bean = (PurchaseArrivalBean) adapter.getItem(position);
-                        chosen_line_vbillcode = saleDelivery1Bean.getVbillcode();
-                        chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
-                        //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
+
                     }
                 });
                 break;
@@ -315,16 +312,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
             return false;
         }
     }
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            //点击完返回键，执行的动作
-            Intent intent = new Intent(PurchaseArrival.this, BusinessOperation.class);
-            startActivity(intent);
-            finish();
-        }
-        return true;
-    }
+
     private void insertDownloadDataToDB(PurchaseArrivalQuery saleDeliveryQuery) {
 
         List<PurchaseArrivalQuery.DataBean> saleDeliveryBeanList = saleDeliveryQuery.getData();
@@ -416,50 +404,9 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
         }
     }
 
-    private String existOriginalCwarename(String cwarehousecode) {
-        String flag;
-        if (cwarehousecode.equals("")){
-            flag ="N";
-        }else{
-            flag ="Y";
-        }
-        return flag;
-    }
 
-    private String getCwarename(String cwarehousecode) {
-        Cursor cursor = db3.rawQuery("select name from Warehouse where code=?",
-                new String[]{cwarehousecode});
-        String cwarename=null;
-        if (cursor != null && cursor.getCount() > 0) {
-            while (cursor.moveToNext()) {
-                cwarename = cursor.getString(cursor.getColumnIndex("name"));
-            }
-            cursor.close();
-        }else{
-            cwarename = "";
-        }
-        return cwarename;
-    }
 
-    private String getDefaultEndTime() {
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        return String.valueOf(year) + "-" + String.valueOf(month) + "-" + String.valueOf(day) + " " + "23:59:59";
-    }
 
-    private String countScannedQRCode(String vbillcode,String vcooporderbcode_b, String matrcode) {
-        String count = "0";
-        Cursor cursor2 = db3.rawQuery("select prodcutcode from PurchaseArrivalScanResult where vbillcode=? and materialcode=? and itempk=? ", new String[]{vbillcode, matrcode,vcooporderbcode_b});
-        if (cursor2 != null && cursor2.getCount() > 0) {
-            //判断cursor中是否存在数据
-            count = String.valueOf(cursor2.getCount());
-            cursor2.close();
-            return count;
-        }
-        return count;
-    }
 
     private void popupQuery() {
         LayoutInflater layoutInflater = LayoutInflater.from(PurchaseArrival.this);
@@ -550,9 +497,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         adapter3.select(position);
                         PurchaseArrivalBean saleDelivery1Bean = (PurchaseArrivalBean) adapter3.getItem(position);
-                        chosen_line_vbillcode = saleDelivery1Bean.getVbillcode();
-                        chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
-                        //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
+
                     }
                 });
 
@@ -744,7 +689,8 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
             Intent intent = new Intent(PurchaseArrival.this, PurchaseReturnDetail.class);
             intent.putExtra("current_sale_delivery_vbillcode", listAllPostition.get(position).getVbillcode());
             intent.putExtra("current_sale_delivery_dbilldate", listAllPostition.get(position).getDbilldate());
-            intent.putExtra("type",6);
+            intent.putExtra("type",getIntent().getIntExtra("type",-1));
+
             startActivity(intent);
 
         }

@@ -94,8 +94,8 @@ public class OtherEntryQRDetail extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(!isAlreadyUpload()){
-              //  Intent intent = new Intent(OtherEntryQRDetail.this,OtherEntryQrScanner.class);
-                    Intent intent = new Intent(OtherEntryQRDetail.this,SaleDeliveryQrScanner.class);
+                Intent intent = new Intent(OtherEntryQRDetail.this,OtherEntryQrScanner.class);
+              //      Intent intent = new Intent(OtherEntryQRDetail.this,SaleDeliveryQrScanner.class);
                     intent.putExtra("type",type);
                     intent.putExtra("current_vbillcode_qrRecv", current_pobillcode_qrRecv);
                     intent.putExtra("current_cwarename_scanner", current_cwarename_qrRecv);

@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -25,7 +26,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.MainActivity;
 import com.example.shanggmiqr.bean.PurchaseArrivalBean;
+import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.SaleDeliveryBodyTableAdapter;
 import com.example.shanggmiqr.bean.SaleDeliveryBodyBean;
@@ -80,8 +83,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     private String[] matrcodeList[];
     private Handler saleDeliveryDetailHandler = null;
     private List<String> upload_cwarename;
-    private String upload_all_cwarename;
-    private String upload_all_cwarehousecode;
+
     //物流公司选择
     private Spinner spinner;
     private Myadapter myadapter;
@@ -98,8 +100,8 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     private List<String> listitem;
     private List<SaleDeliveryUploadFlagBean> lisitemtall;
     //nnum为正 bisreturn为N 为负则为Y
-    private String current_bisreturn = "N";
-    private ZLoadingDialog dialog;
+
+    private ZLoadingDialog zLoadingDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,7 +118,15 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         uploadSingleButton = (Button) findViewById(R.id.upload_saleDelivery);
         saleDeliveryScanButton.setEnabled(false);
         uploadSingleButton.setEnabled(false);
-        dialog = new ZLoadingDialog(SaleDeliveryDetail.this);
+        zLoadingDialog= new ZLoadingDialog(SaleDeliveryDetail.this);
+        zLoadingDialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
+                .setLoadingColor(Color.BLUE)//颜色
+                .setHintText("数据信息下载中...")
+                .setCancelable(false)
+                .setCanceledOnTouchOutside(false)
+                .setHintTextSize(16) // 设置字体大小 dp
+                .setHintTextColor(Color.GRAY)  // 设置字体颜色
+                .setDurationTime(0.5); // 设置动画时间百分比 - 0.5倍
         helper4 = new MyDataBaseHelper(SaleDeliveryDetail.this, "ShangmiData", null, 1);
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。
@@ -137,6 +147,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         dbilldateText.setText("发货日期:" + current_sale_delivery_dbilldateRecv);
         //物流公司选择
         spinner = findViewById(R.id.spinner_logistics_company);
+
         //加载数据
         myadapter();
 
@@ -171,7 +182,8 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                             .setMessage("运单号或者物流公司为空，确定要继续吗？")
                             .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                 @Override
-                                public void onClick(DialogInterface dialog, int which) {
+                                public void onClick(final DialogInterface dialog, int which) {
+                                    zLoadingDialog.show();
                                     // TODO Auto-generated method stub
                                     new Thread(new Runnable() {
                                         @Override
@@ -180,19 +192,18 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                                 try {
                                                     //Y代表已经上传过
                                                     if (iaAlreadyUploadAll()) {
-                                                        Message msg = new Message();
-                                                        msg.what = 0x12;
-                                                        saleDeliveryDetailHandler.sendMessage(msg);
+                                                        Toast.makeText(SaleDeliveryDetail.this, "该发货单已经全部上传", Toast.LENGTH_LONG).show();
                                                     } else if (isCwarenameSame()) {
 
-                                                        String uploadResp = uploadSaleDeliveryVBill("R08", list);
 
+                                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R08", db4,current_sale_delivery_vbillcodeRecv,
+                                                               SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
+                                                        zLoadingDialog.dismiss();
                                                         if (!(null == uploadResp)) {
                                                             if (!(null == lisitemtall)) {
-                                                                Gson gson = new Gson();
-                                                                SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                                                Gson gson2 = new Gson();
-                                                                SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
+
+                                                                SalesRespBean respBean = new Gson().fromJson(uploadResp, SalesRespBean.class);
+                                                                SalesRespBeanValue respBeanValue =new Gson().fromJson(respBean.getValue(), SalesRespBeanValue.class);
                                                                 Bundle bundle = new Bundle();
                                                                 bundle.putString("uploadResp", respBeanValue.getErrmsg());
                                                                 Message msg = new Message();
@@ -213,28 +224,14 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                                             saleDeliveryDetailHandler.sendMessage(msg);
                                                         }
                                                     } else {
-                                                        Message msg = new Message();
-                                                        msg.what = 0x16;
-                                                        saleDeliveryDetailHandler.sendMessage(msg);
+                                                        Toast.makeText(SaleDeliveryDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
                                                     }
 
-                                                } catch (IOException e) {
-                                                    //e.printStackTrace();
-                                                    Bundle bundle = new Bundle();
-                                                    bundle.putString("Exception111", e.toString());
-                                                    Message msg = new Message();
-                                                    msg.what = 0x17;
-                                                    msg.setData(bundle);
-                                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                                    return;
-                                                } catch (XmlPullParserException e) {
-                                                    //e.printStackTrace();
-                                                    Bundle bundle = new Bundle();
-                                                    bundle.putString("Exception111", e.toString());
-                                                    Message msg = new Message();
-                                                    msg.what = 0x17;
-                                                    msg.setData(bundle);
-                                                    saleDeliveryDetailHandler.sendMessage(msg);
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                    Toast.makeText(SaleDeliveryDetail.this, e.toString(), Toast.LENGTH_LONG).show();
+                                                    dialog.dismiss();
+
                                                     return;
                                                 }
                                             }
@@ -252,6 +249,8 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                             })
                             .show();
                 } else {
+
+                    zLoadingDialog.show();
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -260,11 +259,12 @@ public class SaleDeliveryDetail extends AppCompatActivity {
 
                                     //Y代表已经上传过
                                     if (iaAlreadyUploadAll()) {
-                                        Message msg = new Message();
-                                        msg.what = 0x12;
-                                        saleDeliveryDetailHandler.sendMessage(msg);
+                                        Toast.makeText(SaleDeliveryDetail.this, "该发货单已经全部上传", Toast.LENGTH_LONG).show();
                                     } else if (isCwarenameSame()) {
-                                        String uploadResp = uploadSaleDeliveryVBill("R08", list);
+
+                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R08", db4,current_sale_delivery_vbillcodeRecv,
+                                                SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
+                                        zLoadingDialog.dismiss();
                                         if (!(null == uploadResp)) {
                                             if (!(null == lisitemtall)) {
                                                 Gson gson = new Gson();
@@ -291,28 +291,12 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                             saleDeliveryDetailHandler.sendMessage(msg);
                                         }
                                     } else {
-                                        Message msg = new Message();
-                                        msg.what = 0x16;
-                                        saleDeliveryDetailHandler.sendMessage(msg);
+                                        Toast.makeText(SaleDeliveryDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
                                     }
 
-                                } catch (IOException e) {
+                                } catch (Exception e) {
                                     e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                    return;
-                                } catch (XmlPullParserException e) {
-                                    //e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    saleDeliveryDetailHandler.sendMessage(msg);
+                                    Toast.makeText(SaleDeliveryDetail.this, e.toString(), Toast.LENGTH_LONG).show();
                                     return;
                                 }
                             }
@@ -336,8 +320,9 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                             .setMessage("运单号或者物流公司为空，确定要继续吗？")
                             .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                 @Override
-                                public void onClick(DialogInterface dialog, int which) {
+                                public void onClick(final DialogInterface dialog, int which) {
                                     // TODO Auto-generated method stub
+                                    zLoadingDialog.show();
                                     new Thread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -345,13 +330,14 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                                 try {
                                                     //Y代表已经上传过
                                                     if (iaAlreadyUploadSingle(chosen_line_vcooporderbcode_b)) {
-                                                        Message msg = new Message();
-                                                        msg.what = 0x13;
-                                                        saleDeliveryDetailHandler.sendMessage(msg);
+
+                                                        Toast.makeText(SaleDeliveryDetail.this, "该行已经上传", Toast.LENGTH_LONG).show();
                                                     } else {
 
-                                                        String uploadResp = uploadSaleDeliveryVBill("R08", list);
 
+                                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R08",db4,current_sale_delivery_vbillcodeRecv,
+                                                                SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
+                                                        zLoadingDialog.dismiss();
                                                         if (!(null == uploadResp)) {
                                                             if (!(null == listitem)) {
                                                                 Gson gson = new Gson();
@@ -379,23 +365,10 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                                         }
                                                     }
 
-                                                } catch (IOException e) {
+                                                } catch (Exception e) {
                                                      e.printStackTrace();
-                                                    Bundle bundle = new Bundle();
-                                                    bundle.putString("Exception111", e.toString());
-                                                    Message msg = new Message();
-                                                    msg.what = 0x17;
-                                                    msg.setData(bundle);
-                                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                                    return;
-                                                } catch (XmlPullParserException e) {
-                                                     e.printStackTrace();
-                                                    Bundle bundle = new Bundle();
-                                                    bundle.putString("Exception111", e.toString());
-                                                    Message msg = new Message();
-                                                    msg.what = 0x17;
-                                                    msg.setData(bundle);
-                                                    saleDeliveryDetailHandler.sendMessage(msg);
+                                                     zLoadingDialog.dismiss();
+                                                    Toast.makeText(SaleDeliveryDetail.this, e.toString(), Toast.LENGTH_LONG).show();
                                                     return;
                                                 }
                                             }
@@ -419,11 +392,12 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                 try {
                                     //Y代表已经上传过
                                     if (iaAlreadyUploadSingle(chosen_line_vcooporderbcode_b)) {
-                                        Message msg = new Message();
-                                        msg.what = 0x13;
-                                        saleDeliveryDetailHandler.sendMessage(msg);
+                                        Toast.makeText(SaleDeliveryDetail.this, "该行已经上传", Toast.LENGTH_LONG).show();
                                     } else {
-                                        String uploadResp = uploadSaleDeliveryVBill("R08", list);
+
+                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R08", db4,current_sale_delivery_vbillcodeRecv,
+                                                SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
+                                        zLoadingDialog.dismiss();
                                         if (!(null == uploadResp)) {
                                             if (!(null == listitem)) {
                                                 Gson gson = new Gson();
@@ -451,23 +425,10 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                         }
                                     }
 
-                                } catch (IOException e) {
-                                    // e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                    return;
-                                } catch (XmlPullParserException e) {
-                                    // e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    saleDeliveryDetailHandler.sendMessage(msg);
+                                } catch (Exception e) {
+                                     e.printStackTrace();
+                                    zLoadingDialog.dismiss();
+                                    Toast.makeText(SaleDeliveryDetail.this, e.toString(), Toast.LENGTH_LONG).show();
                                     return;
                                 }
                             }
@@ -482,11 +443,9 @@ public class SaleDeliveryDetail extends AppCompatActivity {
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
                 switch (msg.what) {
-                    case 0x10:
-                        Toast.makeText(SaleDeliveryDetail.this, "请检查网络连接", Toast.LENGTH_LONG).show();
-                        break;
+
                     case 0x11:
-                        dialog.dismiss();
+                       zLoadingDialog.dismiss();
                         expressCodeEditText.setText("");
                         spinner.setSelection(logisticscompanies.size() - 1, true);
                         String s = msg.getData().getString("uploadResp");
@@ -503,17 +462,9 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                         adapter.notifyDataSetChanged();
 
                         break;
-                    case 0x12:
-                        Toast.makeText(SaleDeliveryDetail.this, "该发货单已经全部上传", Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x13:
-                        Toast.makeText(SaleDeliveryDetail.this, "该行已经上传", Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x14:
-                        Toast.makeText(SaleDeliveryDetail.this, "请先扫码再进行发货上传操作", Toast.LENGTH_LONG).show();
-                        break;
+
                     case 0x15:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         expressCodeEditText.setText("");
                         spinner.setSelection(logisticscompanies.size() - 1, true);
                         String s2 = msg.getData().getString("uploadResp");
@@ -530,29 +481,23 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                         adapter.notifyDataSetChanged();
 
                         break;
-                    case 0x16:
-                        Toast.makeText(SaleDeliveryDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x17:
-                        dialog.dismiss();
-                        String exception111 = msg.getData().getString("Exception111");
-                        Toast.makeText(SaleDeliveryDetail.this, exception111, Toast.LENGTH_LONG).show();
-                        break;
+
+
                     case 0x18:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         Toast.makeText(SaleDeliveryDetail.this, "接口异常", Toast.LENGTH_LONG).show();
                         break;
                     case 0x19:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         String s3 = msg.getData().getString("uploadResp");
                         Toast.makeText(SaleDeliveryDetail.this, s3, Toast.LENGTH_LONG).show();
                         break;
                     case 0x20:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         Toast.makeText(SaleDeliveryDetail.this, "运单号没有填写，首先填写运单号", Toast.LENGTH_LONG).show();
                         break;
                     case 0x21:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         Toast.makeText(SaleDeliveryDetail.this, "物流公司没有选择，首先选择物流公司", Toast.LENGTH_LONG).show();
                         break;
                     default:
@@ -844,139 +789,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         }
     }
 
-    private String uploadSaleDeliveryVBill(String workcode, List<String> list) throws IOException, XmlPullParserException {
-        String WSDL_URI;
-        String namespace;
-        String WSDL_URI_current = BaseConfig.getNcUrl();//wsdl 的uri
-        String namespace_current = "http://schemas.xmlsoap.org/soap/envelope/";//namespace
-        String methodName = "sendToWISE";//要调用的方法名称
-        SharedPreferences proxySp = getSharedPreferences("configInfo", 0);
-        int upload_num = 0;
-        if (proxySp.getString("WSDL_URI", WSDL_URI_current).equals("") || proxySp.getString("namespace", namespace_current).equals("")) {
-            WSDL_URI = WSDL_URI_current;
-            namespace = namespace_current;
-        } else {
-            WSDL_URI = proxySp.getString("WSDL_URI", WSDL_URI_current);
-            namespace = proxySp.getString("namespace", namespace_current);
-        }
-        SoapObject request = new SoapObject(namespace, methodName);
-        // 设置需调用WebService接口需要传入的两个参数string、string1
-        ArrayList<SaleDeliverySendBean.BodyBean> bodylist = new ArrayList<SaleDeliverySendBean.BodyBean>();
-        Cursor cursor2 = db4.rawQuery("select vcooporderbcode_b,matrcode,cwarename,nnum,scannum from SaleDeliveryBody where vbillcode=? ",
-                new String[]{current_sale_delivery_vbillcodeRecv});
-        if (cursor2 != null && cursor2.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor2.moveToNext()) {
-                SaleDeliverySendBean.BodyBean bean = new SaleDeliverySendBean.BodyBean();
-                bean.vcooporderbcode_b = cursor2.getString(cursor2.getColumnIndex("vcooporderbcode_b"));
-                bean.materialcode = cursor2.getString(cursor2.getColumnIndex("matrcode"));
 
-                String num_check = cursor2.getString(cursor2.getColumnIndex("nnum"));
-                if (Integer.parseInt(num_check) < 0) {
-                    current_bisreturn = "Y";
-                }
-                //因为前面已经筛选过cwarename，因此此处不同行的cwarename是唯一的
-                upload_all_cwarename = cursor2.getString(cursor2.getColumnIndex("cwarename"));
-                bean.pch = "";
-                int scanNum = 0;
-                ArrayList<SaleDeliverySendBean.BodyBean.SnBean> snlist = new ArrayList<SaleDeliverySendBean.BodyBean.SnBean>();
-                if (list.contains(bean.vcooporderbcode_b)) {
-                    Cursor cursor3 = db4.rawQuery("select platecode,boxcode,prodcutcode,xlh from SaleDeliveryScanResult where  vbillcode=? and matrcode=? and vcooporderbcode_b=? and itemuploadflag=?",
-                            new String[]{current_sale_delivery_vbillcodeRecv, bean.materialcode, bean.vcooporderbcode_b, "N"});
-                    if (cursor3 != null && cursor3.getCount() > 0) {
-                        //判断cursor中是否存在数据
-                        while (cursor3.moveToNext()) {
-                            SaleDeliverySendBean.BodyBean.SnBean snbean = new SaleDeliverySendBean.BodyBean.SnBean();
-                            snbean.xlh = cursor3.getString(cursor3.getColumnIndex("xlh"));
-
-                            snbean.txm = cursor3.getString(cursor3.getColumnIndex("prodcutcode"));
-                            snbean.xm = cursor3.getString(cursor3.getColumnIndex("boxcode"));
-                            snbean.tp = cursor3.getString(cursor3.getColumnIndex("platecode"));
-                            upload_all_cwarehousecode = getCwarehousecode(upload_all_cwarename);
-                            scanNum += 1;
-                            upload_num++;
-                            snlist.add(snbean);
-                        }
-                        cursor3.close();
-                    }
-                    bean.sn = snlist;
-                    //提交过一次的二次提交时不应该被计数
-                    bean.nnum = String.valueOf(scanNum);
-                    bodylist.add(bean);
-                }
-            }
-            cursor2.close();
-        }
-        if (bodylist.size()==0){
-            Message msg = new Message();
-            msg.what = 0x14;
-            saleDeliveryDetailHandler.sendMessage(msg);
-            return null;
-        }
-        //通过物流公司名称计算物流公司编号
-        String wlCode = "";
-        Cursor cursorLogistics = db4.rawQuery("select code from LogisticsCompany where name=?",
-                new String[]{chooseLogisticscompany});
-        if (cursorLogistics != null && cursorLogistics.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursorLogistics.moveToNext()) {
-                wlCode = cursorLogistics.getString(0);
-            }
-            cursorLogistics.close();
-        }
-        SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
-        String current_user = currentAccount.getString("current_account","");
-        List<String> stringList=new ArrayList<>();
-        stringList = Arrays.asList(expressCode.split("\\s+"));
-        for (int i = 0; i <stringList.size() ; i++) {
-            SaleDeliverySendBean otherOutgoingSend = new SaleDeliverySendBean("APP", "123456",current_user,
-                    wlCode,stringList.get(i), upload_all_cwarehousecode, current_bisreturn, current_sale_delivery_vbillcodeRecv, bodylist);
-            otherOutgoingSend.setCwhsmanagercode( currentAccount.getString("current_account",""));
-            Gson gson = new Gson();
-            String userSendBean = gson.toJson(otherOutgoingSend);
-
-            request.addProperty("string", workcode);
-            request.addProperty("string1", userSendBean);
-
-        }
-
-        //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
-        //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
-        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
-
-        envelope.bodyOut = request;
-        envelope.dotNet = false;
-        String saleDeliveryUploadDataResp = null;
-        if (upload_num == 0) {
-        } else {
-            HttpTransportSE se = new HttpTransportSE(WSDL_URI, 60000);
-            //  se.call(null, envelope);//调用 version1.2
-            //version1.1 需要如下soapaction
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
-                            .setLoadingColor(Color.BLUE)//颜色
-                            .setHintText("等待服务器返回数据...")
-                            .setCancelable(false)
-                            .setCanceledOnTouchOutside(false)
-                            .setHintTextSize(16) // 设置字体大小 dp
-                            .setHintTextColor(Color.GRAY)  // 设置字体颜色
-                            .setDurationTime(0.5) // 设置动画时间百分比 - 0.5倍
-                            //     .setDialogBackgroundColor(Color.parseColor("#CC111111")) // 设置背景色，默认白色
-                            .show();
-                }
-            });
-            se.call(namespace + "sendToWISE", envelope);
-            // 获取返回的数据
-            // SoapObject object = (SoapObject) envelope.bodyIn;
-            Object object = envelope.getResponse();
-            saleDeliveryUploadDataResp = new Gson().toJson(object);
-        }
-        // 获取返回的结果
-        // saleDeliveryUploadDataResp = object.getProperty(0).toString();
-        return saleDeliveryUploadDataResp;
-    }
 
     @Override
     protected void onResume() {
@@ -997,14 +810,8 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         Cursor cursor= db4.rawQuery("select vcooporderbcode_b,cwarehousecode,cwarename,matrcode,matrname," +
                         "nnum,scannum,customer,uploadflag from SaleDeliveryBody where vbillcode=?",
                 new String[]{current_sale_delivery_vbillcodeRecv});
-
-
-
-        if (cursor != null && cursor.getCount() > 0) {
-
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
-
                 SaleDeliveryBodyBean bean = new SaleDeliveryBodyBean();
                 bean.vcooporderbcode_b = cursor.getString(cursor.getColumnIndex("vcooporderbcode_b"));
                 bean.cwarename = cursor.getString(cursor.getColumnIndex("cwarename"));
@@ -1015,10 +822,9 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                 bean.Customer = cursor.getString(cursor.getColumnIndex("customer"));
                 bean.uploadflag = cursor.getString(cursor.getColumnIndex("uploadflag"));
                 list.add(bean);
-
             }
             cursor.close();
-        }
+
 
         return list;
     }

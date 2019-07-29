@@ -26,6 +26,15 @@ public class AllocateTransferBodyBean {
     public String rwarehousecode;
     public String cwarehousecode;
 
+    public String getMaccode() {
+        return maccode;
+    }
+
+    public void setMaccode(String maccode) {
+        this.maccode = maccode;
+    }
+
+    private String maccode;
     public String uploadflag;
     public String scannum;
     public AllocateTransferBodyBean(){

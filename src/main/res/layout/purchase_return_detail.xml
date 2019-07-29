@@ -24,6 +24,7 @@
                 android:layout_marginTop="10dp"
                 android:text="单据日期:"/>
         <TextView
+            android:visibility="gone"
             android:id="@+id/expressCode_text_purchase_return"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
@@ -31,6 +32,7 @@
             android:text="物流单号:"/>
 
         <EditText
+            android:visibility="gone"
             android:id="@+id/expressCode_edit_text_purchase_return"
             android:layout_width="264dp"
             android:layout_height="wrap_content"
@@ -38,6 +40,7 @@
             android:inputType="textNoSuggestions" />
 
         <Spinner
+            android:visibility="gone"
             android:id="@+id/spinner_logistics_company_purchase_return"
             android:layout_width="266dp"
             android:layout_height="20dp"

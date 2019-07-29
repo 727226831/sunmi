@@ -13,6 +13,7 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -24,6 +25,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.AllocateTransferBodyTableAdapter;
 import com.example.shanggmiqr.bean.AllocateTransferBodyBean;
@@ -67,11 +69,8 @@ public class AllocateTransferDetail extends AppCompatActivity {
     private Button saleDeliveryScanButton;
     private Button uploadAll_saleDeliveryButton;
     private Button uploadSingleButton;
-    private String headpk;
-    private String billmaker;
     private String chosen_line_nnum;
     private String chosen_line_itempk;
-    private String chosen_line_ysnum;
     private String chosen_line_materialcode;
     private String chosen_line_scannum;
     private String chosen_line_uploadflag;
@@ -80,11 +79,8 @@ public class AllocateTransferDetail extends AppCompatActivity {
     private String chosen_line_cwarehousecode;
     private String chosen_line_rwarehousecode;
 
-    private String[] matrcodeList[];
     private Handler allocateTransferDetailHandler = null;
-    private List<String> upload_cwarename;
-    private String upload_all_cwarename;
-    private String upload_all_cwarehousecode;
+
     //物流公司选择
     private Spinner spinner;
     private Myadapter myadapter;
@@ -100,10 +96,10 @@ public class AllocateTransferDetail extends AppCompatActivity {
     //要上传的产品码的集合
     private List<String> listitem;
     private List<AllocateTransferUploadFlagBean> lisitemtall;
-    //nnum为正 bisreturn为N 为负则为Y
-    private String current_bisreturn = "N";
-    private ZLoadingDialog dialog;
 
+    private ZLoadingDialog dialog;
+    private String maccode;
+     AllocateTransferBodyTableAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -142,7 +138,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
         //加载数据
         myadapter();
         listAllBodyPostition = QueryAllocateTransferBody(current_sale_delivery_vbillcodeRecv);
-        final AllocateTransferBodyTableAdapter adapter = new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
+        adapter= new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
         tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -157,12 +153,13 @@ public class AllocateTransferDetail extends AppCompatActivity {
                 chosen_line_materialcode = local_saleDeliveryBodyBean.getMaterialcode();
                 chosen_line_materialclasscode = local_saleDeliveryBodyBean.getMaterialclasscode();
                 chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
+                maccode=local_saleDeliveryBodyBean.getMaccode();
                 chosen_line_cwarehousecode = local_saleDeliveryBodyBean.getCwarehousecode();
                 chosen_line_rwarehousecode = local_saleDeliveryBodyBean.getRwarehousecode();
                 chosen_line_scannum = local_saleDeliveryBodyBean.getScannum();
                 chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
 
-                Toast.makeText(AllocateTransferDetail.this, chosen_line_materialcode, Toast.LENGTH_LONG).show();
+
             }
         });
         saleDeliveryScanButton.setOnClickListener(new View.OnClickListener() {
@@ -179,6 +176,8 @@ public class AllocateTransferDetail extends AppCompatActivity {
                 intent.putExtra("current_scannum_qrRecv", chosen_line_scannum);
                 intent.putExtra("current_uploadflag_qrRecv", chosen_line_uploadflag);
                 intent.putExtra("current_vbillcode_qrRecv", current_sale_delivery_vbillcodeRecv);
+                intent.putExtra("maccode",maccode);
+                Log.i("maccode-->",maccode);
                 startActivity(intent);
             }
         });
@@ -241,7 +240,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                                                     }
 
                                                 } catch (IOException e) {
-                                                    //e.printStackTrace();
+                                                    e.printStackTrace();
                                                     Bundle bundle = new Bundle();
                                                     bundle.putString("Exception111", e.toString());
                                                     Message msg = new Message();
@@ -250,7 +249,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                                                     allocateTransferDetailHandler.sendMessage(msg);
                                                     return;
                                                 } catch (XmlPullParserException e) {
-                                                    //e.printStackTrace();
+                                                    e.printStackTrace();
                                                     Bundle bundle = new Bundle();
                                                     bundle.putString("Exception111", e.toString());
                                                     Message msg = new Message();
@@ -319,7 +318,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                                     }
 
                                 } catch (IOException e) {
-                                    //e.printStackTrace();
+                                    e.printStackTrace();
                                     Bundle bundle = new Bundle();
                                     bundle.putString("Exception111", e.toString());
                                     Message msg = new Message();
@@ -328,7 +327,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                                     allocateTransferDetailHandler.sendMessage(msg);
                                     return;
                                 } catch (XmlPullParserException e) {
-                                    //e.printStackTrace();
+                                    e.printStackTrace();
                                     Bundle bundle = new Bundle();
                                     bundle.putString("Exception111", e.toString());
                                     Message msg = new Message();
@@ -399,7 +398,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                                                     }
 
                                                 } catch (IOException e) {
-                                                    // e.printStackTrace();
+                                                     e.printStackTrace();
                                                     Bundle bundle = new Bundle();
                                                     bundle.putString("Exception111", e.toString());
                                                     Message msg = new Message();
@@ -408,7 +407,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                                                     allocateTransferDetailHandler.sendMessage(msg);
                                                     return;
                                                 } catch (XmlPullParserException e) {
-                                                    // e.printStackTrace();
+                                                     e.printStackTrace();
                                                     Bundle bundle = new Bundle();
                                                     bundle.putString("Exception111", e.toString());
                                                     Message msg = new Message();
@@ -471,7 +470,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                                     }
 
                                 } catch (IOException e) {
-                                    // e.printStackTrace();
+                                     e.printStackTrace();
                                     Bundle bundle = new Bundle();
                                     bundle.putString("Exception111", e.toString());
                                     Message msg = new Message();
@@ -480,7 +479,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                                     allocateTransferDetailHandler.sendMessage(msg);
                                     return;
                                 } catch (XmlPullParserException e) {
-                                    // e.printStackTrace();
+                                     e.printStackTrace();
                                     Bundle bundle = new Bundle();
                                     bundle.putString("Exception111", e.toString());
                                     Message msg = new Message();
@@ -512,33 +511,14 @@ public class AllocateTransferDetail extends AppCompatActivity {
                         Toast.makeText(AllocateTransferDetail.this, s, Toast.LENGTH_LONG).show();
                         updateUploadFlag();
                         if (isAllItemUpload()) {
-                            Intent intent = new Intent(AllocateTransferDetail.this, SaleDelivery.class);
+                            Intent intent = new Intent(AllocateTransferDetail.this, AllocateTransferQRDetail.class);
                             startActivity(intent);
                             finish();
                         }
                         listAllBodyPostition = QueryAllocateTransferBody(current_sale_delivery_vbillcodeRecv);
-                        final AllocateTransferBodyTableAdapter adapterNew = new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
-                        tableBodyListView.setAdapter(adapterNew);
-                        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                adapterNew.select(position);
-                                saleDeliveryScanButton.setEnabled(true);
-                                uploadSingleButton.setEnabled(true);
-                                AllocateTransferBodyBean local_saleDeliveryBodyBean = (AllocateTransferBodyBean) adapterNew.getItem(position);
-
-                                chosen_line_itempk = local_saleDeliveryBodyBean.getItempk();
-                                chosen_line_address = local_saleDeliveryBodyBean.getAddress();
-                                chosen_line_materialcode = local_saleDeliveryBodyBean.getMaterialcode();
-                                chosen_line_materialclasscode = local_saleDeliveryBodyBean.getMaterialclasscode();
-                                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                                chosen_line_cwarehousecode = local_saleDeliveryBodyBean.getCwarehousecode();
-                                chosen_line_rwarehousecode = local_saleDeliveryBodyBean.getRwarehousecode();
-                                chosen_line_scannum = local_saleDeliveryBodyBean.getScannum();
-                                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-
-                            }
-                        });
+                       adapter = new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
+                        tableBodyListView.setAdapter(adapter);
+                        adapter.notify();
 
                         break;
                     case 0x12:
@@ -558,32 +538,14 @@ public class AllocateTransferDetail extends AppCompatActivity {
                         Toast.makeText(AllocateTransferDetail.this, s2, Toast.LENGTH_LONG).show();
                         updateAllUploadFlag();
                         if (isAllItemUpload()) {
-                            Intent intent = new Intent(AllocateTransferDetail.this, SaleDelivery.class);
+                            Intent intent = new Intent(AllocateTransferDetail.this, AllocateTransferQRDetail.class);
                             startActivity(intent);
                             finish();
                         }
                         listAllBodyPostition = QueryAllocateTransferBody(current_sale_delivery_vbillcodeRecv);
-                        final AllocateTransferBodyTableAdapter adapterNew2 = new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
-                        tableBodyListView.setAdapter(adapterNew2);
-                        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                adapterNew2.select(position);
-                                saleDeliveryScanButton.setEnabled(true);
-                                uploadSingleButton.setEnabled(true);
-                                AllocateTransferBodyBean local_saleDeliveryBodyBean = (AllocateTransferBodyBean) adapterNew2.getItem(position);
-
-                                chosen_line_itempk = local_saleDeliveryBodyBean.getItempk();
-                                chosen_line_address = local_saleDeliveryBodyBean.getAddress();
-                                chosen_line_materialcode = local_saleDeliveryBodyBean.getMaterialcode();
-                                chosen_line_materialclasscode = local_saleDeliveryBodyBean.getMaterialclasscode();
-                                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                                chosen_line_cwarehousecode = local_saleDeliveryBodyBean.getCwarehousecode();
-                                chosen_line_rwarehousecode = local_saleDeliveryBodyBean.getRwarehousecode();
-                                chosen_line_scannum = local_saleDeliveryBodyBean.getScannum();
-                                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-                            }
-                        });
+                        adapter = new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
+                        tableBodyListView.setAdapter(adapter);
+                       adapter.notify();
                         break;
                     case 0x16:
                         Toast.makeText(AllocateTransferDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
@@ -615,6 +577,15 @@ public class AllocateTransferDetail extends AppCompatActivity {
                 }
             }
         };
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        listAllBodyPostition = QueryAllocateTransferBody(current_sale_delivery_vbillcodeRecv);
+       adapter = new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
+        tableBodyListView.setAdapter(adapter);
+
     }
 
     private void myadapter() {
@@ -863,7 +834,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
         SoapObject request = new SoapObject(namespace, methodName);
         // 设置需调用WebService接口需要传入的两个参数string、string1
         ArrayList<AllocateTransferSendBean.BodyBean> bodylist = new ArrayList<AllocateTransferSendBean.BodyBean>();
-        Cursor cursor2 = db4.rawQuery("select itempk,materialcode,address,nnum,scannum from AllocateTransferBody where billno=? ", new String[]{current_sale_delivery_vbillcodeRecv});
+            Cursor cursor2 = db4.rawQuery("select itempk,materialcode,address,nnum,scannum,rwarehousecode,cwarehousecode from AllocateTransferBody where billno=? ", new String[]{current_sale_delivery_vbillcodeRecv});
         if (cursor2 != null && cursor2.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor2.moveToNext()) {
@@ -871,6 +842,9 @@ public class AllocateTransferDetail extends AppCompatActivity {
                 bean.itempk = cursor2.getString(cursor2.getColumnIndex("itempk"));
                 bean.yfnum = cursor2.getString(cursor2.getColumnIndex("nnum"));
                 bean.materialcode = cursor2.getString(cursor2.getColumnIndex("materialcode"));
+                bean.setCwarehousecode(cursor2.getString(cursor2.getColumnIndex("cwarehousecode")));
+                bean.setDrwarehouse(cursor2.getString(cursor2.getColumnIndex("rwarehousecode")));
+
                 int scanNum = 0;
                 ArrayList<AllocateTransferSendBean.BodyBean.SnBean> snlist = new ArrayList<AllocateTransferSendBean.BodyBean.SnBean>();
                 if (list.contains(bean.itempk)) {
@@ -912,12 +886,25 @@ public class AllocateTransferDetail extends AppCompatActivity {
             //判断cursor中是否存在数据
             while (cursorLogistics.moveToNext()) {
                 wlCode = cursorLogistics.getString(0);
+
             }
             cursorLogistics.close();
         }
+
         SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
         String current_user = currentAccount.getString("current_account","");
-        AllocateTransferSendBean otherOutgoingSend = new AllocateTransferSendBean("APP",current_user,current_sale_delivery_vbillcodeRecv,"","",current_sale_delivery_orgRecv, billmaker,bodylist);
+        AllocateTransferSendBean otherOutgoingSend = new AllocateTransferSendBean("APP",current_user,current_sale_delivery_vbillcodeRecv,
+                "","",current_sale_delivery_orgRecv,"" ,bodylist);
+        Cursor cursor=db4.rawQuery("select * from AllocateTransfer where  billno=? ",new String[]{current_sale_delivery_vbillcodeRecv});
+        while (cursor.moveToNext()){
+            otherOutgoingSend.setNum(cursor.getString(cursor.getColumnIndex("num")));
+        }
+
+        otherOutgoingSend.setWlorgcode(wlCode);
+       otherOutgoingSend.setWlbillcode(expressCode);
+      // otherOutgoingSend.setCwarehousecode(wlCode);
+       otherOutgoingSend.setCwhsmanagercode(DataHelper.getUser(AllocateTransferDetail.this));
+
         Gson gson = new Gson();
         String userSendBean = gson.toJson(otherOutgoingSend);
 
@@ -926,7 +913,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
         //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
         //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
-
+        Log.i("request-->",request.toString());
         envelope.bodyOut = request;
         envelope.dotNet = false;
         String saleDeliveryUploadDataResp = null;
@@ -958,40 +945,19 @@ public class AllocateTransferDetail extends AppCompatActivity {
         }
         // 获取返回的结果
         // saleDeliveryUploadDataResp = object.getProperty(0).toString();
+        Log.i("response-->",envelope.bodyIn.toString());
         return saleDeliveryUploadDataResp;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        saleDeliveryScanButton.setEnabled(false);
-        uploadSingleButton.setEnabled(false);
-        listAllBodyPostition = QueryAllocateTransferBody(current_sale_delivery_vbillcodeRecv);
-        final AllocateTransferBodyTableAdapter adapterNew = new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
-        tableBodyListView.setAdapter(adapterNew);
-        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapterNew.select(position);
-                saleDeliveryScanButton.setEnabled(true);
-                uploadSingleButton.setEnabled(true);
-                AllocateTransferBodyBean local_saleDeliveryBodyBean = (AllocateTransferBodyBean) adapterNew.getItem(position);
-                chosen_line_itempk = local_saleDeliveryBodyBean.getItempk();
-                chosen_line_address = local_saleDeliveryBodyBean.getAddress();
-                chosen_line_materialcode = local_saleDeliveryBodyBean.getMaterialcode();
-                chosen_line_materialclasscode = local_saleDeliveryBodyBean.getMaterialclasscode();
-                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                chosen_line_cwarehousecode = local_saleDeliveryBodyBean.getCwarehousecode();
-                chosen_line_rwarehousecode = local_saleDeliveryBodyBean.getRwarehousecode();
-                chosen_line_scannum = local_saleDeliveryBodyBean.getScannum();
-                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-            }
-        });
+
     }
 
     public ArrayList<AllocateTransferBodyBean> QueryAllocateTransferBody(String current_sale_delivery_vbillcodeRecv) {
         ArrayList<AllocateTransferBodyBean> list = new ArrayList<AllocateTransferBodyBean>();
-        Cursor cursor = db4.rawQuery("select itempk,address,materialcode,materialclasscode,nnum,rwarehousecode,cwarehousecode,scannum,uploadflag from AllocateTransferBody where billno=?", new String[]{current_sale_delivery_vbillcodeRecv});
+        Cursor cursor = db4.rawQuery("select itempk,address,materialcode,materialclasscode,maccode,nnum,rwarehousecode,cwarehousecode,scannum,uploadflag from AllocateTransferBody where billno=?", new String[]{current_sale_delivery_vbillcodeRecv});
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
@@ -1005,6 +971,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                 bean.cwarehousecode = cursor.getString(cursor.getColumnIndex("cwarehousecode"));
                 bean.scannum = cursor.getString(cursor.getColumnIndex("scannum"));
                 bean.uploadflag = cursor.getString(cursor.getColumnIndex("uploadflag"));
+                bean.setMaccode(cursor.getString(cursor.getColumnIndex("maccode")));
                 list.add(bean);
             }
             cursor.close();
@@ -1057,6 +1024,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
             intent.putExtra("current_scannum_qrRecv", chosen_line_scannum);
             intent.putExtra("current_uploadflag_qrRecv", chosen_line_uploadflag);
             intent.putExtra("current_vbillcode_qrRecv", current_sale_delivery_vbillcodeRecv);
+            intent.putExtra("maccode",maccode);
             startActivity(intent);
         }
     };

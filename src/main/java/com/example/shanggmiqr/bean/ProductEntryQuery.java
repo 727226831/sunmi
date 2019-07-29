@@ -200,6 +200,16 @@ public class ProductEntryQuery {
             private String ysnum;
             private String itempk;
 
+            public String getMaccode() {
+                return maccode;
+            }
+
+            public void setMaccode(String maccode) {
+                this.maccode = maccode;
+            }
+
+            private String maccode;
+
             public void setMaterialcode(String materialcode) {
                 this.materialcode = materialcode;
             }

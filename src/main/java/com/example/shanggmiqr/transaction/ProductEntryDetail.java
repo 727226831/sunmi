@@ -21,6 +21,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.ProductEntryBodyTableAdapter;
 import com.example.shanggmiqr.bean.ProductEntryBodyBean;
@@ -63,8 +64,7 @@ public class ProductEntryDetail extends AppCompatActivity {
     private Button saleDeliveryScanButton;
     private Button uploadAll_saleDeliveryButton;
     private Button uploadSingleButton;
-    private String headpk;
-    private String billmaker;
+
     private String chosen_line_nnum;
     private String chosen_line_itempk;
     private String chosen_line_ysnum;
@@ -81,12 +81,14 @@ public class ProductEntryDetail extends AppCompatActivity {
     //nnum为正 bisreturn为N 为负则为Y
     private String current_bisreturn = "N";
     private ZLoadingDialog dialog;
+    private String maccode;
+    ProductEntryBodyTableAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.product_entry_detail);
-        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        final android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -114,17 +116,18 @@ public class ProductEntryDetail extends AppCompatActivity {
         vbillcodText.setText("发货单号:" + current_sale_delivery_vbillcodeRecv);
         dbilldateText.setText("发货日期:" + current_sale_delivery_dbilldateRecv);
         listAllBodyPostition = QueryProductEntryBody(current_sale_delivery_vbillcodeRecv);
-        Log.i("detail",new Gson().toJson(listAllBodyPostition));
-        final ProductEntryBodyTableAdapter adapter = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
+
+        adapter = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
         tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 adapter.select(position);
+                adapter.notifyDataSetChanged();
                 saleDeliveryScanButton.setEnabled(true);
                 uploadSingleButton.setEnabled(true);
                 ProductEntryBodyBean local_saleDeliveryBodyBean = (ProductEntryBodyBean) adapter.getItem(position);
-
+                 maccode=local_saleDeliveryBodyBean.getMaccode();
                 chosen_line_itempk = local_saleDeliveryBodyBean.getItempk();
                 chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
                 chosen_line_scannum = local_saleDeliveryBodyBean.getScannum();
@@ -132,6 +135,7 @@ public class ProductEntryDetail extends AppCompatActivity {
                 chosen_line_ysnum = local_saleDeliveryBodyBean.getYsnum();
                 chosen_line_materialcode = local_saleDeliveryBodyBean.getMaterialcode();
                 Toast.makeText(ProductEntryDetail.this, chosen_line_materialcode, Toast.LENGTH_LONG).show();
+                Log.i("maccode-->",maccode);
             }
         });
         saleDeliveryScanButton.setOnClickListener(new View.OnClickListener() {
@@ -145,6 +149,7 @@ public class ProductEntryDetail extends AppCompatActivity {
                 intent.putExtra("current_ysnum_qrRecv", chosen_line_ysnum);
                 intent.putExtra("current_uploadflag_qrRecv", chosen_line_uploadflag);
                 intent.putExtra("current_vbillcode_qrRecv", current_sale_delivery_vbillcodeRecv);
+                intent.putExtra("maccode",maccode);
                 startActivity(intent);
             }
         });
@@ -163,7 +168,7 @@ public class ProductEntryDetail extends AppCompatActivity {
                                         msg.what = 0x12;
                                         productEntryDetailHandler.sendMessage(msg);
                                     } else if (isCwarenameSame()) {
-                                        String uploadResp = uploadSaleDeliveryVBill("R08", list);
+                                        String uploadResp = uploadSaleDeliveryVBill("R36", list);
                                         if (!(null == uploadResp)) {
                                             if (!(null == lisitemtall)) {
                                                 Gson gson = new Gson();
@@ -235,7 +240,7 @@ public class ProductEntryDetail extends AppCompatActivity {
                                         msg.what = 0x13;
                                         productEntryDetailHandler.sendMessage(msg);
                                     } else {
-                                        String uploadResp = uploadSaleDeliveryVBill("R08", list);
+                                        String uploadResp = uploadSaleDeliveryVBill("R36", list);
                                         if (!(null == uploadResp)) {
                                             if (!(null == listitem)) {
                                                 Gson gson = new Gson();
@@ -245,14 +250,17 @@ public class ProductEntryDetail extends AppCompatActivity {
                                                 Bundle bundle = new Bundle();
                                                 bundle.putString("uploadResp", respBeanValue.getErrmsg());
                                                 Message msg = new Message();
-                                                if (respBeanValue.getErrno().equals("0")) {
-                                                    //19弹出erromsg
-                                                    updateItemUploadFlag(listitem);
-                                                    msg.what = 0x11;
-                                                } else {
-                                                    //19弹出erromsg
-                                                    msg.what = 0x19;
+                                                if(!respBeanValue.toString().isEmpty()){
+                                                    dialog.dismiss();
                                                 }
+//                                                if (respBeanValue.getErrno().equals("0")) {
+//                                                    //19弹出erromsg
+//                                                    updateItemUploadFlag(listitem);
+//                                                    msg.what = 0x11;
+//                                                } else {
+//                                                    //19弹出erromsg
+//                                                    msg.what = 0x19;
+//                                                }
                                                 msg.setData(bundle);
                                                 productEntryDetailHandler.sendMessage(msg);
                                             }
@@ -308,25 +316,10 @@ public class ProductEntryDetail extends AppCompatActivity {
                             finish();
                         }
                         listAllBodyPostition = QueryProductEntryBody(current_sale_delivery_vbillcodeRecv);
-                        final ProductEntryBodyTableAdapter adapterNew = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
-                        tableBodyListView.setAdapter(adapterNew);
-                        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                adapterNew.select(position);
-                                saleDeliveryScanButton.setEnabled(true);
-                                uploadSingleButton.setEnabled(true);
-                                ProductEntryBodyBean local_saleDeliveryBodyBean = (ProductEntryBodyBean) adapterNew.getItem(position);
+                        adapter = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
+                        tableBodyListView.setAdapter(adapter);
+                        adapter.notifyDataSetChanged();
 
-                                chosen_line_itempk = local_saleDeliveryBodyBean.getItempk();
-                                chosen_line_materialcode = local_saleDeliveryBodyBean.getMaterialcode();
-                                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                                chosen_line_scannum = local_saleDeliveryBodyBean.getScannum();
-                                chosen_line_ysnum = local_saleDeliveryBodyBean.getYsnum();
-                                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-
-                            }
-                        });
 
                         break;
                     case 0x12:
@@ -349,24 +342,10 @@ public class ProductEntryDetail extends AppCompatActivity {
                             finish();
                         }
                         listAllBodyPostition = QueryProductEntryBody(current_sale_delivery_vbillcodeRecv);
-                        final ProductEntryBodyTableAdapter adapterNew2 = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
-                        tableBodyListView.setAdapter(adapterNew2);
-                        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                adapterNew2.select(position);
-                                saleDeliveryScanButton.setEnabled(true);
-                                uploadSingleButton.setEnabled(true);
-                                ProductEntryBodyBean local_saleDeliveryBodyBean = (ProductEntryBodyBean) adapterNew2.getItem(position);
+                        adapter = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
+                        tableBodyListView.setAdapter(adapter);
+                        adapter.notify();
 
-                                chosen_line_itempk = local_saleDeliveryBodyBean.getItempk();
-                                chosen_line_materialcode = local_saleDeliveryBodyBean.getMaterialcode();
-                                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                                chosen_line_scannum = local_saleDeliveryBodyBean.getScannum();
-                                chosen_line_ysnum = local_saleDeliveryBodyBean.getYsnum();
-                                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-                            }
-                        });
                         break;
                     case 0x16:
                         Toast.makeText(ProductEntryDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
@@ -660,12 +639,20 @@ public class ProductEntryDetail extends AppCompatActivity {
             return null;
         }
 
-        ProductEntrySendBean otherOutgoingSend = new ProductEntrySendBean(headpk, billmaker,bodylist);
+        Cursor cursor=db4.rawQuery("select * from ProductEntry where billcode=?",
+                new String[]{current_sale_delivery_vbillcodeRecv});
+        ProductEntrySendBean otherOutgoingSend = new ProductEntrySendBean("", "",bodylist);
+        while (cursor.moveToNext()){
+            otherOutgoingSend.setHeadpk( cursor.getString(cursor.getColumnIndex("headpk")));
+           otherOutgoingSend.setBillmaker(DataHelper.getUser(ProductEntryDetail.this));
+        }
+
         Gson gson = new Gson();
         String userSendBean = gson.toJson(otherOutgoingSend);
 
         request.addProperty("string", workcode);
         request.addProperty("string1", userSendBean);
+        Log.i("request-->",request.toString());
         //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
         //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
@@ -701,37 +688,27 @@ public class ProductEntryDetail extends AppCompatActivity {
         }
         // 获取返回的结果
         // saleDeliveryUploadDataResp = object.getProperty(0).toString();
+        Log.i("response-->",envelope.bodyIn.toString());
         return saleDeliveryUploadDataResp;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        saleDeliveryScanButton.setEnabled(false);
-        uploadSingleButton.setEnabled(false);
-        listAllBodyPostition = QueryProductEntryBody(current_sale_delivery_vbillcodeRecv);
-        final ProductEntryBodyTableAdapter adapterNew = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
-        tableBodyListView.setAdapter(adapterNew);
-        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapterNew.select(position);
-                saleDeliveryScanButton.setEnabled(true);
-                uploadSingleButton.setEnabled(true);
-                ProductEntryBodyBean local_saleDeliveryBodyBean = (ProductEntryBodyBean) adapterNew.getItem(position);
-                chosen_line_itempk = local_saleDeliveryBodyBean.getItempk();
-                chosen_line_materialcode = local_saleDeliveryBodyBean.getMaterialcode();
-                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                chosen_line_scannum = local_saleDeliveryBodyBean.getScannum();
-                chosen_line_ysnum = local_saleDeliveryBodyBean.getYsnum();
-                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-            }
-        });
+//        saleDeliveryScanButton.setEnabled(false);
+//        uploadSingleButton.setEnabled(false);
+//        listAllBodyPostition = QueryProductEntryBody(current_sale_delivery_vbillcodeRecv);
+//        adapter = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
+//        tableBodyListView.setAdapter(adapter);
+
+
     }
+
+
 
     public ArrayList<ProductEntryBodyBean> QueryProductEntryBody(String current_sale_delivery_vbillcodeRecv) {
         ArrayList<ProductEntryBodyBean> list = new ArrayList<ProductEntryBodyBean>();
-        Cursor cursor = db4.rawQuery("select itempk,materialcode,nnum,ysnum,scannum,uploadflag from ProductEntryBody where billcode=?", new String[]{current_sale_delivery_vbillcodeRecv});
+        Cursor cursor = db4.rawQuery("select itempk,materialcode,nnum,ysnum,scannum,uploadflag,maccode from ProductEntryBody where billcode=?", new String[]{current_sale_delivery_vbillcodeRecv});
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
@@ -742,6 +719,7 @@ public class ProductEntryDetail extends AppCompatActivity {
                 bean.ysnum = cursor.getString(cursor.getColumnIndex("ysnum"));
                 bean.scannum = cursor.getString(cursor.getColumnIndex("scannum"));
                 bean.uploadflag = cursor.getString(cursor.getColumnIndex("uploadflag"));
+                bean.setMaccode(cursor.getString(cursor.getColumnIndex("maccode")));
                 list.add(bean);
             }
             cursor.close();
@@ -749,33 +727,6 @@ public class ProductEntryDetail extends AppCompatActivity {
         return list;
     }
 
-    private String getCwarehousecode(String cwarename) {
-        Cursor cursor = db4.rawQuery("select code from Warehouse where name=?",
-                new String[]{cwarename});
-        String cwarehousecode = null;
-        if (cursor != null && cursor.getCount() > 0) {
-            while (cursor.moveToNext()) {
-                cwarehousecode = cursor.getString(cursor.getColumnIndex("code"));
-            }
-            cursor.close();
-        } else {
-            cwarehousecode = "";
-        }
-        return cwarehousecode;
-    }
-
-    public String QueryMaccodeFromDB(String vbillcode, String itempk, String matrcode) {
-        String maccode = "error";
-        Cursor cursor = db4.rawQuery("select materialcode from ProductEntryBody where billcode=? and itempk=? and materialcode=? ", new String[]{vbillcode, itempk, matrcode});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-                return cursor.getString(cursor.getColumnIndex("materialcode"));
-            }
-            cursor.close();
-        }
-        return maccode;
-    }
 
     /**
      * 实现类，响应按钮点击事件
@@ -791,6 +742,7 @@ public class ProductEntryDetail extends AppCompatActivity {
             intent.putExtra("current_ysnum_qrRecv", listAllBodyPostition.get(position).getYsnum());
             intent.putExtra("current_uploadflag_qrRecv", listAllBodyPostition.get(position).getUploadflag());
             intent.putExtra("current_vbillcode_qrRecv", current_sale_delivery_vbillcodeRecv);
+            intent.putExtra("maccode",maccode);
             startActivity(intent);
         }
     };

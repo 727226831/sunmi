@@ -318,16 +318,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
             return false;
         }
     }
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            //点击完返回键，执行的动作
-            Intent intent = new Intent(PurchaseReturn.this, BusinessOperation.class);
-            startActivity(intent);
-            finish();
-        }
-        return true;
-    }
+
     private void insertDownloadDataToDB(PurchaseReturnQuery saleDeliveryQuery) {
 
         List<PurchaseReturnQuery.DataBean> saleDeliveryBeanList = saleDeliveryQuery.getData();

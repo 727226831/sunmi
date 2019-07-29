@@ -52,7 +52,7 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
             + "flag text,"+ "cwarecode text," +  "cwarename text)";
     public static final String OtherOutgoingBody = "create table OtherOutgoingBody ("
             + "id integer primary key autoincrement," + "pobillcode text," + "vcooporderbcode_b text,"+ "materialcode text," + "maccode text,"
-            + "nnum integer,"  + "uploadnum text," + "scannum text,"+ "uploadflag text,"+  "pch text)";
+            + "nnum integer,"  + "uploadnum text," + "scannum text,"+"issn text,"+ "uploadflag text,"+  "pch text)";
     public static final String OtherOutgoingScanResult = "create table OtherOutgoingScanResult ("
             + "id integer primary key autoincrement," + "pobillcode text,"+ "vcooporderbcode_b text,"+ "cwarename text," + "materialcode text," + "platecode text,"
             + "boxcode text," + "xlh text,"+ "num text," + "itemuploadflag text,"+ "prodcutcode text)";
@@ -61,7 +61,7 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
             + "flag text,"+ "cwarecode text," +  "cwarename text)";
     public static final String OtherEntryBody = "create table OtherEntryBody ("
             + "id integer primary key autoincrement," + "pobillcode text," + "vcooporderbcode_b text,"+ "materialcode text," + "maccode text,"
-            + "nnum integer,"  + "uploadnum text," + "scannum text,"+ "uploadflag text,"+  "pch text)";
+            + "nnum integer,"  + "uploadnum text," + "scannum text,"+"issn text,"+ "uploadflag text,"+  "pch text)";
     public static final String OtherEntryScanResult = "create table OtherEntryScanResult ("
             + "id integer primary key autoincrement," + "pobillcode text,"+ "vcooporderbcode_b text,"+ "cwarename text," + "materialcode text," + "platecode text,"
             + "boxcode text,"+ "xlh text," + "num text," + "itemuploadflag text,"+ "prodcutcode text)";
@@ -70,7 +70,7 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
             + "dbilldate text," + "deptcode text,"+ "Pupsndoccode text,"+ "Transporttypecode text,"+ "billmakercode text,"+ "vmemo text,"+ "flag text,"+ "country text)";
     public static final String SaleDeliveryBody = "create table SaleDeliveryBody ("
             + "id integer primary key autoincrement," + "vbillcode text,"+ "vcooporderbcode_b text," + "matrcode text," + "matrname text,"
-            + "maccode text," + "nnum text," + "scannum text," + "rackcode text,"+ "customer text,"+ "uploadflag text,"+ "cwarename text,"+"issn,"+ "orginal_cwarename text,"+ "cwarehousecode text)";
+            + "maccode text," + "nnum text," + "scannum text," + "rackcode text,"+ "customer text,"+ "uploadflag text,"+ "cwarename text,"+"issn text,"+ "orginal_cwarename text,"+ "cwarehousecode text)";
     public static final String SaleDeliveryScanResult = "create table SaleDeliveryScanResult ("
             + "id integer primary key autoincrement," + "vbillcode text,"+ "vcooporderbcode_b text,"+ "matrcode text," + "platecode text,"
             + "boxcode text," + "num text," + "prodcutcode text," + "itemuploadflag text,"+ "xlh text)";
@@ -78,7 +78,7 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
             + "id integer primary key autoincrement,"+ "vbillcode text," + "dbilldate text,"+ "dr integer,"+ "ts text," + "flag text," + "org text)";
     public static final String PurchaseReturnBody = "create table PurchaseReturnBody ("
             + "id integer primary key autoincrement," + "vbillcode text,"+ "itempk text," + "materialname text," + "nnum text,"
-            + "warehouse text," + "maccode text," + "materialcode text," + "scannum text,"+ "uploadflag text,"+ "orginal_cwarename text)";
+            + "warehouse text," + "maccode text," + "materialcode text," + "scannum text,"+"issn text,"+ "uploadflag text,"+ "orginal_cwarename text)";
     public static final String PurchaseReturnScanResult = "create table PurchaseReturnScanResult ("
             + "id integer primary key autoincrement," + "vbillcode text,"+ "itempk text,"+ "maccode text," + "materialcode text," + "platecode text,"
             + "boxcode text," + "num text," + "prodcutcode text," + "itemuploadflag text,"+ "xlh text)";
@@ -86,7 +86,7 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
             + "id integer primary key autoincrement,"+ "headpk text,"+ "vbillcode text," + "dbilldate text,"+ "dr integer,"+ "ts text," + "flag text," + "num text," + "org text)";
     public static final String PurchaseArrivalBody = "create table PurchaseArrivalBody ("
             + "id integer primary key autoincrement,"+ "headpk text," + "vbillcode text,"+ "itempk text," + "materialname text," + "nnum text,"
-            + "warehouse text," + "maccode text," + "materialcode text," + "scannum text,"+ "uploadflag text,"+ "orginal_cwarename text)";
+            + "warehouse text," + "maccode text," + "materialcode text," + "scannum text,"+ "uploadflag text,"+"issn text,"+ "orginal_cwarename text)";
     public static final String PurchaseArrivalScanResult = "create table PurchaseArrivalScanResult ("
             + "id integer primary key autoincrement,"+ "headpk text," + "vbillcode text,"+ "itempk text,"+ "maccode text," + "materialcode text," + "platecode text,"
             + "boxcode text," + "num text," + "prodcutcode text," + "itemuploadflag text,"+ "xlh text)";
@@ -94,7 +94,7 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
             + "id integer primary key autoincrement,"+ "dr integer," + "pobillcode text,"
             + "dbilldate text," + "num text,"+ "ts text,"+ "flag text)";
     public static final String LoanBody = "create table LoanBody ("
-            + "id integer primary key autoincrement," + "pobillcode text,"+ "itempk text," + "materialcode text,"
+            + "id integer primary key autoincrement," + "pobillcode text,"+ "itempk text," + "materialcode text,"+"issn text,"
             + "maccode text," + "nnum text," + "scannum text," + "vemo text,"+ "uploadflag text,"+ "cwarename text,"+ "orginal_cwarename text,"+ "cwarecode text)";
     public static final String LoanScanResult = "create table LoanScanResult ("
             + "id integer primary key autoincrement," + "pobillcode text,"+ "itempk text,"+ "materialcode text," + "platecode text,"
@@ -103,8 +103,8 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
             + "id integer primary key autoincrement," + "headpk text,"+ "dr integer,"+ "billcode text,"
             + "dbilldate text," + "cwarecode text,"+ "cwarename text,"+ "org text,"+ "ts text,"+ "totalnum text,"+ "flag text)";
     public static final String ProductEntryBody = "create table ProductEntryBody ("
-            + "id integer primary key autoincrement," + "billcode text,"+ "itempk text," + "materialcode text," + "nnum text,"
-            + "ysnum text,"+ "scannum text,"+ "uploadflag text)";
+            + "id integer primary key autoincrement," + "billcode text,"+ "itempk text," +"issn text,"+ "materialcode text," + "nnum text,"
+            + "maccode text,"+ "ysnum text,"+ "scannum text,"+ "uploadflag text)";
     public static final String ProductEntryScanResult = "create table ProductEntryScanResult ("
             + "id integer primary key autoincrement," + "billcode text,"+ "itempk text,"+ "materialcode text," + "platecode text,"
             + "boxcode text," + "num text," + "prodcutcode text," + "itemuploadflag text,"+ "xlh text)";
@@ -113,7 +113,7 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
             + "dbilldate text,"+ "dr integer," + "num text,"+ "flag text)";
     public static final String AllocateTransferBody = "create table AllocateTransferBody ("
             + "id integer primary key autoincrement,"+"headpk text," + "billno text,"+ "itempk text,"+ "address text," + "materialcode text,"+ "materialclasscode text," + "nnum text,"
-            + "rwarehousecode text,"+ "cwarehousecode text,"+ "scannum text,"+ "uploadflag text)";
+            + "maccode text," + "rwarehousecode text,"+ "cwarehousecode text,"+"issn text,"+ "scannum text,"+ "uploadflag text)";
     public static final String AllocateTransferScanResult = "create table AllocateTransferScanResult ("
             + "id integer primary key autoincrement," + "billno text,"+ "itempk text,"+ "materialcode text," + "platecode text,"
             + "boxcode text," + "num text," + "prodcutcode text," + "itemuploadflag text,"+ "xlh text)";

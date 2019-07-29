@@ -49,8 +49,7 @@ public class LoanQrScanner extends AppCompatActivity {
     private String current_cwarename_qrRecv;
     private int current_nnum_qrRecv;
     private String current_vbillcode_qrRecv;
-    private int current_qrcode_rule_length = 13;
-    private String current_material_code;
+
     private EditText plateCodeEditText;
     private EditText boxCodeEditText;
     private List<String> boxCodeEditTextContent;
@@ -159,8 +158,8 @@ public class LoanQrScanner extends AppCompatActivity {
 
                         int current_scanSum =countSum();
                         scannnumText.setText("已扫码数量：" + current_scanSum);
-                        DataHelper.updateSaleDeliveryBodyscannum(db5,current_scanSum,current_vbillcode_qrRecv,
-                                current_vcooporderbcode_b_qrRecv);
+                        DataHelper.updateScannum(db5,current_scanSum,current_vbillcode_qrRecv,
+                                current_vcooporderbcode_b_qrRecv,getIntent().getIntExtra("type",-1));
                         break;
                     case 0x14:
                         Toast.makeText(LoanQrScanner.this, "用户名或密码错误", Toast.LENGTH_LONG).show();
@@ -374,7 +373,7 @@ public class LoanQrScanner extends AppCompatActivity {
         return list;
     }
 
-    private void insertintoTempQrDBForSaleDelivery(String productcode) {
+    private void insertintoTempQrDBForSaleDelivery(final String productcode) {
 //插入临时数据库保持条码信息并显示在此页面
 
         new Thread(new Runnable() {
@@ -393,7 +392,7 @@ public class LoanQrScanner extends AppCompatActivity {
                         values.put("prodcutcode", productCodeEditText.getText().toString());
                         values.put("num", current_nnum_qrRecv);
                         values.put("itemuploadflag", "N");
-                        values.put("xlh", DataHelper.getXlh(db5,productCodeEditText.getText().toString(),current_maccode_qrRecv));
+                        values.put("xlh", DataHelper.getXlh(db5,productcode,current_maccode_qrRecv));
                         // 插入第一条数据
                         db5.insert("LoanScanResult", null, values);
                         values.clear();

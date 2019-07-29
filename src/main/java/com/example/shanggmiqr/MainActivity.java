@@ -508,22 +508,14 @@ public class MainActivity extends AppCompatActivity {
             // 获取返回的结果
             result = object.getProperty(0).toString();
             //   JSONObject jsonObject = new JSONObject(result);
-            Log.i("result-->",result);
+
 
             //等login后再关闭
             // db.close();
             return result;
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             // e.printStackTrace();
-            Bundle bundle = new Bundle();
-            bundle.putString("Exception333", e.toString());
-            Message msg = new Message();
-            msg.what = 0x16;
-            msg.setData(bundle);
-            mHandler.sendMessage(msg);
-        } catch (XmlPullParserException e) {
-            //e.printStackTrace();
             Bundle bundle = new Bundle();
             bundle.putString("Exception333", e.toString());
             Message msg = new Message();
