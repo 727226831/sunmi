@@ -92,6 +92,7 @@ public class ProductEntryDetail extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
+
         }
         saleDeliveryScanButton = (Button) findViewById(R.id.scan_productEntry);
         uploadAll_saleDeliveryButton = (Button) findViewById(R.id.uploadall_productEntry);
@@ -113,8 +114,8 @@ public class ProductEntryDetail extends AppCompatActivity {
         vbillcodText = (TextView) findViewById(R.id.vbillcode_productEntry);
         dbilldateText = (TextView) findViewById(R.id.dbilldate_productEntry);
 
-        vbillcodText.setText("发货单号:" + current_sale_delivery_vbillcodeRecv);
-        dbilldateText.setText("发货日期:" + current_sale_delivery_dbilldateRecv);
+        vbillcodText.setText("入库单号:" + current_sale_delivery_vbillcodeRecv);
+        dbilldateText.setText("入库日期:" + current_sale_delivery_dbilldateRecv);
         listAllBodyPostition = QueryProductEntryBody(current_sale_delivery_vbillcodeRecv);
 
         adapter = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
@@ -337,14 +338,15 @@ public class ProductEntryDetail extends AppCompatActivity {
                         Toast.makeText(ProductEntryDetail.this, s2, Toast.LENGTH_LONG).show();
                         updateAllUploadFlag();
                         if (isAllItemUpload()) {
-                            Intent intent = new Intent(ProductEntryDetail.this, SaleDelivery.class);
+                            Intent intent = new Intent(ProductEntryDetail.this, ProductEntry.class);
+                            intent.putExtra("type",3);
                             startActivity(intent);
                             finish();
                         }
                         listAllBodyPostition = QueryProductEntryBody(current_sale_delivery_vbillcodeRecv);
                         adapter = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
-                        adapter.notify();
+                        adapter.notifyDataSetChanged();
 
                         break;
                     case 0x16:
@@ -692,19 +694,17 @@ public class ProductEntryDetail extends AppCompatActivity {
         return saleDeliveryUploadDataResp;
     }
 
+
+
     @Override
-    protected void onResume() {
-        super.onResume();
-//        saleDeliveryScanButton.setEnabled(false);
-//        uploadSingleButton.setEnabled(false);
-//        listAllBodyPostition = QueryProductEntryBody(current_sale_delivery_vbillcodeRecv);
-//        adapter = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
-//        tableBodyListView.setAdapter(adapter);
-
-
+    protected void onStart() {
+        super.onStart();
+                saleDeliveryScanButton.setEnabled(false);
+        uploadSingleButton.setEnabled(false);
+        listAllBodyPostition = QueryProductEntryBody(current_sale_delivery_vbillcodeRecv);
+        adapter = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
+        tableBodyListView.setAdapter(adapter);
     }
-
-
 
     public ArrayList<ProductEntryBodyBean> QueryProductEntryBody(String current_sale_delivery_vbillcodeRecv) {
         ArrayList<ProductEntryBodyBean> list = new ArrayList<ProductEntryBodyBean>();
@@ -743,6 +743,7 @@ public class ProductEntryDetail extends AppCompatActivity {
             intent.putExtra("current_uploadflag_qrRecv", listAllBodyPostition.get(position).getUploadflag());
             intent.putExtra("current_vbillcode_qrRecv", current_sale_delivery_vbillcodeRecv);
             intent.putExtra("maccode",maccode);
+            intent.putExtra("type",getIntent().getIntExtra("type",-1));
             startActivity(intent);
         }
     };

@@ -108,7 +108,7 @@ public class AllocateTransferBodyTableAdapter extends BaseAdapter{
             viewHolder = (ViewHolder2) convertView.getTag();
         }
         saleDeliveryBodyBean = (AllocateTransferBodyBean) getItem(position);
-        viewHolder.itempk.setText(goods.getItempk());
+        viewHolder.itempk.setText("");
         viewHolder.itempk.setTextSize(10);
         viewHolder.address.setText(goods.getAddress());
         viewHolder.address.setTextSize(10);

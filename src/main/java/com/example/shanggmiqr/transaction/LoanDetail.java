@@ -511,7 +511,8 @@ public class LoanDetail extends AppCompatActivity {
                         Toast.makeText(LoanDetail.this, s, Toast.LENGTH_LONG).show();
                         updateUploadFlag();
                         if (isAllItemUpload()) {
-                            Intent intent = new Intent(LoanDetail.this, SaleDelivery.class);
+                            Intent intent = new Intent(LoanDetail.this, LoanBill.class);
+                            intent.putExtra("type",4);
                             startActivity(intent);
                             finish();
                         }
@@ -987,8 +988,9 @@ public class LoanDetail extends AppCompatActivity {
             // SoapObject object = (SoapObject) envelope.bodyIn;
             Object object = envelope.getResponse();
             saleDeliveryUploadDataResp = new Gson().toJson(object);
+            Log.i("response-->",envelope.bodyIn.toString());
         }
-        Log.i("response-->",envelope.bodyIn.toString());
+
         // 获取返回的结果
         // saleDeliveryUploadDataResp = object.getProperty(0).toString();
         return saleDeliveryUploadDataResp;
@@ -1087,6 +1089,7 @@ public class LoanDetail extends AppCompatActivity {
             intent.putExtra("current_maccode_qr", QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(position).getItempk(), listAllBodyPostition.get(position).getMaterialcode()));
             intent.putExtra("current_customer_qr", listAllBodyPostition.get(position).getVemo());
             intent.putExtra("current_vbillcode_qr", current_sale_delivery_vbillcodeRecv);
+            intent.putExtra("type",getIntent().getIntExtra("type",-1));
             startActivity(intent);
         }
     };

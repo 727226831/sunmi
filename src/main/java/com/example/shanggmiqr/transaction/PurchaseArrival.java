@@ -296,8 +296,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                Intent intent = new Intent(PurchaseArrival.this, BusinessOperation.class);
-                startActivity(intent);
+
                 finish();
                 return true;
         }

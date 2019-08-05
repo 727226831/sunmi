@@ -49,6 +49,7 @@
                 android:layout_marginTop="10dp"
                 android:text="发货数量:" />
             <LinearLayout
+                android:visibility="gone"
                 android:layout_width="260dp"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"

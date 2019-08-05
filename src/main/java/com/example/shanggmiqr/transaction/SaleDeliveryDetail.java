@@ -26,6 +26,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.BusinessOperation;
 import com.example.shanggmiqr.MainActivity;
 import com.example.shanggmiqr.bean.PurchaseArrivalBean;
 import com.example.shanggmiqr.util.DataHelper;
@@ -165,6 +166,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                 intent.putExtra("current_nnum_qrRecv", chosen_line_nnum);
                 intent.putExtra("current_uploadflag_qrRecv", chosen_line_uploadflag);
                 intent.putExtra("current_vbillcode_qrRecv", current_sale_delivery_vbillcodeRecv);
+                intent.putExtra("type",getIntent().getIntExtra("type",-1));
 
                 startActivity(intent);
             }
@@ -296,8 +298,6 @@ public class SaleDeliveryDetail extends AppCompatActivity {
 
                                 } catch (Exception e) {
                                     e.printStackTrace();
-                                    Toast.makeText(SaleDeliveryDetail.this, e.toString(), Toast.LENGTH_LONG).show();
-                                    return;
                                 }
                             }
                         }
@@ -368,8 +368,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                                 } catch (Exception e) {
                                                      e.printStackTrace();
                                                      zLoadingDialog.dismiss();
-                                                    Toast.makeText(SaleDeliveryDetail.this, e.toString(), Toast.LENGTH_LONG).show();
-                                                    return;
+
                                                 }
                                             }
                                         }
@@ -428,8 +427,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                 } catch (Exception e) {
                                      e.printStackTrace();
                                     zLoadingDialog.dismiss();
-                                    Toast.makeText(SaleDeliveryDetail.this, e.toString(), Toast.LENGTH_LONG).show();
-                                    return;
+
                                 }
                             }
                         }
@@ -499,6 +497,14 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                     case 0x21:
                         zLoadingDialog.dismiss();
                         Toast.makeText(SaleDeliveryDetail.this, "物流公司没有选择，首先选择物流公司", Toast.LENGTH_LONG).show();
+                        break;
+                    case 0x22:
+                        saleDeliveryScanButton.setEnabled(false);
+                        uploadSingleButton.setEnabled(false);
+                        listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
+                        adapter = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
+                        tableBodyListView.setAdapter(adapter);
+                        adapter.notifyDataSetChanged();
                         break;
                     default:
                         break;
@@ -589,7 +595,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     protected void onStart() {
 
         super.onStart();
-
+        Log.i("on start-->","");
         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
         adapter = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
@@ -791,17 +797,16 @@ public class SaleDeliveryDetail extends AppCompatActivity {
 
 
 
+
+
     @Override
-    protected void onResume() {
-        super.onResume();
-        saleDeliveryScanButton.setEnabled(false);
-        uploadSingleButton.setEnabled(false);
-        listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
-         adapter = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
-        tableBodyListView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
+    protected void onRestart() {
+        super.onRestart();
+        Log.i("on restart-->","");
+        saleDeliveryDetailHandler.sendEmptyMessage(0x22);
 
     }
+
 
     public ArrayList<SaleDeliveryBodyBean> QuerySaleDeliveryBody(String current_sale_delivery_vbillcodeRecv) {
 
@@ -819,6 +824,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                 bean.matrname = cursor.getString(cursor.getColumnIndex("matrname"));
                 bean.nnum = cursor.getString(cursor.getColumnIndex("nnum"));
                 bean.scannnum = cursor.getString(cursor.getColumnIndex("scannum"));
+
                 bean.Customer = cursor.getString(cursor.getColumnIndex("customer"));
                 bean.uploadflag = cursor.getString(cursor.getColumnIndex("uploadflag"));
                 list.add(bean);
@@ -874,6 +880,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
             intent.putExtra("current_maccode_qr", QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(position).getVcooporderbcode_b(), listAllBodyPostition.get(position).getMatrcode()));
             intent.putExtra("current_customer_qr", listAllBodyPostition.get(position).getCustomer());
             intent.putExtra("current_vbillcode_qr", current_sale_delivery_vbillcodeRecv);
+            intent.putExtra("type",getIntent().getIntExtra("type",-1));
             startActivity(intent);
         }
     };
@@ -882,7 +889,8 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                this.finish(); // back button
+
+                finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);

@@ -103,6 +103,7 @@
             android:text="退出" />
 
         <Button
+            android:visibility="gone"
             android:id="@+id/downloaduserinfo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -115,6 +116,12 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="80dip"
             android:text="设置" />
+        <Button
+            android:id="@+id/b_repair"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="80dip"
+            android:text="修改密码" />
     </LinearLayout>
 
     <TextView

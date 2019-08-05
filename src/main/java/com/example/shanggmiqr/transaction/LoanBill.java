@@ -301,8 +301,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                Intent intent = new Intent(LoanBill.this, BusinessOperation.class);
-                startActivity(intent);
+
                 finish();
                 return true;
         }

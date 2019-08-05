@@ -303,8 +303,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                Intent intent = new Intent(AllocateTransfer.this, BusinessOperation.class);
-                startActivity(intent);
+
                 finish();
                 return true;
         }

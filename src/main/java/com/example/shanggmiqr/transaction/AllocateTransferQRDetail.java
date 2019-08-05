@@ -109,7 +109,7 @@ public class AllocateTransferQRDetail extends AppCompatActivity {
                     intent.putExtra("current_uploadflag_qrRecv", current_uploadflag_qrRecv);
                     intent.putExtra("current_vbillcode_qrRecv", current_vbillcode_qrRecv);
                     intent.putExtra("maccode",maccode);
-                    Log.i("maccode-->",maccode);
+
                     startActivity(intent);
                 } else {
                     Toast.makeText(AllocateTransferQRDetail.this, "已经执行发货操作的行号不允许再进行操作", Toast.LENGTH_LONG).show();
@@ -121,6 +121,7 @@ public class AllocateTransferQRDetail extends AppCompatActivity {
         matrcodeText.setText("物料编码:" + current_materialcode_qrRecv);
         numQRText.setText("数量:  " + current_nnum_qrRecv);
         vbillcodeText.setText("单号:  " + current_vbillcode_qrRecv);
+
         listAllBodyPostition = QueryAllocateTransferBody(current_materialcode_qrRecv);
         String current_scanSum = countScannedQRCode(current_vbillcode_qrRecv, current_materialcode_qrRecv);
         insertCountOfScannedQRCode(current_scanSum);
@@ -145,9 +146,7 @@ public class AllocateTransferQRDetail extends AppCompatActivity {
 
     //下面的方法内容需要根据实际更新
     public ArrayList<AllocateTransferQrDetailBean> QueryAllocateTransferBody(String current_matrcode_qrRecv) {
-        Log.i("str1-->",current_vbillcode_qrRecv);
-        Log.i("str2-->",current_matrcode_qrRecv);
-        Log.i("str3-->",current_itempk_qrRecv);
+
         ArrayList<AllocateTransferQrDetailBean> list = new ArrayList<AllocateTransferQrDetailBean>();
         Cursor cursor = db5.rawQuery("select platecode,boxcode,prodcutcode,itemuploadflag from AllocateTransferScanResult where billno=? " +
                 "and materialcode=? and itempk=?", new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv, current_itempk_qrRecv});

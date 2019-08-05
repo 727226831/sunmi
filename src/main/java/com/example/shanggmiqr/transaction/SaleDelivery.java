@@ -253,7 +253,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                                 e.printStackTrace();
                                 Bundle bundle = new Bundle();
                                 bundle.putString("Exception", e.toString());
-                                Message msg = new Message();
+                                 Message msg = new Message();
                                 msg.what = 0x19;
                                 msg.setData(bundle);
                                 saleDeliveryHandler.sendMessage(msg);
@@ -321,8 +321,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                Intent intent = new Intent(SaleDelivery.this, BusinessOperation.class);
-                startActivity(intent);
+
                 finish();
                 return true;
         }

@@ -103,6 +103,8 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
                     intent.putExtra("current_customer_qrRecv", current_customer_qrRecv);
                     intent.putExtra("current_nnum_qrRecv", current_nnum_qrRecv);
                     intent.putExtra("current_vbillcode_qrRecv", current_vbillcode_qrRecv);
+                    intent.putExtra("type",getIntent().getIntExtra("type",-1));
+                    Log.i("type3-->",getIntent().getIntExtra("type",-1)+"");
                     startActivity(intent);
                 } else {
                     Toast.makeText(SaleDeliveryQRDetail.this, "已经执行发货操作的行号不允许再进行操作", Toast.LENGTH_LONG).show();
@@ -112,8 +114,27 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
         vcooporderbcode_bText.setText("行号  :" + current_vcooporderbcode_b_qrRecv);
         matrnameText.setText("物料名称:" + current_matrname_qrRecv);
         matrcodeText.setText("物料编码:" + current_matrcode_qrRecv);
-        numQRText.setText("发货数量:" + current_nnum_qrRecv);
-        vbillcodeText.setText("发货单号:" + current_vbillcode_qrRecv);
+        switch (getIntent().getIntExtra("type",-1)){
+            case 0:
+                actionBar.setTitle("发货单条码明细");
+                numQRText.setText("发货数量:" + current_nnum_qrRecv);
+                vbillcodeText.setText("发货单号:" + current_vbillcode_qrRecv);
+                break;
+            case 6:
+                actionBar.setTitle("到货单条码明细");
+                numQRText.setText("到货数量:" + current_nnum_qrRecv);
+                vbillcodeText.setText("到货单号:" + current_vbillcode_qrRecv);
+                break;
+            case 7:
+                actionBar.setTitle("退货单条码明细");
+                numQRText.setText("退货数量:" + current_nnum_qrRecv);
+                vbillcodeText.setText("退货单号:" + current_vbillcode_qrRecv);
+                break;
+            default:
+
+                break;
+        }
+
         listAllBodyPostition = QuerySaleDeliveryBody(current_matrcode_qrRecv);
         String current_scanSum = countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv);
         insertCountOfScannedQRCode(current_scanSum);
@@ -150,26 +171,6 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
 
     }
 
-    //原始订单带过来的仓库不许修改，后面手动选择的又没扫描的订单可以修改
-    private boolean isOriginaWarehouse() {
-        Cursor cursornew = db5.rawQuery("select orginal_cwarename from SaleDeliveryBody where vbillcode=? and vcooporderbcode_b=? and orginal_cwarename=?",
-                new String[]{current_vbillcode_qrRecv, current_vcooporderbcode_b_qrRecv, "Y"});
-        if (cursornew != null && cursornew.getCount() > 0) {
-            cursornew.close();
-            return true;
-        }
-        return false;
-    }
-
-    private boolean allowChangeWarehousename() {
-        Cursor cursornew = db5.rawQuery("select prodcutcode from SaleDeliveryScanResult where vbillcode=? and vcooporderbcode_b=?",
-                new String[]{current_vbillcode_qrRecv, current_vcooporderbcode_b_qrRecv});
-        if (cursornew != null && cursornew.getCount() > 0) {
-            cursornew.close();
-            return false;
-        }
-        return true;
-    }
 
     private void updateWarehouseInfo(String name, String current_vbillcode_qrRecv, String current_vcooporderbcode_b_qrRecv) {
         if (!name.equals("请选择仓库")) {

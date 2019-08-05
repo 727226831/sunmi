@@ -49,6 +49,7 @@ public class BusinessOperation extends AppCompatActivity {
         if(actionBar != null){
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
+
         }
         recyclerView=findViewById(R.id.rv_list);
 
@@ -67,6 +68,16 @@ public class BusinessOperation extends AppCompatActivity {
 
 
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+
+        }
+        finish();
+        return super.onOptionsItemSelected(item);
+    }
+
     public class NormalAdapter extends RecyclerView.Adapter<NormalAdapter.VH>{
         //② 创建ViewHolder
         public  class VH extends RecyclerView.ViewHolder{

@@ -222,15 +222,19 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
     private List<String> boxCodeEditTextContent;
     private void getData() {
         boxCodeEditTextContent= Arrays.asList(boxCodeEditText.getText().toString().split("\\s"));
-        Log.i("qr-->",boxCodeEditTextContent.toString()+"/"+boxCodeEditTextContent.size());
+
 
 
         for (int i = 0; i <boxCodeEditTextContent.size() ; i++) {
 
             String productcode=boxCodeEditTextContent.get(i);
 
-            count = countSum();
+            if(i>Math.abs(current_nnum_qrRecv)-1)
+            {
+                Toast.makeText(AllocateTransferQrScanner.this, "已扫描指定数量", Toast.LENGTH_LONG).show();
+                return;
 
+            }
 
 
 

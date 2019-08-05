@@ -164,6 +164,7 @@ public class DataHelper {
 
 
 
+
     public static boolean isValidQr(String productcode,String matbasclasscode,String matrcode,SQLiteDatabase db,Context context) {
 
         String scannedMaccode = DataHelper.getMaccode(db,productcode,matbasclasscode);
@@ -191,12 +192,13 @@ public class DataHelper {
     public static void updateScannum(SQLiteDatabase db, int scannum, String vbillcode, String itempk, int type) {
         ContentValues contentValues=new ContentValues();
         contentValues.put("scannum",scannum);
-        Log.i("type-->",type+"");
 
+        Log.i("update scannum-->","is run"+type);
         switch (type){
             case 0:
                 db.update("SaleDeliveryBody",contentValues,"vbillcode=? and vcooporderbcode_b=?",
                         new String[]{ vbillcode,itempk});
+
                 break;
             case 1:
                 db.update("OtherEntryBody",contentValues,"pobillcode=? and vcooporderbcode_b=?",
@@ -220,9 +222,6 @@ public class DataHelper {
                 break;
 
         }
-
-
-
 
     }
     public static List<String> queryWarehouseInfo(SQLiteDatabase db) {

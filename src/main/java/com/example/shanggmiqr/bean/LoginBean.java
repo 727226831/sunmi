@@ -19,4 +19,31 @@ public class LoginBean {
 
     String appuser;
     String apppassword;
+
+
+        private String issuccess;
+        private String errmsg;
+        private String power;
+        public void setIssuccess(String issuccess) {
+            this.issuccess = issuccess;
+        }
+        public String getIssuccess() {
+            return issuccess;
+        }
+
+        public void setErrmsg(String errmsg) {
+            this.errmsg = errmsg;
+        }
+        public String getErrmsg() {
+            return errmsg;
+        }
+
+        public void setPower(String power) {
+            this.power = power;
+        }
+        public String getPower() {
+            return power;
+        }
+
+
 }

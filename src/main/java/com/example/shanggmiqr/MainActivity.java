@@ -61,13 +61,14 @@ public class MainActivity extends AppCompatActivity {
     private EditText pwdEdittext;
     private Button mlogInButton;
     private String result;
-    private String number;
+
     private MyDataBaseHelper helper;
     private SQLiteDatabase db;
     private String user_ts_begintime;
     private String user_ts_endtime;
     private TextView textViewversion;
     private ZLoadingDialog dialog;
+    private Button buttonRepair;
     //读写权限
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -77,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
     SharedPreferences updateConfig;
     SharedPreferences.Editor editor;
+    MenuBean menuBean;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,6 +108,13 @@ public class MainActivity extends AppCompatActivity {
         pwdEdittext = (EditText) findViewById(R.id.pwdEdittext);
         textViewversion=findViewById(R.id.tv_version);
        textViewversion.setText("版本号:"+ BuildConfig.VERSION_NAME);
+       buttonRepair=findViewById(R.id.b_repair);
+       buttonRepair.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view) {
+            startActivity(new Intent(MainActivity.this,RepairActivity.class));
+           }
+       });
         helper = new MyDataBaseHelper(MainActivity.this, "ShangmiData", null, 1);
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错
@@ -124,7 +133,12 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         if (isNetworkConnected(MainActivity.this)) {
                             try {
-                               final MenuBean menuBean=new Gson().fromJson(login(),MenuBean.class);
+
+
+
+                                menuBean=new Gson().fromJson(login(),MenuBean.class);
+
+
                                if(menuBean.getIssuccess().equals("Y")){
                                    SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
                                    SharedPreferences.Editor editor1 = currentAccount.edit();
@@ -137,7 +151,8 @@ public class MainActivity extends AppCompatActivity {
                                    intent.putExtra("from_login", "Y");
                                    startActivity(intent);
 
-                               }else {
+                               }else  if(menuBean.getIssuccess().equals("N")){
+
                                  runOnUiThread(new Runnable() {
                                      @Override
                                      public void run() {
@@ -146,25 +161,10 @@ public class MainActivity extends AppCompatActivity {
                                  });
                                }
                             } catch (Exception e) {
-
+                                   e.printStackTrace();
                             }
                         }
-//                        Message msgLogin = new Message();
-//                        if (searchUser(accountEdittext.getText().toString(), pwdEdittext.getText().toString())) {
-//                            SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
-//                            SharedPreferences.Editor editor1 = currentAccount.edit();
-//                            editor1.putString("user",accountEdittext.getText().toString());
-//                            editor1.putString("password",pwdEdittext.getText().toString());
-//                            editor1.commit();
-//                            msgLogin.what = 0x13;
-//                            mHandler.sendMessage(msgLogin);
-//                            Intent intent = new Intent(MainActivity.this, TopMenu.class);
-//                            intent.putExtra("from_login", "Y");
-//                            startActivity(intent);
-//                        } else {
-//                            msgLogin.what = 0x14;
-//                            mHandler.sendMessage(msgLogin);
-//                        }
+
                     }
                 }).start();
 
@@ -342,16 +342,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    private boolean isUserDBEmpty() {
-        Cursor cursor = db.rawQuery("select * from User",
-                null);
-        while (cursor.getCount() > 0) {
-            // db.close();
-            //  Log.i(" search_city_name_exist", str + "在数据库已存在,return true");
-            return false;// //有城市在数据库已存在，返回false
-        }
-        return true;
-    }
+
 
     private void insertUserDataToDB(User user) {
         //对象中拿到集合
@@ -467,7 +458,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return result;
     }
-    public String login() throws Exception {
+    public String login() {
         String WSDL_URI;
         String namespace;
 
@@ -503,11 +494,18 @@ public class MainActivity extends AppCompatActivity {
             //   se.call(null, envelope);//调用
             se.call(namespace + "sendToWISE", envelope);
             // 获取返回的数据
-            SoapObject object = (SoapObject) envelope.bodyIn;
-            Log.i("response-->",object.toString());
-            // 获取返回的结果
-            result = object.getProperty(0).toString();
-            //   JSONObject jsonObject = new JSONObject(result);
+
+
+
+            if(!envelope.bodyIn.getClass().getName().equals("org.ksoap2.SoapFault")){
+                SoapObject object = (SoapObject) envelope.bodyIn;
+                result = object.getProperty(0).toString();
+                //   JSONObject jsonObject = new JSONObject(result);
+                Log.i("response-->",result);
+            }else {
+                result="{\"issuccess\":\"N\",\"errmsg\":\"接口异常\"}";
+            }
+
 
 
             //等login后再关闭
@@ -515,13 +513,8 @@ public class MainActivity extends AppCompatActivity {
             return result;
 
         } catch (Exception e) {
-            // e.printStackTrace();
-            Bundle bundle = new Bundle();
-            bundle.putString("Exception333", e.toString());
-            Message msg = new Message();
-            msg.what = 0x16;
-            msg.setData(bundle);
-            mHandler.sendMessage(msg);
+             e.printStackTrace();
+
         }
         return result;
     }

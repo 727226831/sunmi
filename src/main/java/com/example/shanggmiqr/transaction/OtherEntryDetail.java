@@ -75,22 +75,13 @@ public class OtherEntryDetail extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.other_entry_detail);
         type=getIntent().getIntExtra("type",-1);
-        switch (type){
-            case 1:
-                workcode="R10";
-                title="其他入库明细";
-                break;
-            case 2:
-                workcode="R12";
-                title="其他出库明细";
-                break;
-        }
+
 
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setTitle(title);
+
         }
         otherEntryScanButton = (Button) findViewById(R.id.scan_other_entry);
         uploadallOtherentryButton = (Button) findViewById(R.id.uploadall_other_entry);
@@ -112,8 +103,22 @@ public class OtherEntryDetail extends AppCompatActivity {
         poBillCodeText = (TextView) findViewById(R.id.pobill_otherentry);
         cwareNameText = (TextView) findViewById(R.id.cwarename_otherentry);
         dbilldateText = (TextView) findViewById(R.id.dbilldate_otherentry);
-        poBillCodeText.setText("入库单号:" + current_pobillcodeRecv);
-        cwareNameText.setText("入库仓库:" + current_cwarenameRecv);
+        switch (type){
+            case 1:
+                workcode="R10";
+                title="其他入库明细";
+                poBillCodeText.setText("入库单号:" + current_pobillcodeRecv);
+                cwareNameText.setText("入库仓库:" + current_cwarenameRecv);
+                break;
+            case 2:
+                workcode="R12";
+                title="其他出库明细";
+                poBillCodeText.setText("出库单号:" + current_pobillcodeRecv);
+                cwareNameText.setText("出库仓库:" + current_cwarenameRecv);
+                break;
+        }
+        actionBar.setTitle(title);
+
         dbilldateText.setText("单据日期:" + current_dbilldateRecv);
         listAllBodyPostition = QueryOtherEntryBody(current_pobillcodeRecv);
         final OtherEntryBodyTableAdapter adapter = new OtherEntryBodyTableAdapter(OtherEntryDetail.this, listAllBodyPostition, mListener);
@@ -136,7 +141,7 @@ public class OtherEntryDetail extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (!isAlreadyUpload()) {
-                  //  Intent intent = new Intent(OtherEntryDetail.this, OtherEntryQrScanner.class);
+
                     Intent intent = new Intent(OtherEntryDetail.this,SaleDeliveryQrScanner.class);
                     intent.putExtra("type",type);
                     intent.putExtra("current_vbillcode_qrRecv", current_pobillcodeRecv);
@@ -155,6 +160,7 @@ public class OtherEntryDetail extends AppCompatActivity {
         uploadallOtherentryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -251,6 +257,7 @@ public class OtherEntryDetail extends AppCompatActivity {
                         });
 
                         Intent intent = new Intent(OtherEntryDetail.this, OtherEntry.class);
+                        intent.putExtra("type",2);
                         startActivity(intent);
                         finish();
 
@@ -402,7 +409,7 @@ public class OtherEntryDetail extends AppCompatActivity {
     private String uploadOutgingPobill(String workcode) throws IOException, XmlPullParserException {
         String WSDL_URI;
         String namespace;
-        int temp_count = 0;
+
         String WSDL_URI_current = BaseConfig.getNcUrl();//wsdl 的uri
         String namespace_current = "http://schemas.xmlsoap.org/soap/envelope/";//namespace
         String methodName = "sendToWISE";//要调用的方法名称
@@ -441,16 +448,9 @@ public class OtherEntryDetail extends AppCompatActivity {
                 bean.setItempk( cursor2.getString(cursor2.getColumnIndex("vcooporderbcode_b")));
                 ArrayList<OtherOutgoingSendBean.BodyBean.SnBean> snlist = new ArrayList<OtherOutgoingSendBean.BodyBean.SnBean>();
                 Cursor cursor3=null;
-                switch (type){
-                    case 1:
-                        cursor3 = db4.rawQuery("select platecode,boxcode,prodcutcode,xlh from OtherEntryScanResult where pobillcode=? and vcooporderbcode_b=? and materialcode=?",
+
+                cursor3 = db4.rawQuery("select platecode,boxcode,prodcutcode,xlh from SaleDeliveryScanResult where vbillcode=? and vcooporderbcode_b=? and matrcode=?",
                                 new String[]{current_pobillcodeRecv, bean.vcooporderbcode_b, bean.materialcode});
-                        break;
-                    case 2:
-                        cursor3 = db4.rawQuery("select platecode,boxcode,prodcutcode,xlh from OtherOutgoingScanResult where pobillcode=? and vcooporderbcode_b=? and materialcode=?",
-                                new String[]{current_pobillcodeRecv, bean.vcooporderbcode_b, bean.materialcode});
-                        break;
-                }
 
                 if (cursor3 != null && cursor3.getCount() > 0) {
                     //判断cursor中是否存在数据
@@ -461,7 +461,7 @@ public class OtherEntryDetail extends AppCompatActivity {
                         snbean.txm = cursor3.getString(cursor3.getColumnIndex("prodcutcode"));
                         snbean.xlh = cursor3.getString(cursor3.getColumnIndex("xlh"));
                         snlist.add(snbean);
-                        temp_count++;
+
                     }
                     cursor3.close();
                 }
@@ -484,7 +484,7 @@ public class OtherEntryDetail extends AppCompatActivity {
 
         envelope.bodyOut = request;
         envelope.dotNet = false;
-        if (temp_count != 0) {
+
             HttpTransportSE se = new HttpTransportSE(WSDL_URI,60000);
             //  se.call(null, envelope);//调用 version1.2
             //version1.1 需要如下soapaction
@@ -508,19 +508,18 @@ public class OtherEntryDetail extends AppCompatActivity {
             SoapObject object = (SoapObject) envelope.bodyIn;
             int sizeValue = object.getPropertyCount();
             // 获取返回的结果
+            Log.i("response-->",envelope.bodyIn.toString());
             if (object != null && sizeValue > 0) {
+
                 otherEntryUploadDataResp = object.getProperty(0).toString();
             } else {
                 Message msg = new Message();
                 msg.what = 0x22;
                 otherEntryDetailHandler.sendMessage(msg);
             }
-        } else {
-            Message msg = new Message();
-            msg.what = 0x21;
-            otherEntryDetailHandler.sendMessage(msg);
-        }
-        Log.i("response-->",envelope.bodyIn.toString());
+
+
+
         return otherEntryUploadDataResp;
     }
 

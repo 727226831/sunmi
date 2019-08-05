@@ -93,6 +93,7 @@ public class ProductEntryQRDetail extends AppCompatActivity {
                     intent.putExtra("current_uploadflag_qrRecv", current_uploadflag_qrRecv);
                     intent.putExtra("current_vbillcode_qrRecv", current_vbillcode_qrRecv);
                     intent.putExtra("maccode",maccode);
+                    intent.putExtra("type",getIntent().getIntExtra("type",-1));
                     startActivity(intent);
                 } else {
                     Toast.makeText(ProductEntryQRDetail.this, "已经执行发货操作的行号不允许再进行操作", Toast.LENGTH_LONG).show();
