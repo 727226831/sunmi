@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -43,6 +44,7 @@ public class OtherEntryQRDetail extends AppCompatActivity {
     private List<OtherOutgoingQrDetailBean> listAllBodyPostition;
     private ListView tableBodyListView;
     private Button scanButton;
+    OtherEntryTableQrDetailAdapter adapter;
     int type;
     String title="";
     @Override
@@ -117,8 +119,9 @@ public class OtherEntryQRDetail extends AppCompatActivity {
         listAllBodyPostition = QueryOtherEntryBody(current_pobillcode_qrRecv,current_materialcode_qrRecv);
         String current_scanSum = countScannedQRCode(current_pobillcode_qrRecv,current_materialcode_qrRecv);
         insertCountOfScannedQRCode(current_scanSum);
-        OtherEntryTableQrDetailAdapter adapter = new OtherEntryTableQrDetailAdapter(OtherEntryQRDetail.this, listAllBodyPostition,mListener);
+        adapter = new OtherEntryTableQrDetailAdapter(OtherEntryQRDetail.this, listAllBodyPostition,mListener);
         tableBodyListView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
     }
 //下面的方法内容需要根据实际更新
     public ArrayList<OtherOutgoingQrDetailBean> QueryOtherEntryBody(String current_pobillcodeRecv,String materialcode) {
@@ -174,8 +177,9 @@ public class OtherEntryQRDetail extends AppCompatActivity {
         listAllBodyPostition = QueryOtherEntryBody(current_pobillcode_qrRecv,current_materialcode_qrRecv);
         String current_scanSum = countScannedQRCode(current_pobillcode_qrRecv,current_materialcode_qrRecv);
         insertCountOfScannedQRCode(current_scanSum);
-        OtherEntryTableQrDetailAdapter adapter = new OtherEntryTableQrDetailAdapter(OtherEntryQRDetail.this, listAllBodyPostition,mListener);
+        adapter = new OtherEntryTableQrDetailAdapter(OtherEntryQRDetail.this, listAllBodyPostition,mListener);
         tableBodyListView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -212,26 +216,23 @@ public class OtherEntryQRDetail extends AppCompatActivity {
     private OtherEntryTableQrDetailAdapter.MyClickListener mListener = new OtherEntryTableQrDetailAdapter.MyClickListener() {
         @Override
         public void myOnClick(int position, View v) {
-            if(!isAlreadyUpload()){
-                switch (type){
-                    case 1:
-                        db5.execSQL("delete from OtherEntryScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=? and prodcutcode=?",
-                                new Object[] { current_pobillcode_qrRecv,current_materialcode_qrRecv,current_vcooporderbcode_b_qrRecv,listAllBodyPostition.get(position).getProdcutcode() });
-                        break;
-                    case 2:
-                        db5.execSQL("delete from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=? and prodcutcode=?",
-                                new Object[] { current_pobillcode_qrRecv,current_materialcode_qrRecv,current_vcooporderbcode_b_qrRecv,listAllBodyPostition.get(position).getProdcutcode() });
-                        break;
-                }
 
-            listAllBodyPostition = QueryOtherEntryBody(current_pobillcode_qrRecv,current_materialcode_qrRecv);
-            String current_scanSum = countScannedQRCode(current_pobillcode_qrRecv,current_materialcode_qrRecv);
-            insertCountOfScannedQRCode(current_scanSum);
-                OtherEntryTableQrDetailAdapter adapter = new OtherEntryTableQrDetailAdapter(OtherEntryQRDetail.this, listAllBodyPostition,mListener);
-            tableBodyListView.setAdapter(adapter);
+
+            if(listAllBodyPostition.get(position).getItemuploadflag().equals("N")){
+                db5.execSQL("delete from SaleDeliveryScanResult where vbillcode=? and prodcutcode=?" +
+                        " and vcooporderbcode_b=?", new Object[]{current_pobillcode_qrRecv, listAllBodyPostition.get(position).getProdcutcode(),
+                        current_vcooporderbcode_b_qrRecv});
+
+                listAllBodyPostition = QueryOtherEntryBody(current_pobillcode_qrRecv,current_materialcode_qrRecv);
+                String current_scanSum = countScannedQRCode(current_pobillcode_qrRecv,current_materialcode_qrRecv);
+                insertCountOfScannedQRCode(current_scanSum);
+                adapter = new OtherEntryTableQrDetailAdapter(OtherEntryQRDetail.this, listAllBodyPostition,mListener);
+                tableBodyListView.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
             }else{
                 Toast.makeText(OtherEntryQRDetail.this,"已经执行发货操作的行号不允许再进行操作",Toast.LENGTH_LONG).show();
             }
+
         }
     };
 }

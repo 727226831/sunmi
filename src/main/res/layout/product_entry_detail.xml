@@ -36,8 +36,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:text="扫码出库"/>
+            android:text="扫码"/>
         <Button
+            android:visibility="gone"
             android:id="@+id/upload_productEntry"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

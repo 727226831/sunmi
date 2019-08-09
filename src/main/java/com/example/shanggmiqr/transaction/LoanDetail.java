@@ -160,7 +160,7 @@ public class LoanDetail extends AppCompatActivity {
                 chosen_line_scannnum = local_saleDeliveryBodyBean.getScannum();
                 chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
 
-                Toast.makeText(LoanDetail.this, chosen_line_matrcode, Toast.LENGTH_LONG).show();
+
             }
         });
         saleDeliveryScanButton.setOnClickListener(new View.OnClickListener() {

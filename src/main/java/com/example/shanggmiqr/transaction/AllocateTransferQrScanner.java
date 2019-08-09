@@ -185,11 +185,11 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
                     case 0x13:
                         //将数据库的数据显示出来
                         isSuccess = true;
-                        productCodeEditText.setText("");
+                       boxCodeEditText.setText("");
                         //boxCodeEditText.setText("");
                         //plateCodeEditText.setText("");
                         scannnumText.setText("已扫码数量：" +  countSum());
-                        productCodeEditText.requestFocus();
+                        boxCodeEditText.requestFocus();
                         List<SaleDeliveryScanResultBean> list = showScannedQR();
                         SaleDeliveryScannerAdapter adapter = new SaleDeliveryScannerAdapter(AllocateTransferQrScanner.this, list, mListener2);
                         tableBodyListView.setAdapter(adapter);

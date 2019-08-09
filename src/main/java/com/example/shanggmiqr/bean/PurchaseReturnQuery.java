@@ -65,6 +65,18 @@ public class PurchaseReturnQuery {
         private String dr;
         private List<BodyBean> body;
 
+
+        public String getNum() {
+            return num;
+        }
+
+        public void setNum(String num) {
+            this.num = num;
+        }
+
+        private String num;
+
+
         public String getVbillcode() {
             return vbillcode;
         }

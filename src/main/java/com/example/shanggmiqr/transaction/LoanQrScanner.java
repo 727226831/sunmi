@@ -13,6 +13,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -30,6 +31,7 @@ import com.example.shanggmiqr.adapter.LoanScannerAdapter;
 import com.example.shanggmiqr.bean.SaleDeliveryScanResultBean;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -188,7 +190,7 @@ public class LoanQrScanner extends AppCompatActivity {
         for (int i = 0; i <boxCodeEditTextContent.size() ; i++) {
 
             String productcode=boxCodeEditTextContent.get(i);
-
+            Log.i("prodcutcode--> ",productcode);
             count = countSum();
 
 
@@ -387,9 +389,9 @@ public class LoanQrScanner extends AppCompatActivity {
                         values.put("pobillcode", current_vbillcode_qrRecv);
                         values.put("itempk", current_vcooporderbcode_b_qrRecv);
                         values.put("materialcode", current_matrcode_qrRecv);
-                        values.put("platecode", plateCodeEditText.getText().toString());
-                        values.put("boxcode", boxCodeEditText.getText().toString());
-                        values.put("prodcutcode", productCodeEditText.getText().toString());
+                        values.put("platecode", "");
+                        values.put("boxcode", "");
+                        values.put("prodcutcode", productcode);
                         values.put("num", current_nnum_qrRecv);
                         values.put("itemuploadflag", "N");
                         values.put("xlh", DataHelper.getXlh(db5,productcode,current_maccode_qrRecv));

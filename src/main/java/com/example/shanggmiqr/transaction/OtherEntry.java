@@ -132,7 +132,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         buttonexport=findViewById(R.id.b_export);
         buttonexport.setOnClickListener(this);
         List<OtherBean> list = queryAll();
-        Log.i("other list-->",list.size()+"");
+
         listAllPostition = list;
         final OtherEntryTableAdapter adapter1 = new OtherEntryTableAdapter(OtherEntry.this, list, mListener);
         tableListView.setAdapter(adapter1);
@@ -259,12 +259,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                                         otherEntryHandler.sendMessage(msg);
                                     }
                                  //   String currentTs = getLatestDbilldate();
-                                    String systime = Utils.getCurrentDateTimeNew();
-                                    SharedPreferences latestDBTimeInfo5 = getSharedPreferences(name, 0);
-                                    SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
 
-                                    editor5.putString("latest_download_ts_begintime",systime);
-                                    editor5.commit();
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -640,9 +635,12 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
                 list.add(bean);
+
             }
+            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),list.get(0).getDbilldate(),OtherEntry.this);
             cursor.close();
         }
+
         return list;
     }
     public ArrayList<OtherBean> displayAll() {

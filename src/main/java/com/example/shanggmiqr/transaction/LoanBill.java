@@ -237,11 +237,9 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                                         msg.what = 0x11;
                                         saleDeliveryHandler.sendMessage(msg);
                                     }
-                                    String currentTs = Utils.getCurrentDateTimeNew();
-                                    SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestLoanTSInfo", 0);
-                                    SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                                    editor5.putString("latest_download_ts_begintime", currentTs);
-                                    editor5.commit();
+
+
+
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -288,8 +286,8 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         adapter.select(position);
-                        SaleDeliveryBean saleDelivery1Bean = (SaleDeliveryBean) adapter.getItem(position);
-                        chosen_line_vbillcode = saleDelivery1Bean.getVbillcode();
+                        LoanBean saleDelivery1Bean = listAllPostition.get(position);
+                        chosen_line_vbillcode = saleDelivery1Bean.getPobillcode();
                         chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
                         //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
                     }
@@ -323,78 +321,73 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
         for (LoanQuery.DataBean ob : loanBeanList) {
 
             String pobillcode = ob.getPobillcode();
-            String dbilldate = ob.getDbilldate();
-            String num = ob.getNum();
-            String ts = ob.getTs();
-            String dr =ob.getDr();
             //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
-
-            if("0".equals(dr)&& isVbillcodeExist(pobillcode)){
-                continue;
-            }
-            //等于1时
-            if("1".equals(dr) || ("2".equals(dr)&&isVbillcodeExist(pobillcode)))
-            {
-                //操作选择二 通过单号删除
-                //删除三张表
-                db3.beginTransaction();
-                try {
+            switch (Integer.parseInt(ob.getDr())){
+                case 0:
+                    insertDb(ob);
+                    break;
+                case 1:
                     db3.delete("Loan", "pobillcode=?", new String[]{pobillcode});
                     db3.delete("LoanBody", "pobillcode=?", new String[]{pobillcode});
                     db3.delete("LoanScanResult", "pobillcode=?", new String[]{pobillcode});
-                    db3.setTransactionSuccessful();
-                }
-                catch (Exception ex)
-                {
-                    ex.printStackTrace();
-                }
-                finally {
-                    db3.endTransaction();
-                }
+                    break;
+                case 2:
+                    db3.delete("Loan", "pobillcode=?", new String[]{pobillcode});
+                    db3.delete("LoanBody", "pobillcode=?", new String[]{pobillcode});
+                    db3.delete("LoanScanResult", "pobillcode=?", new String[]{pobillcode});
+                    insertDb(ob);
+                    break;
             }
-            if("1".equals(dr)){
-                continue;
-            }
-            List<LoanQuery.DataBean.BodyBean> loanDatabodysList = ob.getBody();
-            //使用 ContentValues 来对要添加的数据进行组装
-            ContentValues values = new ContentValues();
-            for (LoanQuery.DataBean.BodyBean obb : loanDatabodysList) {
-                String materialcode = obb.getMaterialcode();
-                String maccode = obb.getMaccode();
-                String nnum = obb.getNnum();
-                String itempk = obb.getItempk();
-                String cwarecode = obb.getCwarecode();
-                String cwarename = obb.getCwarename();
-                String vemo = obb.getVemo();;
-                String scannum = countScannedQRCode(pobillcode,itempk, materialcode);
-                String orginal_cwarename = existOriginalCwarename(cwarename);
-                //这里应该执行的是插入第二个表的操作
-                ContentValues valuesInner = new ContentValues();
-                valuesInner.put("pobillcode", pobillcode);
-                valuesInner.put("itempk", itempk);
-                valuesInner.put("materialcode", materialcode);
-                valuesInner.put("maccode", maccode);
-                valuesInner.put("nnum", nnum);
-                valuesInner.put("scannum", scannum);
-                valuesInner.put("cwarecode", cwarecode);
-                valuesInner.put("cwarename", cwarename);
-                valuesInner.put("orginal_cwarename", orginal_cwarename);
-                valuesInner.put("vemo", vemo);
-                //N代表尚未上传
-                valuesInner.put("uploadflag", "N");
-                db3.insert("LoanBody", null, valuesInner);
-                valuesInner.clear();
-            }
-                values.put("pobillcode", pobillcode);
-            values.put("dbilldate", dbilldate);
-            values.put("num", num);
-            values.put("ts", ts);
-            values.put("dr", dr);
-            values.put("flag", "N");
-            // 插入第一条数据
-            db3.insert("Loan", null, values);
-            values.clear();
+
+
         }
+    }
+
+    private void insertDb(LoanQuery.DataBean ob) {
+        String pobillcode = ob.getPobillcode();
+        String dbilldate = ob.getDbilldate();
+        String num = ob.getNum();
+        String ts = ob.getTs();
+        String dr =ob.getDr();
+        List<LoanQuery.DataBean.BodyBean> loanDatabodysList = ob.getBody();
+        //使用 ContentValues 来对要添加的数据进行组装
+        ContentValues values = new ContentValues();
+        for (LoanQuery.DataBean.BodyBean obb : loanDatabodysList) {
+            String materialcode = obb.getMaterialcode();
+            String maccode = obb.getMaccode();
+            String nnum = obb.getNnum();
+            String itempk = obb.getItempk();
+            String cwarecode = obb.getCwarecode();
+            String cwarename = obb.getCwarename();
+            String vemo = obb.getVemo();;
+            String scannum = countScannedQRCode(pobillcode,itempk, materialcode);
+            String orginal_cwarename = existOriginalCwarename(cwarename);
+            //这里应该执行的是插入第二个表的操作
+            ContentValues valuesInner = new ContentValues();
+            valuesInner.put("pobillcode", pobillcode);
+            valuesInner.put("itempk", itempk);
+            valuesInner.put("materialcode", materialcode);
+            valuesInner.put("maccode", maccode);
+            valuesInner.put("nnum", nnum);
+            valuesInner.put("scannum", scannum);
+            valuesInner.put("cwarecode", cwarecode);
+            valuesInner.put("cwarename", cwarename);
+            valuesInner.put("orginal_cwarename", orginal_cwarename);
+            valuesInner.put("vemo", vemo);
+            //N代表尚未上传
+            valuesInner.put("uploadflag", "N");
+            db3.insert("LoanBody", null, valuesInner);
+            valuesInner.clear();
+        }
+        values.put("pobillcode", pobillcode);
+        values.put("dbilldate", dbilldate);
+        values.put("num", num);
+        values.put("ts", ts);
+        values.put("dr", dr);
+        values.put("flag", "N");
+        // 插入第一条数据
+        db3.insert("Loan", null, values);
+        values.clear();
     }
 
     private boolean isVbillcodeExist(String pobillcode) {
@@ -690,7 +683,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
 
     public ArrayList<LoanBean> querySaleDelivery() {
         ArrayList<LoanBean> list = new ArrayList<LoanBean>();
-        List<String> list_update = new ArrayList<String>();
+
         Cursor cursor = db3.rawQuery("select pobillcode,dbilldate,dr from Loan where flag=? order by dbilldate desc", new String[]{"N"});
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
@@ -700,10 +693,12 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getString(cursor.getColumnIndex("dr"));
                 list.add(bean);
-            }
 
+            }
+            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),list.get(0).getDbilldate(),LoanBill.this);
             cursor.close();
         }
+
         return list;
     }
     public ArrayList<LoanBean> displayAllSaleDelivery() {

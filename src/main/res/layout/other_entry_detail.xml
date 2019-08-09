@@ -50,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="40dp"
                 android:layout_marginTop="20dp"
-                android:text="扫码入库" />
+                android:text="扫码" />
 
             <Button
                 android:id="@+id/uploadall_other_entry"

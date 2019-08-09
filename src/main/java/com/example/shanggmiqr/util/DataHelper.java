@@ -39,6 +39,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -179,7 +180,7 @@ public class DataHelper {
         //判断cursor中是否存在数据
         while (cursor.moveToNext()) {
             String code = cursor.getString(cursor.getColumnIndex("code"));
-            Log.i("isvalid-->",code+"/"+matrcode);
+
             if (code.equals(matrcode)) {
                 cursor.close();
                 return true;
@@ -254,69 +255,70 @@ public class DataHelper {
                 otherbodyTable="OtherOutgoingBody";
                 break;
         }
-        for (OtherQueryBean.DataBean ob : otherEntryBeanList) {
-           boolean isPobillcodeExist=isPobillcodeExist(db,ob.getPobillcode());
-            if("0".equals(ob.getDr())&& isPobillcodeExist){
-                continue;
-            }
-            //等于1时
-            if("1".equals((ob.getDr()))|| ("2".equals(ob.getDr())&&isPobillcodeExist))
-            {
 
-                db.beginTransaction();
-                try {
+        for (OtherQueryBean.DataBean ob : otherEntryBeanList) {
+            switch (ob.getDr()){
+                case 0:
+                    insertData(ob,db,otherbodyTable,otherTable);
+                    break;
+                case 1:
                     db.delete(otherTable, "pobillcode=?", new String[]{ob.getPobillcode()});
                     db.delete(otherbodyTable, "pobillcode=?", new String[]{ob.getPobillcode()});
-                   // db.delete(otherbodyTable, "pobillcode=?", new String[]{ob.getPobillcode()});
-                   db.setTransactionSuccessful();
-                }
-                catch (Exception ex)
-                {
-                    ex.printStackTrace();
+                    db.delete(otherbodyTable, "pobillcode=?", new String[]{ob.getPobillcode()});
 
-                }
-                finally {
-                    db.endTransaction();
-                }
+                    break;
+                case 2:
+                    db.delete(otherTable, "pobillcode=?", new String[]{ob.getPobillcode()});
+                    db.delete(otherbodyTable, "pobillcode=?", new String[]{ob.getPobillcode()});
+                     db.delete(otherbodyTable, "pobillcode=?", new String[]{ob.getPobillcode()});
+                    insertData(ob,db,otherbodyTable,otherTable);
+                    break;
             }
-            List<OtherQueryBean.DataBean.BodyBean> outGoingDatabodyList = ob.getBody();
-            //使用 ContentValues 来对要添加的数据进行组装
-            ContentValues values = new ContentValues();
-            for (OtherQueryBean.DataBean.BodyBean obb : outGoingDatabodyList) {
-                String materialcode = obb.getMaterialcode();
-                String maccode = obb.getMaccode();
-                int nnum = obb.getNnum();
-                String pch = obb.getPch();
-                String vcooporderbcode_b = obb.getVcooporderbcode_b();
-                int scannum = queryScanResultcount(db,ob.getPobillcode(), materialcode, vcooporderbcode_b,0);
-                //这里应该执行的是插入第二个表的操作
-                ContentValues valuesInner = new ContentValues();
-                valuesInner.put("pobillcode", ob.getPobillcode());
-                valuesInner.put("materialcode", materialcode);
-                valuesInner.put("maccode", maccode);
-                    valuesInner.put("nnum", nnum);
-                valuesInner.put("pch", pch);
-                valuesInner.put("uploadnum", "0");
-                valuesInner.put("scannum", scannum);
-                valuesInner.put("uploadflag", "N");
-                valuesInner.put("issn",obb.getIssn());
-                valuesInner.put("vcooporderbcode_b", vcooporderbcode_b);
 
-                db.insert(otherbodyTable, null, valuesInner);
-                valuesInner.clear();
-            }
-            values.put("pobillcode", ob.getPobillcode());
-            values.put("cwarecode",ob.getCwarecode());
-            values.put("cwarename", ob.getCwarename());
-            values.put("dbilldate", ob.getDbilldate());
-            values.put("dr", ob.getDr());
-            values.put("flag", "N");
-            // 插入第一条数据
-            db.insert(otherTable, null, values);
-            values.clear();
+
 
         }
     }
+
+    private static void insertData(OtherQueryBean.DataBean ob,SQLiteDatabase db,String otherbodyTable,String  otherTable) {
+        List<OtherQueryBean.DataBean.BodyBean> outGoingDatabodyList = ob.getBody();
+        //使用 ContentValues 来对要添加的数据进行组装
+        ContentValues values = new ContentValues();
+        for (OtherQueryBean.DataBean.BodyBean obb : outGoingDatabodyList) {
+            String materialcode = obb.getMaterialcode();
+            String maccode = obb.getMaccode();
+            int nnum = obb.getNnum();
+            String pch = obb.getPch();
+            String vcooporderbcode_b = obb.getVcooporderbcode_b();
+            int scannum = queryScanResultcount(db,ob.getPobillcode(), materialcode, vcooporderbcode_b,0);
+            //这里应该执行的是插入第二个表的操作
+            ContentValues valuesInner = new ContentValues();
+            valuesInner.put("pobillcode", ob.getPobillcode());
+            valuesInner.put("materialcode", materialcode);
+            valuesInner.put("maccode", maccode);
+            valuesInner.put("nnum", nnum);
+            valuesInner.put("pch", pch);
+            valuesInner.put("uploadnum", "0");
+            valuesInner.put("scannum", scannum);
+            valuesInner.put("uploadflag", "N");
+            valuesInner.put("issn",obb.getIssn());
+            valuesInner.put("vcooporderbcode_b", vcooporderbcode_b);
+
+            db.insert(otherbodyTable, null, valuesInner);
+            valuesInner.clear();
+        }
+        values.put("pobillcode", ob.getPobillcode());
+        values.put("cwarecode",ob.getCwarecode());
+        values.put("cwarename", ob.getCwarename());
+        values.put("dbilldate", ob.getDbilldate());
+        values.put("dr", ob.getDr());
+        values.put("flag", "N");
+        // 插入第一条数据
+        db.insert(otherTable, null, values);
+        values.clear();
+    }
+
+
     public static boolean isPobillcodeExist(SQLiteDatabase db,String pobillcode) {
         Cursor cursor2 = db.rawQuery("select pobillcode from OtherEntry where pobillcode=?", new String[]{pobillcode});
         if (cursor2 != null && cursor2.getCount() > 0) {
@@ -495,6 +497,40 @@ public class DataHelper {
         String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
         return  begintime;
     }
+    public  static  void putLatestdownloadbegintime(int type,String time,Context context){
+        String name=null;
+        switch (type){
+            case 0:
+                name="LatestSaleDeliveryTSInfo";
+                break;
+            case 1:
+                name="LatestOtherEntryTSInfo";
+                break;
+            case 2:
+                name="LatestOtherOutgoingTSInfo";
+                break;
+            case 3:
+                name="LatestProductEntryTSInfo";
+                break;
+            case 4:
+                name="LatestLoanTSInfo";
+                break;
+            case 5:
+                name="LatestAllocateTransferTSInfo";
+                break;
+            case 6:
+                name="LatestPurchaseArrivalTSInfo";
+                break;
+            case 7:
+                name="LatestPurchaseReturnTSInfo";
+                break;
+
+        }
+        SharedPreferences latestDBTimeInfo = context.getSharedPreferences(name, 0);
+        latestDBTimeInfo.edit().putString("latest_download_ts_begintime",time).commit();
+
+
+    }
     public static boolean isWarehouseDBDownloaed(SQLiteDatabase db) {
         Cursor cursor = db.rawQuery("select name from Warehouse",
                 null);
@@ -572,11 +608,10 @@ public class DataHelper {
         String methodName = "sendToWISE";//要调用的方法名称
         String warehousecode=null;
         String current_bisreturn="N";
-        String org=null;
+
         SoapObject request = new SoapObject(namespace, methodName);
-        String dbilldate=null;
-        String num=null;
-        String shunm=null;
+
+        String shunm="0";
         // 设置需调用WebService接口需要传入的两个参数string、string1
         ArrayList<SaleDeliverySendBean.BodyBean> bodylist = new ArrayList<SaleDeliverySendBean.BodyBean>();
         Cursor cursor = null;
@@ -596,7 +631,7 @@ public class DataHelper {
         }
 
 
-        Log.i("vbillcode-->",vbillcode+"/"+type);
+
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
 
@@ -612,6 +647,7 @@ public class DataHelper {
                         bean.materialcode = cursor.getString(cursor.getColumnIndex("materialcode"));
                         warehousecode = cursor.getString(cursor.getColumnIndex("warehouse"));
                         bean.setWarehouse(cursor.getString(cursor.getColumnIndex("warehouse")));
+
                         break;
                     case 7:
                         bean.itempk = cursor.getString(cursor.getColumnIndex("itempk"));
@@ -655,7 +691,10 @@ public class DataHelper {
                             shunm=cursor3.getCount()+"";
                         }
                         cursor3.close();
-
+                   if(type!=0 && shunm.equals("0")){
+                       return  "{\"name\":\"anyType\",\"namespace\":\"http://www.w3.org/2001/XMLSchema\"," +
+                               "\"value\":\"{\\\"errno\\\":\\\"1\\\",\\\"errmsg\\\":\\\"数量不能为空\\\"}\",\"attributes\":[]}";
+                   }
                     bean.setShnum(shunm);
                     bean.sn = snlist;
                     //提交过一次的二次提交时不应该被计数
@@ -684,11 +723,6 @@ public class DataHelper {
         }
         SharedPreferences currentAccount= context.getSharedPreferences("current_account", 0);
         String current_user = currentAccount.getString("current_account","");
-        List<String> stringList=new ArrayList<>();
-        stringList = Arrays.asList(expresscode.split("\\s+"));
-         getUser(context);
-
-
             SaleDeliverySendBean otherOutgoingSend = new SaleDeliverySendBean("APP", "123456",current_user,
                     wlCode,expresscode, warehousecode, current_bisreturn, vbillcode, bodylist);
             otherOutgoingSend.setCwhsmanagercode( currentAccount.getString("user",""));
@@ -723,8 +757,7 @@ public class DataHelper {
 
   //      }
         Log.i("request-->",request.toString());
-        //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
-        //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
+
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
 
         envelope.bodyOut = request;
@@ -737,23 +770,30 @@ public class DataHelper {
         try {
 
             se.call(namespace + "sendToWISE", envelope);
+
+            if(envelope.bodyIn.toString().equals("SoapFault - faultcode: 'soap:Server' faultstring:" +
+                    " 'JSONObject[\"num\"] not found.' faultactor: 'null' detail: org.kxml2.kdom.Node@70668e"))
+            {
+                returnMsg("接口异常");
+            }
+
             Object object = envelope.getResponse();
             saleDeliveryUploadDataResp = new Gson().toJson(object);
+            Log.i("response-->",envelope.bodyIn.toString());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (XmlPullParserException e) {
             e.printStackTrace();
         }
-        // 获取返回的数据
-            // SoapObject object = (SoapObject) envelope.bodyIn;
 
-
-        Log.i("response-->",envelope.bodyIn.toString());
-        // 获取返回的结果
-        // saleDeliveryUploadDataResp = object.getProperty(0).toString();
         return saleDeliveryUploadDataResp;
     }
 
+    public static String returnMsg(String string) {
+
+        return  "{\"name\":\"anyType\",\"namespace\":\"http://www.w3.org/2001/XMLSchema\"," +
+                "\"value\":\"{\\\"errno\\\":\\\"1\\\",\\\"errmsg+"+string+"}\",\"attributes\":[]}";
+    }
 
 
 }

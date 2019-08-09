@@ -1,17 +1,15 @@
 package com.example.shanggmiqr.transaction;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -34,6 +32,7 @@ import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
 import com.google.gson.Gson;
 import com.zyao89.view.zloading.ZLoadingDialog;
+import com.zyao89.view.zloading.Z_TYPE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,9 +66,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
     private String chosen_line_uploadflag;
     private String[] matrcodeList[];
     private Handler saleDeliveryDetailHandler = null;
-    private List<String> upload_cwarename;
-    private String upload_all_cwarename;
-    private String upload_all_cwarehousecode;
+
     //物流公司选择
     private Spinner spinner;
     private Myadapter myadapter;
@@ -80,6 +77,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
     //运单号
     private String expressCode = "";
 
+
     //要上传行号的集合
     private List<String> list;
     //要上传的产品码的集合
@@ -87,7 +85,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
     private List<SaleDeliveryUploadFlagBean> lisitemtall;
     //nnum为正 bisreturn为N 为负则为Y
     private String current_bisreturn = "N";
-    private ZLoadingDialog dialog;
+    private ZLoadingDialog zLoadingDialog;
      PurchaseReturnBodyTableAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,7 +103,15 @@ public class PurchaseReturnDetail extends AppCompatActivity {
         uploadSingleButton = (Button) findViewById(R.id.upload_purchaseReturn);
         saleDeliveryScanButton.setEnabled(false);
         uploadSingleButton.setEnabled(false);
-        dialog = new ZLoadingDialog(PurchaseReturnDetail.this);
+        zLoadingDialog = new ZLoadingDialog(PurchaseReturnDetail.this);
+        zLoadingDialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
+                .setLoadingColor(Color.BLUE)//颜色
+                .setHintText("提交中...")
+                .setCancelable(false)
+                .setCanceledOnTouchOutside(false)
+                .setHintTextSize(16) // 设置字体大小 dp
+                .setHintTextColor(Color.GRAY)  // 设置字体颜色
+                .setDurationTime(0.5); // 设置动画时间百分比 - 0.5倍
         helper4 = new MyDataBaseHelper(PurchaseReturnDetail.this, "ShangmiData", null, 1);
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。
@@ -156,7 +162,6 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                 chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
                 chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
 
-                Toast.makeText(PurchaseReturnDetail.this, chosen_line_matrcode, Toast.LENGTH_LONG).show();
             }
         });
         saleDeliveryScanButton.setOnClickListener(new View.OnClickListener() {
@@ -180,245 +185,14 @@ public class PurchaseReturnDetail extends AppCompatActivity {
         uploadAll_saleDeliveryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                expressCode = expressCodeEditText.getText().toString();
-                if ("".equals(expressCode) || "".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)) {
-                    if("".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)){
-                        chooseLogisticscompany ="";
-                    }
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (Utils.isNetworkConnected(PurchaseReturnDetail.this)) {
-                                try {
-                                    //Y代表已经上传过
-                                    if (iaAlreadyUploadAll()) {
-                                        Message msg = new Message();
-                                        msg.what = 0x12;
-                                        saleDeliveryDetailHandler.sendMessage(msg);
-                                    } else if (isCwarenameSame()) {
-                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R41",db4, current_sale_delivery_vbillcodeRecv,
-                                                PurchaseReturnDetail.this,"",expressCode,getIntent().getIntExtra("type",-1));
-                                        if (!(null == uploadResp)) {
-                                            if (!(null == lisitemtall)) {
-                                                Gson gson = new Gson();
-                                                SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                                Gson gson2 = new Gson();
-                                                SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                                Bundle bundle = new Bundle();
-                                                bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                                Message msg = new Message();
-                                                if (respBeanValue.getErrno().equals("0")) {
-                                                    //19弹出erromsg
-                                                    updateAllItemUploadFlag(lisitemtall);
-                                                    msg.what = 0x15;
-                                                } else {
-                                                    //19弹出erromsg
-                                                    msg.what = 0x19;
-                                                }
-                                                msg.setData(bundle);
-                                                saleDeliveryDetailHandler.sendMessage(msg);
-                                            }
-                                        } else {
-                                            Message msg = new Message();
-                                            msg.what = 0x18;
-                                            saleDeliveryDetailHandler.sendMessage(msg);
-                                        }
-                                    } else {
-                                        Message msg = new Message();
-                                        msg.what = 0x16;
-                                        saleDeliveryDetailHandler.sendMessage(msg);
-                                    }
-
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-
-
-                                }
-                            }
-                        }
-                    }).start();
-                } else {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (Utils.isNetworkConnected(PurchaseReturnDetail.this)) {
-                                try {
-
-                                    //Y代表已经上传过
-                                    if (iaAlreadyUploadAll()) {
-                                        Message msg = new Message();
-                                        msg.what = 0x12;
-                                        saleDeliveryDetailHandler.sendMessage(msg);
-                                    } else if (isCwarenameSame()) {
-                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R41",db4, current_sale_delivery_vbillcodeRecv,
-                                                PurchaseReturnDetail.this,"",expressCode,getIntent().getIntExtra("type",-1));
-                                        if (!(null == uploadResp)) {
-                                            if (!(null == lisitemtall)) {
-                                                Gson gson = new Gson();
-                                                SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                                Gson gson2 = new Gson();
-                                                SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                                Bundle bundle = new Bundle();
-                                                bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                                Message msg = new Message();
-                                                if (respBeanValue.getErrno().equals("0")) {
-                                                    //19弹出erromsg
-                                                    updateAllItemUploadFlag(lisitemtall);
-                                                    msg.what = 0x15;
-                                                } else {
-                                                    //19弹出erromsg
-                                                    msg.what = 0x19;
-                                                }
-                                                msg.setData(bundle);
-                                                saleDeliveryDetailHandler.sendMessage(msg);
-                                            }
-                                        } else {
-                                            Message msg = new Message();
-                                            msg.what = 0x18;
-                                            saleDeliveryDetailHandler.sendMessage(msg);
-                                        }
-                                    } else {
-                                        Message msg = new Message();
-                                        msg.what = 0x16;
-                                        saleDeliveryDetailHandler.sendMessage(msg);
-                                    }
-
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                    return;
-                                }
-                            }
-                        }
-                    }).start();
-                }
+                pushData();
 
             }
         });
         uploadSingleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                expressCode = expressCodeEditText.getText().toString();
-                if ("".equals(expressCode) || "".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)) {
-                    if("".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)){
-                        chooseLogisticscompany ="";
-                    }
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (Utils.isNetworkConnected(PurchaseReturnDetail.this)) {
-                                try {
-                                    //Y代表已经上传过
-                                    if (iaAlreadyUploadSingle(itempk)) {
-                                        Message msg = new Message();
-                                        msg.what = 0x13;
-                                        saleDeliveryDetailHandler.sendMessage(msg);
-                                    } else {
-                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R41",db4, current_sale_delivery_vbillcodeRecv,
-                                                PurchaseReturnDetail.this,"",expressCode,getIntent().getIntExtra("type",-1));
-                                        if (!(null == uploadResp)) {
-                                            if (!(null == listitem)) {
-                                                Gson gson = new Gson();
-                                                SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                                Gson gson2 = new Gson();
-                                                SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                                Bundle bundle = new Bundle();
-                                                bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                                Message msg = new Message();
-                                                if (respBeanValue.getErrno().equals("0")) {
-                                                    //19弹出erromsg
-                                                    updateItemUploadFlag(listitem);
-                                                    msg.what = 0x11;
-                                                } else {
-                                                    //19弹出erromsg
-                                                    msg.what = 0x19;
-                                                }
-                                                msg.setData(bundle);
-                                                saleDeliveryDetailHandler.sendMessage(msg);
-                                            }
-                                        } else {
-                                            Message msg = new Message();
-                                            msg.what = 0x18;
-                                            saleDeliveryDetailHandler.sendMessage(msg);
-                                        }
-                                    }
-
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                    return;
-                                }
-                            }
-                        }
-                    }).start();
-
-
-                }else{
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (Utils.isNetworkConnected(PurchaseReturnDetail.this)) {
-                                try {
-                                    //Y代表已经上传过
-                                    if (iaAlreadyUploadSingle(itempk)) {
-                                        Message msg = new Message();
-                                        msg.what = 0x13;
-                                        saleDeliveryDetailHandler.sendMessage(msg);
-                                    } else {
-                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R41" +
-                                                        "",db4, current_sale_delivery_vbillcodeRecv,
-                                                PurchaseReturnDetail.this,"",expressCode,getIntent().getIntExtra("type",-1));
-                                        if (!(null == uploadResp)) {
-                                            if (!(null == listitem)) {
-                                                Gson gson = new Gson();
-                                                SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                                Gson gson2 = new Gson();
-                                                SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                                Bundle bundle = new Bundle();
-                                                bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                                Message msg = new Message();
-                                                if (respBeanValue.getErrno().equals("0")) {
-                                                    //19弹出erromsg
-                                                    updateItemUploadFlag(listitem);
-                                                    msg.what = 0x11;
-                                                } else {
-                                                    //19弹出erromsg
-                                                    msg.what = 0x19;
-                                                }
-                                                msg.setData(bundle);
-                                                saleDeliveryDetailHandler.sendMessage(msg);
-                                            }
-                                        } else {
-                                            Message msg = new Message();
-                                            msg.what = 0x18;
-                                            saleDeliveryDetailHandler.sendMessage(msg);
-                                        }
-                                    }
-
-                                } catch (Exception e) {
-                                     e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                    return;
-                                }
-                            }
-                        }
-                    }).start();
-                }
+                pushData();
 
             }
         });
@@ -431,7 +205,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                         Toast.makeText(PurchaseReturnDetail.this, "请检查网络连接", Toast.LENGTH_LONG).show();
                         break;
                     case 0x11:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         expressCodeEditText.setText("");
                         spinner.setSelection(logisticscompanies.size() - 1, true);
                         String s = msg.getData().getString("uploadResp");
@@ -459,7 +233,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                         Toast.makeText(PurchaseReturnDetail.this, "请先扫码再进行发货上传操作", Toast.LENGTH_LONG).show();
                         break;
                     case 0x15:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         expressCodeEditText.setText("");
                         spinner.setSelection(logisticscompanies.size() - 1, true);
                         String s2 = msg.getData().getString("uploadResp");
@@ -480,25 +254,25 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                         Toast.makeText(PurchaseReturnDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
                         break;
                     case 0x17:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         String exception111 = msg.getData().getString("Exception111");
                         Toast.makeText(PurchaseReturnDetail.this, exception111, Toast.LENGTH_LONG).show();
                         break;
                     case 0x18:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         Toast.makeText(PurchaseReturnDetail.this, "接口异常", Toast.LENGTH_LONG).show();
                         break;
                     case 0x19:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         String s3 = msg.getData().getString("uploadResp");
                         Toast.makeText(PurchaseReturnDetail.this, s3, Toast.LENGTH_LONG).show();
                         break;
                     case 0x20:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         Toast.makeText(PurchaseReturnDetail.this, "运单号没有填写，首先填写运单号", Toast.LENGTH_LONG).show();
                         break;
                     case 0x21:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         Toast.makeText(PurchaseReturnDetail.this, "物流公司没有选择，首先选择物流公司", Toast.LENGTH_LONG).show();
                         break;
                     default:
@@ -506,6 +280,63 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                 }
             }
         };
+    }
+
+    private void pushData() {
+        zLoadingDialog.show();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (Utils.isNetworkConnected(PurchaseReturnDetail.this)) {
+                    try {
+                        //Y代表已经上传过
+                        if (iaAlreadyUploadSingle(itempk)) {
+                            Message msg = new Message();
+                            msg.what = 0x13;
+                            saleDeliveryDetailHandler.sendMessage(msg);
+                        } else {
+                            String uploadResp = DataHelper.uploadSaleDeliveryVBill("R41",db4, current_sale_delivery_vbillcodeRecv,
+                                    PurchaseReturnDetail.this,"",expressCode,getIntent().getIntExtra("type",-1));
+                            if (!(null == uploadResp)) {
+                                if (!(null == listitem)) {
+                                    Gson gson = new Gson();
+                                    SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
+                                    Gson gson2 = new Gson();
+                                    SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
+                                    Bundle bundle = new Bundle();
+                                    bundle.putString("uploadResp", respBeanValue.getErrmsg());
+                                    Message msg = new Message();
+                                    if (respBeanValue.getErrno().equals("0")) {
+                                        //19弹出erromsg
+                                        updateItemUploadFlag(listitem);
+                                        msg.what = 0x11;
+                                    } else {
+                                        //19弹出erromsg
+                                        msg.what = 0x19;
+                                    }
+                                    msg.setData(bundle);
+                                    saleDeliveryDetailHandler.sendMessage(msg);
+                                }
+                            } else {
+                                Message msg = new Message();
+                                msg.what = 0x18;
+                                saleDeliveryDetailHandler.sendMessage(msg);
+                            }
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("Exception111", e.toString());
+                        Message msg = new Message();
+                        msg.what = 0x17;
+                        msg.setData(bundle);
+                        saleDeliveryDetailHandler.sendMessage(msg);
+                        return;
+                    }
+                }
+            }
+        }).start();
     }
 
     private void myadapter() {
@@ -586,26 +417,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
     }
 
     private boolean isCwarenameSame() {
-//        Cursor cursor3 = db4.rawQuery("select cwarename from SaleDeliveryBody where vbillcode=? ",
-//                new String[]{current_sale_delivery_vbillcodeRecv});
-//        upload_cwarename = new ArrayList<String>();
-//        HashSet<String> hashSet = new HashSet<String>();
-//        if (cursor3 != null && cursor3.getCount() > 0) {
-//            while (cursor3.moveToNext()) {
-//                upload_cwarename.add(cursor3.getString(cursor3.getColumnIndex("cwarename")));
-//            }
-//            cursor3.close();
-//        }
-//        for (int i = 0; i < upload_cwarename.size(); i++) {
-//            hashSet.add(upload_cwarename.get(i).toString());
-//        }
-//        if (upload_cwarename.size() == 1) {
-//            return true;
-//        } else if (hashSet.size() == upload_cwarename.size()) {
-//            return false;
-//        } else {
-//            return true;
-//        }
+
         return  true;
     }
 

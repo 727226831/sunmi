@@ -233,11 +233,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                                         msg.what = 0x11;
                                         allocateTransferHandler.sendMessage(msg);
                                     }
-                                    String currentTs = Utils.getCurrentDateTimeNew();
-                                    SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestAllocateTransferTSInfo", 0);
-                                    SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                                    editor5.putString("latest_download_ts_begintime", currentTs);
-                                    editor5.commit();
+
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -290,8 +286,9 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         adapter.select(position);
-                        SaleDeliveryBean saleDelivery1Bean = (SaleDeliveryBean) adapter.getItem(position);
-                        chosen_line_vbillcode = saleDelivery1Bean.getVbillcode();
+
+                        AllocateTransferBean saleDelivery1Bean = listAllPostition.get(position);
+                        chosen_line_vbillcode = saleDelivery1Bean.getBillno();
                         chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
                         //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
                     }
@@ -325,88 +322,86 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
         for (AllocateTransferQuery.DataBean ob : saleDeliveryBeanList) {
 
             String billno = ob.getBillno();
-            String dbilldate = ob.getDbilldate();
             String dr = ob.getDr();
-            String ts = ob.getTs();
-            String num = ob.getNum();
-            String cunitcode = ob.getCunitcode();
-            String runitcode = ob.getRunitcode();
-            String org = ob.getOrg();
-            String headpk =ob.getHeadpk();
-            //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
 
-            if("0".equals(dr)&& isBillcodeExist(billno)){
-                continue;
-            }
-            //等于1时
-            if("1".equals(dr) || ("2".equals(dr)&&isBillcodeExist(billno)))
-            {
-                //操作选择二 通过单号删除
-                //删除三张表
-                db3.beginTransaction();
-                try {
+            //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
+            switch (Integer.parseInt(ob.getDr())){
+                case 0:
+                    insertDb(ob);
+                    break;
+                case 1:
                     db3.delete("AllocateTransfer", "billno=?", new String[]{billno});
                     db3.delete("AllocateTransferBody", "billno=?", new String[]{billno});
                     db3.delete("AllocateTransferScanResult", "billno=?", new String[]{billno});
-                    db3.setTransactionSuccessful();
-                }
-                catch (Exception ex)
-                {
-                    ex.printStackTrace();
-                }
-                finally {
-                    db3.endTransaction();
-                }
+                    break;
+                case 2:
+                    db3.delete("AllocateTransfer", "billno=?", new String[]{billno});
+                    db3.delete("AllocateTransferBody", "billno=?", new String[]{billno});
+                    db3.delete("AllocateTransferScanResult", "billno=?", new String[]{billno});
+                    insertDb(ob);
+                    break;
             }
-            if("1".equals(dr)){
-                continue;
-            }
-            List<AllocateTransferQuery.DataBean.BodyBean> saleDeliveryDatabodysList = ob.getBody();
-            //使用 ContentValues 来对要添加的数据进行组装
-            ContentValues values = new ContentValues();
-            for (AllocateTransferQuery.DataBean.BodyBean obb : saleDeliveryDatabodysList) {
-                String itempk = obb.getItempk();
-                String address = obb.getAddress();
-                String materialcode = obb.getMaterialcode();
-                String materialclasscode = obb.getMaterialclasscode();
-                String nnum = obb.getNnum();
-                String rwarehousecode = obb.getRwarehousecode();
-                String cwarehousecode = obb.getCwarehousecode();
-                String scannum = countScannedQRCode(billno, materialcode,itempk);
-                //这里应该执行的是插入第二个表的操作
-                ContentValues valuesInner = new ContentValues();
-                valuesInner.put("billno", billno);
-                valuesInner.put("headpk",headpk);
-                valuesInner.put("itempk", itempk);
-                valuesInner.put("address", address);
-                valuesInner.put("materialcode", materialcode);
-                valuesInner.put("materialclasscode", materialclasscode);
-                valuesInner.put("nnum", nnum);
-                valuesInner.put("rwarehousecode", rwarehousecode);
-                valuesInner.put("cwarehousecode", cwarehousecode);
-                valuesInner.put("scannum", scannum);
-                valuesInner.put("issn",obb.getIssn());
-                valuesInner.put("maccode",obb.getMaccode());
 
-                //N代表尚未上传
-                valuesInner.put("uploadflag", "N");
-                db3.insert("AllocateTransferBody", null, valuesInner);
-                valuesInner.clear();
-            }
-            values.put("billno", billno);
-            values.put("dbilldate", dbilldate);
-            values.put("dr", dr);
-            values.put("cunitcode", cunitcode);
-            values.put("runitcode", runitcode);
-            values.put("org", org);
-            values.put("ts", ts);
-            values.put("num", num);
-            values.put("headpk",headpk);
-            values.put("flag", "N");
-            // 插入第一条数据
-            db3.insert("AllocateTransfer", null, values);
-            values.clear();
+
+
         }
+    }
+
+    private void insertDb(AllocateTransferQuery.DataBean ob) {
+        String billno = ob.getBillno();
+        String dbilldate = ob.getDbilldate();
+        String dr = ob.getDr();
+        String ts = ob.getTs();
+        String num = ob.getNum();
+        String cunitcode = ob.getCunitcode();
+        String runitcode = ob.getRunitcode();
+        String org = ob.getOrg();
+        String headpk =ob.getHeadpk();
+        List<AllocateTransferQuery.DataBean.BodyBean> saleDeliveryDatabodysList = ob.getBody();
+        //使用 ContentValues 来对要添加的数据进行组装
+        ContentValues values = new ContentValues();
+        for (AllocateTransferQuery.DataBean.BodyBean obb : saleDeliveryDatabodysList) {
+            String itempk = obb.getItempk();
+            String address = obb.getAddress();
+            String materialcode = obb.getMaterialcode();
+            String materialclasscode = obb.getMaterialclasscode();
+            String nnum = obb.getNnum();
+            String rwarehousecode = obb.getRwarehousecode();
+            String cwarehousecode = obb.getCwarehousecode();
+            String scannum = countScannedQRCode(billno, materialcode,itempk);
+            //这里应该执行的是插入第二个表的操作
+            ContentValues valuesInner = new ContentValues();
+            valuesInner.put("billno", billno);
+            valuesInner.put("headpk",headpk);
+            valuesInner.put("itempk", itempk);
+            valuesInner.put("address", address);
+            valuesInner.put("materialcode", materialcode);
+            valuesInner.put("materialclasscode", materialclasscode);
+            valuesInner.put("nnum", nnum);
+            valuesInner.put("rwarehousecode", rwarehousecode);
+            valuesInner.put("cwarehousecode", cwarehousecode);
+            valuesInner.put("scannum", scannum);
+            valuesInner.put("issn",obb.getIssn());
+            valuesInner.put("maccode",obb.getMaccode());
+
+            //N代表尚未上传
+            valuesInner.put("uploadflag", "N");
+            db3.insert("AllocateTransferBody", null, valuesInner);
+            valuesInner.clear();
+        }
+        values.put("billno", billno);
+        values.put("dbilldate", dbilldate);
+        values.put("dr", dr);
+        values.put("cunitcode", cunitcode);
+        values.put("runitcode", runitcode);
+        values.put("org", org);
+        values.put("ts", ts);
+        values.put("num", num);
+        values.put("headpk",headpk);
+        values.put("flag", "N");
+        // 插入第一条数据
+        db3.insert("AllocateTransfer", null, values);
+        values.clear();
     }
 
     private boolean isBillcodeExist(String billno) {
@@ -607,10 +602,12 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
                 list.add(bean);
-            }
 
+            }
+            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),list.get(0).getDbilldate(),AllocateTransfer.this);
             cursor.close();
         }
+
         return list;
     }
     public ArrayList<AllocateTransferBean> displayAllProductEntry() {

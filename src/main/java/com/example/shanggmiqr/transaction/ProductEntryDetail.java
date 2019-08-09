@@ -120,6 +120,7 @@ public class ProductEntryDetail extends AppCompatActivity {
 
         adapter = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
+        adapter.select(0);
         tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -135,10 +136,10 @@ public class ProductEntryDetail extends AppCompatActivity {
                 chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
                 chosen_line_ysnum = local_saleDeliveryBodyBean.getYsnum();
                 chosen_line_materialcode = local_saleDeliveryBodyBean.getMaterialcode();
-                Toast.makeText(ProductEntryDetail.this, chosen_line_materialcode, Toast.LENGTH_LONG).show();
-                Log.i("maccode-->",maccode);
+
             }
         });
+
         saleDeliveryScanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -151,12 +152,17 @@ public class ProductEntryDetail extends AppCompatActivity {
                 intent.putExtra("current_uploadflag_qrRecv", chosen_line_uploadflag);
                 intent.putExtra("current_vbillcode_qrRecv", current_sale_delivery_vbillcodeRecv);
                 intent.putExtra("maccode",maccode);
+
                 startActivity(intent);
             }
         });
         uploadAll_saleDeliveryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(Integer.parseInt(chosen_line_nnum)!=Integer.parseInt(chosen_line_ysnum)-Integer.parseInt(chosen_line_scannum)){
+                    Toast.makeText(ProductEntryDetail.this, "数量不正确", Toast.LENGTH_LONG).show();
+                    return;
+                }
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -227,77 +233,7 @@ public class ProductEntryDetail extends AppCompatActivity {
 
             }
         });
-        uploadSingleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (Utils.isNetworkConnected(ProductEntryDetail.this)) {
-                                try {
-                                    //Y代表已经上传过
-                                    if (iaAlreadyUploadSingle(chosen_line_itempk)) {
-                                        Message msg = new Message();
-                                        msg.what = 0x13;
-                                        productEntryDetailHandler.sendMessage(msg);
-                                    } else {
-                                        String uploadResp = uploadSaleDeliveryVBill("R36", list);
-                                        if (!(null == uploadResp)) {
-                                            if (!(null == listitem)) {
-                                                Gson gson = new Gson();
-                                                SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                                Gson gson2 = new Gson();
-                                                SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                                Bundle bundle = new Bundle();
-                                                bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                                Message msg = new Message();
-                                                if(!respBeanValue.toString().isEmpty()){
-                                                    dialog.dismiss();
-                                                }
-//                                                if (respBeanValue.getErrno().equals("0")) {
-//                                                    //19弹出erromsg
-//                                                    updateItemUploadFlag(listitem);
-//                                                    msg.what = 0x11;
-//                                                } else {
-//                                                    //19弹出erromsg
-//                                                    msg.what = 0x19;
-//                                                }
-                                                msg.setData(bundle);
-                                                productEntryDetailHandler.sendMessage(msg);
-                                            }
-                                        } else {
-                                            Message msg = new Message();
-                                            msg.what = 0x18;
-                                            productEntryDetailHandler.sendMessage(msg);
-                                        }
-                                    }
 
-                                } catch (IOException e) {
-                                    // e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    productEntryDetailHandler.sendMessage(msg);
-                                    return;
-                                } catch (XmlPullParserException e) {
-                                    // e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    productEntryDetailHandler.sendMessage(msg);
-                                    return;
-                                }
-                            }
-                        }
-                    }).start();
-
-
-            }
-        });
         productEntryDetailHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -398,19 +334,7 @@ public class ProductEntryDetail extends AppCompatActivity {
         }
     }
 
-    private List<String> querylogisticscompanies() {
-        List<String> cars = new ArrayList<>();
-        Cursor cursornew = db4.rawQuery("select name from LogisticsCompany",
-                null);
-        if (cursornew != null && cursornew.getCount() > 0) {
-            while (cursornew.moveToNext()) {
-                String name = cursornew.getString(cursornew.getColumnIndex("name"));
-                cars.add(name);
-            }
-            cursornew.close();
-        }
-        return cars;
-    }
+
 
     private boolean isAllItemUpload() {
         Cursor cursor00 = db4.rawQuery("select itempk from ProductEntryBody where billcode=? and uploadflag=?",
@@ -438,6 +362,7 @@ public class ProductEntryDetail extends AppCompatActivity {
         for (String send : listitem) {
             db4.execSQL("update ProductEntryScanResult set itemuploadflag=? where billcode=? and itempk=? and materialcode=? and prodcutcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_itempk, chosen_line_materialcode, send});
         }
+
     }
 
     //扫描上传的prodcutcode更新状态
@@ -446,7 +371,8 @@ public class ProductEntryDetail extends AppCompatActivity {
             String curr_vbillcode = sdu.getBillcode();
             String curr_Vcooporderbcode_b = sdu.getItempk();
             String curr_Prodcutcode = sdu.getProdcutcode();
-            db4.execSQL("update ProductEntryScanResult set itemuploadflag=? where billcode=? and itempk=? and prodcutcode=?", new String[]{"Y", curr_vbillcode, curr_Vcooporderbcode_b, curr_Prodcutcode});
+            db4.execSQL("update ProductEntryScanResult set itemuploadflag=? where billcode=? and itempk=? and prodcutcode=?",
+                    new String[]{"Y", curr_vbillcode, curr_Vcooporderbcode_b, curr_Prodcutcode});
         }
     }
 
@@ -554,31 +480,9 @@ public class ProductEntryDetail extends AppCompatActivity {
     }
 
     private void updateAllUploadFlag() {
-        Cursor cursor31 = db4.rawQuery("select itempk from ProductEntryScanResult where billcode=?",
-                new String[]{current_sale_delivery_vbillcodeRecv});
-        if (cursor31 != null && cursor31.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor31.moveToNext()) {
-                Cursor cursor3 = db4.rawQuery("select prodcutcode,itemuploadflag from ProductEntryScanResult where billcode=? and itempk=? and itemuploadflag=?",
-                        new String[]{current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("itempk")), "Y"});
-                Cursor cursor32 = db4.rawQuery("select nnum,materialcode from ProductEntryBody where billcode=? and itempk=?",
-                        new String[]{current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("itempk"))});
-                if (cursor3 != null && cursor3.getCount() > 0 && cursor32 != null && cursor32.getCount() > 0) {
-                    while (cursor32.moveToNext()) {
-                        String nnum = cursor32.getString(cursor32.getColumnIndex("nnum"));
-                        String matrcode = cursor32.getString(cursor32.getColumnIndex("materialcode"));
-                        if (cursor3.getCount() == Math.abs(Integer.parseInt(nnum))) {
-                            db4.execSQL("update ProductEntryBody set uploadflag=? where billcode=? and itempk=? and materialcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("itempk")), matrcode});
-                        } else if (cursor3.getCount() < Math.abs(Integer.parseInt(nnum))) {
-                            db4.execSQL("update ProductEntryBody set uploadflag=? where billcode=? and itempk=? and materialcode=?", new String[]{"PY", current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("itempk")), matrcode});
-                        }
-                        cursor3.close();
-                        cursor32.close();
-                    }
-                }
-            }
-            cursor31.close();
-        }
+        db4.execSQL("update ProductEntryBody set uploadflag=? and nnum=? and scannum=? where billcode=? and itempk=? and materialcode=?",
+                new String[]{"Y",lisitemtall.size()+"",lisitemtall.size()+"", current_sale_delivery_vbillcodeRecv, chosen_line_itempk,chosen_line_materialcode});
+
     }
 
     private String uploadSaleDeliveryVBill(String workcode, List<String> list) throws IOException, XmlPullParserException {
@@ -664,7 +568,7 @@ public class ProductEntryDetail extends AppCompatActivity {
         String saleDeliveryUploadDataResp = null;
         if (upload_num == 0) {
         } else {
-            HttpTransportSE se = new HttpTransportSE(WSDL_URI, 60000);
+
             //  se.call(null, envelope);//调用 version1.2
             //version1.1 需要如下soapaction
             runOnUiThread(new Runnable() {
@@ -682,15 +586,16 @@ public class ProductEntryDetail extends AppCompatActivity {
                             .show();
                 }
             });
-            se.call(namespace + "sendToWISE", envelope);
-            // 获取返回的数据
-            // SoapObject object = (SoapObject) envelope.bodyIn;
-            Object object = envelope.getResponse();
-            saleDeliveryUploadDataResp = new Gson().toJson(object);
+
         }
-        // 获取返回的结果
-        // saleDeliveryUploadDataResp = object.getProperty(0).toString();
-        Log.i("response-->",envelope.bodyIn.toString());
+
+        HttpTransportSE se = new HttpTransportSE(WSDL_URI, 60000);
+        se.call(namespace + "sendToWISE", envelope);
+        // 获取返回的数据
+        // SoapObject object = (SoapObject) envelope.bodyIn;
+        Object object = envelope.getResponse();
+        saleDeliveryUploadDataResp = new Gson().toJson(object);
+        Log.i("response-->",saleDeliveryUploadDataResp);
         return saleDeliveryUploadDataResp;
     }
 

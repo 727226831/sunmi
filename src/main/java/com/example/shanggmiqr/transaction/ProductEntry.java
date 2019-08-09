@@ -237,11 +237,7 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
                                         msg.what = 0x11;
                                         productEntryHandler.sendMessage(msg);
                                     }
-                                    String currentTs = Utils.getCurrentDateTimeNew();
-                                    SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestProductEntryTSInfo", 0);
-                                    SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                                    editor5.putString("latest_download_ts_begintime", currentTs);
-                                    editor5.commit();
+
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -288,8 +284,8 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         adapter.select(position);
-                        SaleDeliveryBean saleDelivery1Bean = (SaleDeliveryBean) adapter.getItem(position);
-                        chosen_line_vbillcode = saleDelivery1Bean.getVbillcode();
+                        ProductEntryBean saleDelivery1Bean=listAllPostition.get(position);
+                        chosen_line_vbillcode = saleDelivery1Bean.getBillcode();
                         chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
                         //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
                     }
@@ -323,79 +319,76 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
         for (ProductEntryQuery.DataBean ob : saleDeliveryBeanList) {
             Log.i("bean-->",new Gson().toJson(ob));
             String billcode = ob.getBillcode();
-            String dbilldate = ob.getDbilldate();
-            String dr = ob.getDr();
-            String ts = ob.getTs();
-            String cwarecode = ob.getCwarecode();
-            String cwarename = ob.getCwarename();
-            String org = ob.getOrg();
-            String totalnum = ob.getTotalnum();
-            String headpk = ob.getHeadpk();
-            //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
 
-            if("0".equals(dr)&& isBillcodeExist(billcode)){
-                continue;
-            }
-            //等于1时
-            if("1".equals(dr) || ("2".equals(dr)&&isBillcodeExist(billcode)))
-            {
-                //操作选择二 通过单号删除
-                //删除三张表
-                db3.beginTransaction();
-                try {
+
+            //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
+            switch (Integer.parseInt(ob.getDr())){
+                case 0:
+                    insertDb(ob);
+                    break;
+                case 1:
                     db3.delete("ProductEntry", "billcode=?", new String[]{billcode});
                     db3.delete("ProductEntryBody", "billcode=?", new String[]{billcode});
                     db3.delete("ProductEntryScanResult", "billcode=?", new String[]{billcode});
-                    db3.setTransactionSuccessful();
-                }
-                catch (Exception ex)
-                {
-                    ex.printStackTrace();
-                }
-                finally {
-                    db3.endTransaction();
-                }
+                    break;
+                case 2:
+                    db3.delete("ProductEntry", "billcode=?", new String[]{billcode});
+                    db3.delete("ProductEntryBody", "billcode=?", new String[]{billcode});
+                    db3.delete("ProductEntryScanResult", "billcode=?", new String[]{billcode});
+                    insertDb(ob);
+                    break;
             }
-            if("1".equals(dr)){
-                continue;
-            }
-            List<ProductEntryQuery.DataBean.BodyBean> saleDeliveryDatabodysList = ob.getBody();
-            //使用 ContentValues 来对要添加的数据进行组装
-            ContentValues values = new ContentValues();
-            for (ProductEntryQuery.DataBean.BodyBean obb : saleDeliveryDatabodysList) {
-                String itempk = obb.getItempk();
-                String materialcode = obb.getMaterialcode();
-                String nnum = obb.getNnum();
-                String ysnum = obb.getYsnum();
-                String scannum = countScannedQRCode(billcode, materialcode,itempk);
-                //这里应该执行的是插入第二个表的操作
-                ContentValues valuesInner = new ContentValues();
-                valuesInner.put("billcode", billcode);
-                valuesInner.put("itempk", itempk);
-                valuesInner.put("materialcode", materialcode);
-                valuesInner.put("nnum", nnum);
-                valuesInner.put("ysnum", ysnum);
-                valuesInner.put("scannum", scannum);
-                valuesInner.put("maccode",obb.getMaccode());
-                //N代表尚未上传
-                valuesInner.put("uploadflag", "N");
-                db3.insert("ProductEntryBody", null, valuesInner);
-                valuesInner.clear();
-            }
-            values.put("billcode", billcode);
-            values.put("dbilldate", dbilldate);
-            values.put("dr", dr);
-            values.put("ts", ts);
-            values.put("cwarecode", cwarecode);
-            values.put("cwarename", cwarename);
-            values.put("org", org);
-            values.put("totalnum", totalnum);
-            values.put("headpk", headpk);
-            values.put("flag", "N");
-            // 插入第一条数据
-            db3.insert("ProductEntry", null, values);
-            values.clear();
+
+
         }
+    }
+
+    private void insertDb(ProductEntryQuery.DataBean ob) {
+        String billcode = ob.getBillcode();
+        String dbilldate = ob.getDbilldate();
+        String dr = ob.getDr();
+        String ts = ob.getTs();
+        String cwarecode = ob.getCwarecode();
+        String cwarename = ob.getCwarename();
+        String org = ob.getOrg();
+        String totalnum = ob.getTotalnum();
+        String headpk = ob.getHeadpk();
+        List<ProductEntryQuery.DataBean.BodyBean> saleDeliveryDatabodysList = ob.getBody();
+        //使用 ContentValues 来对要添加的数据进行组装
+        ContentValues values = new ContentValues();
+        for (ProductEntryQuery.DataBean.BodyBean obb : saleDeliveryDatabodysList) {
+            String itempk = obb.getItempk();
+            String materialcode = obb.getMaterialcode();
+            String nnum = obb.getNnum();
+            String ysnum = obb.getYsnum();
+            String scannum = countScannedQRCode(billcode, materialcode,itempk);
+            //这里应该执行的是插入第二个表的操作
+            ContentValues valuesInner = new ContentValues();
+            valuesInner.put("billcode", billcode);
+            valuesInner.put("itempk", itempk);
+            valuesInner.put("materialcode", materialcode);
+            valuesInner.put("nnum", nnum);
+            valuesInner.put("ysnum", ysnum);
+            valuesInner.put("scannum", scannum);
+            valuesInner.put("maccode",obb.getMaccode());
+            //N代表尚未上传
+            valuesInner.put("uploadflag", "N");
+            db3.insert("ProductEntryBody", null, valuesInner);
+            valuesInner.clear();
+        }
+        values.put("billcode", billcode);
+        values.put("dbilldate", dbilldate);
+        values.put("dr", dr);
+        values.put("ts", ts);
+        values.put("cwarecode", cwarecode);
+        values.put("cwarename", cwarename);
+        values.put("org", org);
+        values.put("totalnum", totalnum);
+        values.put("headpk", headpk);
+        values.put("flag", "N");
+        // 插入第一条数据
+        db3.insert("ProductEntry", null, values);
+        values.clear();
     }
 
     private boolean isBillcodeExist(String billcode) {
@@ -676,7 +669,10 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
             }
 
             cursor.close();
+            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),list.get(0).getDbilldate(),ProductEntry.this);
         }
+
+
         return list;
     }
     public ArrayList<ProductEntryBean> displayAllProductEntry() {

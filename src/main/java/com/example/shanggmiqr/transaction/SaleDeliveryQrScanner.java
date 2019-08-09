@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -32,6 +33,8 @@ import com.example.shanggmiqr.adapter.SaleDeliveryScannerAdapter;
 import com.example.shanggmiqr.bean.SaleDeliveryScanResultBean;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
+import com.zyao89.view.zloading.ZLoadingDialog;
+import com.zyao89.view.zloading.Z_TYPE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,6 +76,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
     private LinearLayout linearLayoutSN;
     private EditText editTextSN;
     boolean isSN;
+    ZLoadingDialog zLoadingDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,6 +152,15 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
         spinner = findViewById(R.id.saledelivery_spinner_scanner_text);
         myadapter();
         List<SaleDeliveryScanResultBean> list = showScannedQR();
+        zLoadingDialog= new ZLoadingDialog(SaleDeliveryQrScanner.this);
+        zLoadingDialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
+                .setLoadingColor(Color.BLUE)//颜色
+                .setHintText("正在连接...")
+                .setCancelable(false)
+                .setCanceledOnTouchOutside(false)
+                .setHintTextSize(16) // 设置字体大小 dp
+                .setHintTextColor(Color.GRAY)  // 设置字体颜色
+                .setDurationTime(0.5); // 设置动画时间百分比 - 0.5倍
 
         isSN=isSN();
 
@@ -173,9 +186,10 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                         Toast.makeText(SaleDeliveryQrScanner.this, "不能大于指定数量", Toast.LENGTH_LONG).show();
                         return;
                     }
-                    for (int i = 0; i <Integer.parseInt(editTextSN.getText().toString()) ; i++) {
-                        insertQrDBForSaleDelivery("");
-                    }
+                    zLoadingDialog.show();
+                    insertQrDBForSaleDelivery("");
+                  //  zLoadingDialog.dismiss();
+
 
 
                 }
@@ -201,6 +215,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                         Toast.makeText(SaleDeliveryQrScanner.this, "用户数据下载成功", Toast.LENGTH_LONG).show();
                         break;
                     case 0x13:
+                        zLoadingDialog.dismiss();
                          boxCodeEditText.requestFocus();
                         List<SaleDeliveryScanResultBean> list = showScannedQR();
                         SaleDeliveryScannerAdapter adapter = new SaleDeliveryScannerAdapter(SaleDeliveryQrScanner.this, list, mListener2);
@@ -375,6 +390,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
             }
 
+
         }
     }
 
@@ -481,8 +497,14 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                             values.put("xlh", "");
                         }
                         // 插入第一条数据
+                        if(productcode.equals("")){
+                            for (int i = 0; i <Integer.parseInt(editTextSN.getText().toString()) ; i++) {
+                                db5.insert("SaleDeliveryScanResult", null, values);
+                            }
+                        }else {
+                            db5.insert("SaleDeliveryScanResult", null, values);
+                        }
 
-                        db5.insert("SaleDeliveryScanResult", null, values);
                         values.clear();
                         Message msg = new Message();
                         msg.what = 0x13;
@@ -525,7 +547,9 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
         public void myOnClick(int position, View v) {
             List<SaleDeliveryScanResultBean> listDel = showScannedQR();
             if (!isAlreadyUpload(listDel.get(position).getProdcutcode())) {
-                db5.execSQL("delete from SaleDeliveryScanResult where vbillcode=? and prodcutcode=? and vcooporderbcode_b=?", new Object[]{current_vbillcode_qrRecv, listDel.get(position).getProdcutcode(), current_vcooporderbcode_b_qrRecv});
+                db5.execSQL("delete from SaleDeliveryScanResult where vbillcode=? and prodcutcode=?" +
+                        " and vcooporderbcode_b=?", new Object[]{current_vbillcode_qrRecv, listDel.get(position).getProdcutcode(),
+                        current_vcooporderbcode_b_qrRecv});
                 count = countSum();
 
                 DataHelper.updateScannum(db5,count,current_vbillcode_qrRecv, current_vcooporderbcode_b_qrRecv,getIntent().getIntExtra("type",-1));

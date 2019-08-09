@@ -1,127 +1,160 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.weiytjiang.shangmiqr">
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
     <application
-        android:networkSecurityConfig="@xml/network_security_config"
         android:name="com.example.shanggmiqr.util.App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.example.shanggmiqr.MainActivity"
-            android:screenOrientation="portrait"
-            >
+        <activity android:name="com.example.shanggmiqr.RepairActivity"></activity>
+        <activity
+            android:name="com.example.shanggmiqr.MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.shanggmiqr.TopMenu"
-            android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.DataManage"
+        <activity
+            android:name="com.example.shanggmiqr.TopMenu"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.DataManage"
             android:label="基础数据管理"
-            android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.SaleDelivery"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.SaleDelivery"
             android:label="销售发货"
-            android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.ProductEntry"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.ProductEntry"
             android:label="产成品入库"
-            android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.AllocateTransfer"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.AllocateTransfer"
             android:label="调拨出库"
-            android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.PurchaseReturn"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.PurchaseReturn"
             android:label="采购退货"
-            android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.PurchaseReturnDetail"
-            android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.AllocateTransferDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.PurchaseReturnDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.AllocateTransferDetail"
             android:label="调拨出库明细"
-            android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.LoanBill"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.LoanBill"
             android:label="借出单"
-            android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.OtherEntry"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.OtherEntry"
             android:label="其他入库"
-            android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.PurchaseArrival"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.PurchaseArrival"
             android:label="采购到货"
-            android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.OtherOutgoingDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.OtherOutgoingDetail"
             android:label="其他出库明细"
-            android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.OtherEntryDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.OtherEntryDetail"
             android:label="其他入库明细"
-            android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.OtherEntryQRDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.OtherEntryQRDetail"
             android:label="入库条码明细"
-            android:screenOrientation="portrait" ></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.UserDBDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.UserDBDetail"
             android:label="用户档案"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.WarhouseDBDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.WarhouseDBDetail"
             android:label="仓库档案"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.CustomerDBDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.CustomerDBDetail"
             android:label="客户档案"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.MaterialDBDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.MaterialDBDetail"
             android:label="物料档案"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.SupplierDBDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.SupplierDBDetail"
             android:label="供应商档案"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.LogisticsCompanyDBDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.LogisticsCompanyDBDetail"
             android:label="物料公司档案"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.OtherEntryQrScanner"
-            android:label="入库扫描"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.SaleDeliveryDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.SaleDeliveryDetail"
             android:label="发货单明细"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.LoanDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.LoanDetail"
             android:label="借出单明细"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.LoanQRDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.LoanQRDetail"
             android:label="借出单条码明细"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.SaleDeliveryQRDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.SaleDeliveryQRDetail"
             android:label="发货单条码明细"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.ProductEntryDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.ProductEntryDetail"
             android:label="产成品入库单明细"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.ProductEntryQRDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.ProductEntryQRDetail"
             android:label="产成品入库单条码明细"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.LoanQrScanner"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.LoanQrScanner"
             android:label="借出单扫描"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.ProductEntryQrScanner"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.ProductEntryQrScanner"
             android:label="产成品入库扫描"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.AllocateTransferQRDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.AllocateTransferQRDetail"
             android:label="调拨出库单条码明细"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.AllocateTransferQrScanner"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.AllocateTransferQrScanner"
             android:label="调拨出库单扫描"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.SaleDeliveryQrScanner"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.SaleDeliveryQrScanner"
             android:label="扫码出库"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.transaction.QrcodeRuleDBDetail"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.shanggmiqr.transaction.QrcodeRuleDBDetail"
             android:label="条码档案"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name="com.example.shanggmiqr.BusinessOperation"/>
+            android:screenOrientation="portrait" />
+        <activity android:name="com.example.shanggmiqr.BusinessOperation" />
     </application>
 
 </manifest>

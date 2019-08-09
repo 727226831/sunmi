@@ -72,7 +72,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
     private String chosen_line_nnum;
     private String chosen_line_itempk;
     private String chosen_line_materialcode;
-    private String chosen_line_scannum;
+    private String chosen_line_scannum="0";
     private String chosen_line_uploadflag;
     private String chosen_line_address;
     private String chosen_line_materialclasscode;
@@ -97,9 +97,10 @@ public class AllocateTransferDetail extends AppCompatActivity {
     private List<String> listitem;
     private List<AllocateTransferUploadFlagBean> lisitemtall;
 
-    private ZLoadingDialog dialog;
+
     private String maccode;
      AllocateTransferBodyTableAdapter adapter;
+     ZLoadingDialog zLoadingDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,13 +110,22 @@ public class AllocateTransferDetail extends AppCompatActivity {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
         expressCodeEditText = (EditText) findViewById(R.id.expressCode_edit_text_allocateTransfer);
         saleDeliveryScanButton = (Button) findViewById(R.id.scan_allocateTransfer);
         uploadAll_saleDeliveryButton = (Button) findViewById(R.id.uploadall_allocateTransfer);
         uploadSingleButton = (Button) findViewById(R.id.upload_allocateTransfer);
         saleDeliveryScanButton.setEnabled(false);
         uploadSingleButton.setEnabled(false);
-        dialog = new ZLoadingDialog(AllocateTransferDetail.this);
+        zLoadingDialog= new ZLoadingDialog(AllocateTransferDetail.this);
+        zLoadingDialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
+                .setLoadingColor(Color.BLUE)//颜色
+                .setHintText("数据信息下载中...")
+                .setCancelable(false)
+                .setCanceledOnTouchOutside(false)
+                .setHintTextSize(16) // 设置字体大小 dp
+                .setHintTextColor(Color.GRAY)  // 设置字体颜色
+                .setDurationTime(0.5); // 设置动画时间百分比 - 0.5倍
         helper4 = new MyDataBaseHelper(AllocateTransferDetail.this, "ShangmiData", null, 1);
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。
@@ -140,13 +150,11 @@ public class AllocateTransferDetail extends AppCompatActivity {
         listAllBodyPostition = QueryAllocateTransferBody(current_sale_delivery_vbillcodeRecv);
         adapter= new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
+        adapter.select(0);
         tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
                 select(position);
-
-
             }
         });
         saleDeliveryScanButton.setOnClickListener(new View.OnClickListener() {
@@ -164,7 +172,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                 intent.putExtra("current_uploadflag_qrRecv", chosen_line_uploadflag);
                 intent.putExtra("current_vbillcode_qrRecv", current_sale_delivery_vbillcodeRecv);
                 intent.putExtra("maccode",maccode);
-                Log.i("maccode-->",maccode);
+
                 startActivity(intent);
             }
         });
@@ -182,160 +190,22 @@ public class AllocateTransferDetail extends AppCompatActivity {
                             .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(final DialogInterface dialog, int which) {
-                                    // TODO Auto-generated method stub
-                                    new Thread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (Utils.isNetworkConnected(AllocateTransferDetail.this)) {
-                                                try {
-                                                    //Y代表已经上传过
-                                                    if (iaAlreadyUploadAll()) {
-                                                        Message msg = new Message();
-                                                        msg.what = 0x12;
-                                                        allocateTransferDetailHandler.sendMessage(msg);
-                                                    } else if (isCwarenameSame()) {
-                                                        String uploadResp = uploadSaleDeliveryVBill("R43", list);
-                                                        if (!(null == uploadResp)) {
-                                                            if (!(null == lisitemtall)) {
-                                                                Gson gson = new Gson();
-                                                                SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                                                Gson gson2 = new Gson();
-                                                                SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                                                Bundle bundle = new Bundle();
-                                                                bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                                                Message msg = new Message();
-                                                                if(respBeanValue.getErrno()==null) {
-                                                                    dialog.dismiss();
-                                                                    runOnUiThread(new Runnable() {
-                                                                        @Override
-                                                                        public void run() {
-                                                                            Toast.makeText(AllocateTransferDetail.this, "服务器异常", Toast.LENGTH_LONG).show();
-                                                                        }
-                                                                    });
-                                                                    return;
-                                                                }
-                                                                if (respBeanValue.getErrno().equals("0")) {
-                                                                    //19弹出erromsg
-                                                                    updateAllItemUploadFlag(lisitemtall);
-                                                                    msg.what = 0x15;
-                                                                } else {
-                                                                    //19弹出erromsg
-                                                                    msg.what = 0x19;
-                                                                }
-                                                                msg.setData(bundle);
-                                                                allocateTransferDetailHandler.sendMessage(msg);
-                                                            }
-                                                        } else {
-                                                            Message msg = new Message();
-                                                            msg.what = 0x18;
-                                                            allocateTransferDetailHandler.sendMessage(msg);
-                                                        }
-                                                    } else {
-                                                        Message msg = new Message();
-                                                        msg.what = 0x16;
-                                                        allocateTransferDetailHandler.sendMessage(msg);
-                                                    }
 
-                                                } catch (IOException e) {
-                                                    e.printStackTrace();
-                                                    Bundle bundle = new Bundle();
-                                                    bundle.putString("Exception111", e.toString());
-                                                    Message msg = new Message();
-                                                    msg.what = 0x17;
-                                                    msg.setData(bundle);
-                                                    allocateTransferDetailHandler.sendMessage(msg);
-                                                    return;
-                                                } catch (XmlPullParserException e) {
-                                                    e.printStackTrace();
-                                                    Bundle bundle = new Bundle();
-                                                    bundle.putString("Exception111", e.toString());
-                                                    Message msg = new Message();
-                                                    msg.what = 0x17;
-                                                    msg.setData(bundle);
-                                                    allocateTransferDetailHandler.sendMessage(msg);
-                                                    return;
-                                                }
-                                            }
-                                        }
-                                    }).start();
+                                  pushData();
                                 }
                             })
                             .setNegativeButton("取消", new DialogInterface.OnClickListener() {
 
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    // TODO Auto-generated method stub
+
                                     return;
                                 }
                             })
                             .show();
                 } else {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (Utils.isNetworkConnected(AllocateTransferDetail.this)) {
-                                try {
 
-                                    //Y代表已经上传过
-                                    if (iaAlreadyUploadAll()) {
-                                        Message msg = new Message();
-                                        msg.what = 0x12;
-                                        allocateTransferDetailHandler.sendMessage(msg);
-                                    } else if (isCwarenameSame()) {
-                                        String uploadResp = uploadSaleDeliveryVBill("R43", list);
-                                        if (!(null == uploadResp)) {
-                                            if (!(null == lisitemtall)) {
-                                                Gson gson = new Gson();
-                                                SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                                Gson gson2 = new Gson();
-                                                SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                                Bundle bundle = new Bundle();
-                                                bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                                Message msg = new Message();
-                                                if (respBeanValue.getErrno().equals("0")) {
-                                                    //19弹出erromsg
-                                                    updateAllItemUploadFlag(lisitemtall);
-                                                    msg.what = 0x15;
-                                                } else {
-                                                    //19弹出erromsg
-                                                    msg.what = 0x19;
-                                                }
-                                                msg.setData(bundle);
-                                                allocateTransferDetailHandler.sendMessage(msg);
-                                            }
-                                        } else {
-                                            Message msg = new Message();
-                                            msg.what = 0x18;
-                                            allocateTransferDetailHandler.sendMessage(msg);
-                                        }
-                                    } else {
-                                        Message msg = new Message();
-                                        msg.what = 0x16;
-                                        allocateTransferDetailHandler.sendMessage(msg);
-                                    }
-
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    allocateTransferDetailHandler.sendMessage(msg);
-                                    return;
-                                } catch (XmlPullParserException e) {
-                                    e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    allocateTransferDetailHandler.sendMessage(msg);
-                                    return;
-                                }
-                            }
-                        }
-                    }).start();
+                    pushData();
                 }
 
             }
@@ -354,68 +224,8 @@ public class AllocateTransferDetail extends AppCompatActivity {
                             .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    // TODO Auto-generated method stub
-                                    new Thread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (Utils.isNetworkConnected(AllocateTransferDetail.this)) {
-                                                try {
-                                                    //Y代表已经上传过
-                                                    if (iaAlreadyUploadSingle(chosen_line_itempk)) {
-                                                        Message msg = new Message();
-                                                        msg.what = 0x13;
-                                                        allocateTransferDetailHandler.sendMessage(msg);
-                                                    } else {
-                                                        String uploadResp = uploadSaleDeliveryVBill("R43", list);
-                                                        if (!(null == uploadResp)) {
-                                                            if (!(null == listitem)) {
-                                                                Gson gson = new Gson();
-                                                                SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                                                Gson gson2 = new Gson();
-                                                                SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                                                Bundle bundle = new Bundle();
-                                                                bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                                                Message msg = new Message();
-                                                                if (respBeanValue.getErrno().equals("0")) {
-                                                                    //19弹出erromsg
-                                                                    updateItemUploadFlag(listitem);
-                                                                    msg.what = 0x11;
-                                                                } else {
-                                                                    //19弹出erromsg
-                                                                    msg.what = 0x19;
-                                                                }
-                                                                msg.setData(bundle);
-                                                                allocateTransferDetailHandler.sendMessage(msg);
-                                                            }
-                                                        } else {
-                                                            Message msg = new Message();
-                                                            msg.what = 0x18;
-                                                            allocateTransferDetailHandler.sendMessage(msg);
-                                                        }
-                                                    }
 
-                                                } catch (IOException e) {
-                                                     e.printStackTrace();
-                                                    Bundle bundle = new Bundle();
-                                                    bundle.putString("Exception111", e.toString());
-                                                    Message msg = new Message();
-                                                    msg.what = 0x17;
-                                                    msg.setData(bundle);
-                                                    allocateTransferDetailHandler.sendMessage(msg);
-                                                    return;
-                                                } catch (XmlPullParserException e) {
-                                                     e.printStackTrace();
-                                                    Bundle bundle = new Bundle();
-                                                    bundle.putString("Exception111", e.toString());
-                                                    Message msg = new Message();
-                                                    msg.what = 0x17;
-                                                    msg.setData(bundle);
-                                                    allocateTransferDetailHandler.sendMessage(msg);
-                                                    return;
-                                                }
-                                            }
-                                        }
-                                    }).start();
+                                    pushData();
                                 }
                             })
                             .setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -427,67 +237,9 @@ public class AllocateTransferDetail extends AppCompatActivity {
                             })
                             .show();
                 }else{
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (Utils.isNetworkConnected(AllocateTransferDetail.this)) {
-                                try {
-                                    //Y代表已经上传过
-                                    if (iaAlreadyUploadSingle(chosen_line_itempk)) {
-                                        Message msg = new Message();
-                                        msg.what = 0x13;
-                                        allocateTransferDetailHandler.sendMessage(msg);
-                                    } else {
-                                        String uploadResp = uploadSaleDeliveryVBill("R43", list);
-                                        if (!(null == uploadResp)) {
-                                            if (!(null == listitem)) {
-                                                Gson gson = new Gson();
-                                                SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                                Gson gson2 = new Gson();
-                                                SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                                Bundle bundle = new Bundle();
-                                                bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                                Message msg = new Message();
-                                                if (respBeanValue.getErrno().equals("0")) {
-                                                    //19弹出erromsg
-                                                    updateItemUploadFlag(listitem);
-                                                    msg.what = 0x11;
-                                                } else {
-                                                    //19弹出erromsg
-                                                    msg.what = 0x19;
-                                                }
-                                                msg.setData(bundle);
-                                                allocateTransferDetailHandler.sendMessage(msg);
-                                            }
-                                        } else {
-                                            Message msg = new Message();
-                                            msg.what = 0x18;
-                                            allocateTransferDetailHandler.sendMessage(msg);
-                                        }
-                                    }
 
-                                } catch (IOException e) {
-                                     e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    allocateTransferDetailHandler.sendMessage(msg);
-                                    return;
-                                } catch (XmlPullParserException e) {
-                                     e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    allocateTransferDetailHandler.sendMessage(msg);
-                                    return;
-                                }
-                            }
-                        }
-                    }).start();
+                    pushData();
+
                 }
 
             }
@@ -501,7 +253,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                         Toast.makeText(AllocateTransferDetail.this, "请检查网络连接", Toast.LENGTH_LONG).show();
                         break;
                     case 0x11:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         expressCodeEditText.setText("");
                         spinner.setSelection(logisticscompanies.size() - 1, true);
                         String s = msg.getData().getString("uploadResp");
@@ -528,7 +280,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                         Toast.makeText(AllocateTransferDetail.this, "请先扫码再进行发货上传操作", Toast.LENGTH_LONG).show();
                         break;
                     case 0x15:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         expressCodeEditText.setText("");
                         spinner.setSelection(logisticscompanies.size() - 1, true);
                         String s2 = msg.getData().getString("uploadResp");
@@ -549,25 +301,25 @@ public class AllocateTransferDetail extends AppCompatActivity {
                         Toast.makeText(AllocateTransferDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
                         break;
                     case 0x17:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         String exception111 = msg.getData().getString("Exception111");
                         Toast.makeText(AllocateTransferDetail.this, exception111, Toast.LENGTH_LONG).show();
                         break;
                     case 0x18:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         Toast.makeText(AllocateTransferDetail.this, "接口异常", Toast.LENGTH_LONG).show();
                         break;
                     case 0x19:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         String s3 = msg.getData().getString("uploadResp");
                         Toast.makeText(AllocateTransferDetail.this, s3, Toast.LENGTH_LONG).show();
                         break;
                     case 0x20:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         Toast.makeText(AllocateTransferDetail.this, "运单号没有填写，首先填写运单号", Toast.LENGTH_LONG).show();
                         break;
                     case 0x21:
-                        dialog.dismiss();
+                        zLoadingDialog.dismiss();
                         Toast.makeText(AllocateTransferDetail.this, "物流公司没有选择，首先选择物流公司", Toast.LENGTH_LONG).show();
                         break;
                     default:
@@ -575,6 +327,91 @@ public class AllocateTransferDetail extends AppCompatActivity {
                 }
             }
         };
+    }
+
+    private void pushData() {
+
+        if(Integer.parseInt(chosen_line_scannum)==0){
+            Toast.makeText(AllocateTransferDetail.this, "数量不能为0", Toast.LENGTH_LONG).show();
+            return;
+        }
+        zLoadingDialog.show();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (Utils.isNetworkConnected(AllocateTransferDetail.this)) {
+                    try {
+                        //Y代表已经上传过
+                        if (iaAlreadyUploadAll()) {
+                            Message msg = new Message();
+                            msg.what = 0x12;
+                            allocateTransferDetailHandler.sendMessage(msg);
+                        } else if (isCwarenameSame()) {
+
+                            String uploadResp = uploadSaleDeliveryVBill("R43", list);
+                            if (!(null == uploadResp)) {
+                                if (!(null == lisitemtall)) {
+                                    Gson gson = new Gson();
+                                    SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
+                                    Gson gson2 = new Gson();
+                                    SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
+                                    Bundle bundle = new Bundle();
+                                    bundle.putString("uploadResp", respBeanValue.getErrmsg());
+                                    Message msg = new Message();
+                                    if(respBeanValue.getErrno()==null) {
+                                        zLoadingDialog.dismiss();
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(AllocateTransferDetail.this, "服务器异常", Toast.LENGTH_LONG).show();
+                                            }
+                                        });
+                                        return;
+                                    }
+                                    if (respBeanValue.getErrno().equals("0")) {
+                                        //19弹出erromsg
+                                        updateAllItemUploadFlag(lisitemtall);
+                                        msg.what = 0x15;
+                                    } else {
+                                        //19弹出erromsg
+                                        msg.what = 0x19;
+                                    }
+                                    msg.setData(bundle);
+                                    allocateTransferDetailHandler.sendMessage(msg);
+                                }
+                            } else {
+                                Message msg = new Message();
+                                msg.what = 0x18;
+                                allocateTransferDetailHandler.sendMessage(msg);
+                            }
+                        } else {
+                            Message msg = new Message();
+                            msg.what = 0x16;
+                            allocateTransferDetailHandler.sendMessage(msg);
+                        }
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("Exception111", e.toString());
+                        Message msg = new Message();
+                        msg.what = 0x17;
+                        msg.setData(bundle);
+                        allocateTransferDetailHandler.sendMessage(msg);
+                        return;
+                    } catch (XmlPullParserException e) {
+                        e.printStackTrace();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("Exception111", e.toString());
+                        Message msg = new Message();
+                        msg.what = 0x17;
+                        msg.setData(bundle);
+                        allocateTransferDetailHandler.sendMessage(msg);
+                        return;
+                    }
+                }
+            }
+        }).start();
     }
 
     private void select(int position) {
@@ -686,11 +523,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
       return true;
     }
 
-    private void updateItemUploadFlag(List<String> listitem) {
-        for (String send : listitem) {
-            db4.execSQL("update ProductEntryScanResult set itemuploadflag=? where billcode=? and itempk=? and materialcode=? and prodcutcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_itempk, chosen_line_materialcode, send});
-        }
-    }
+
 
     //扫描上传的prodcutcode更新状态
     private void updateAllItemUploadFlag(List<AllocateTransferUploadFlagBean> saleDeliveryUploadFlagBean) {
@@ -702,33 +535,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
         }
     }
 
-    private boolean iaAlreadyUploadSingle(String chosen_line_itempk) {
-        Cursor cursor3 = db4.rawQuery("select itempk from ProductEntryBody where billcode=? and itempk=? and uploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_itempk, "Y"});
-        lisitemtall = new ArrayList<AllocateTransferUploadFlagBean>();
-        // Cursor cursor3 = db3.rawQuery(sql3, null);
-        if (cursor3 != null && cursor3.getCount() > 0) {
-            return true;
-        } else {
-            //判断cursor中是否存在数据
-            //     while (cursor3.moveToNext()) {
-            list = new ArrayList<String>();
-            list.add(chosen_line_itempk);
-            Cursor cursor4 = db4.rawQuery("select prodcutcode,itemuploadflag from ProductEntryScanResult where billcode=? and itempk=? and itemuploadflag=?",
-                    new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_itempk, "N"});
-            listitem = new ArrayList<String>();
-            if (cursor4 != null && cursor4.getCount() > 0) {
-                //判断cursor中是否存在数据
-                while (cursor4.moveToNext()) {
-                    listitem.add(cursor4.getString(cursor4.getColumnIndex("prodcutcode")));
-                }
-                cursor4.close();
-            }
-            //      }
-            cursor3.close();
-            return false;//false代表有未上传的
-        }
-    }
+
 
     private boolean iaAlreadyUploadAll() {
         Cursor cursor = db4.rawQuery("select billno from AllocateTransfer where billno=? and flag=?",
@@ -934,35 +741,17 @@ public class AllocateTransferDetail extends AppCompatActivity {
         envelope.bodyOut = request;
         envelope.dotNet = false;
         String saleDeliveryUploadDataResp = null;
-        if (upload_num == 0) {
-        } else {
-            HttpTransportSE se = new HttpTransportSE(WSDL_URI, 60000);
-            //  se.call(null, envelope);//调用 version1.2
-            //version1.1 需要如下soapaction
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
-                            .setLoadingColor(Color.BLUE)//颜色
-                            .setHintText("等待服务器返回数据...")
-                            .setCancelable(false)
-                            .setCanceledOnTouchOutside(false)
-                            .setHintTextSize(16) // 设置字体大小 dp
-                            .setHintTextColor(Color.GRAY)  // 设置字体颜色
-                            .setDurationTime(0.5) // 设置动画时间百分比 - 0.5倍
-                            //     .setDialogBackgroundColor(Color.parseColor("#CC111111")) // 设置背景色，默认白色
-                            .show();
-                }
-            });
-            se.call(namespace + "sendToWISE", envelope);
-            // 获取返回的数据
-            // SoapObject object = (SoapObject) envelope.bodyIn;
-            Object object = envelope.getResponse();
-            saleDeliveryUploadDataResp = new Gson().toJson(object);
-        }
+
         // 获取返回的结果
         // saleDeliveryUploadDataResp = object.getProperty(0).toString();
-        Log.i("response-->",envelope.bodyIn.toString());
+        HttpTransportSE se = new HttpTransportSE(WSDL_URI, 60000);
+        se.call(namespace + "sendToWISE", envelope);
+
+        // 获取返回的数据
+        // SoapObject object = (SoapObject) envelope.bodyIn;
+        Object object = envelope.getResponse();
+        saleDeliveryUploadDataResp = new Gson().toJson(object);
+
         return saleDeliveryUploadDataResp;
     }
 

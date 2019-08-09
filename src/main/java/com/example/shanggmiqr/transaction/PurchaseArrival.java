@@ -15,8 +15,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,27 +30,18 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.shanggmiqr.BusinessOperation;
-import com.example.shanggmiqr.bean.DataBean;
 import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.PurchaseArrivalAdapter;
-import com.example.shanggmiqr.bean.CommonSendAllocateBean;
 import com.example.shanggmiqr.bean.PurchaseArrivalBean;
 import com.example.shanggmiqr.bean.PurchaseArrivalQuery;
-import com.example.shanggmiqr.util.BaseConfig;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
 import com.google.gson.Gson;
 import com.zyao89.view.zloading.ZLoadingDialog;
 import com.zyao89.view.zloading.Z_TYPE;
 
-import org.ksoap2.serialization.SoapObject;
-import org.ksoap2.serialization.SoapSerializationEnvelope;
-import org.ksoap2.transport.HttpTransportSE;
-
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -234,11 +223,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                                         msg.what = 0x11;
                                         saleDeliveryHandler.sendMessage(msg);
                                     }
-                                    String currentTs = Utils.getCurrentDateTimeNew();
-                                    SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestPurchaseArrivalTSInfo", 0);
-                                    SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                                    editor5.putString("latest_download_ts_begintime", currentTs);
-                                    editor5.commit();
+
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -317,79 +302,77 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
         List<PurchaseArrivalQuery.DataBean> saleDeliveryBeanList = saleDeliveryQuery.getData();
         for (PurchaseArrivalQuery.DataBean ob : saleDeliveryBeanList) {
 
-            String headpk = ob.getHeadpk();
-            String dbilldate = ob.getDbilldate();
-            String dr = ob.getDr();
             String vbillcode = ob.getVbillcode();
-            String num = ob.getNum();
-            String ts = ob.getTs();
-            String org = ob.getOrg();
             //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
 
-            if("0".equals(dr)&& isVbillcodeExist(vbillcode)){
-                continue;
-            }
-            //等于1时
-            if("1".equals(dr) || ("2".equals(dr)&&isVbillcodeExist(vbillcode)))
-            {
-                //操作选择二 通过单号删除
-                //删除三张表
-                db3.beginTransaction();
-                try {
-                    db3.delete("PurchaseArrival", "vbillcode=?", new String[]{vbillcode});
-                    db3.delete("PurchaseArrivalBody", "vbillcode=?", new String[]{vbillcode});
-                    db3.delete("PurchaseArrivalScanResult", "vbillcode=?", new String[]{vbillcode});
-                    db3.setTransactionSuccessful();
-                }
-                catch (Exception ex)
-                {
-                    ex.printStackTrace();
-                }
-                finally {
-                    db3.endTransaction();
-                }
-            }
-            if("1".equals(dr)){
-                continue;
-            }
-            List<PurchaseArrivalQuery.DataBean.BodyBean> saleDeliveryDatabodysList = ob.getBody();
-            //使用 ContentValues 来对要添加的数据进行组装
-            ContentValues values = new ContentValues();
-            for (PurchaseArrivalQuery.DataBean.BodyBean obb : saleDeliveryDatabodysList) {
-                String itempk = obb.getItempk();
-                String materialcode = obb.getMaterialcode();
-                String nnum = obb.getNnum();
-                String maccode = obb.getMaccode();
-                String warehouse = obb.getWarehouse();
-                String materialname = obb.getMaterialname();
-                //这里应该执行的是插入第二个表的操作
-                ContentValues valuesInner = new ContentValues();
-                valuesInner.put("headpk", headpk);
-                valuesInner.put("vbillcode", vbillcode);
-                valuesInner.put("itempk", itempk);
-                valuesInner.put("materialcode", materialcode);
-                valuesInner.put("materialname", materialname);
-                valuesInner.put("maccode", maccode);
-                valuesInner.put("nnum", nnum);
-         //       valuesInner.put("scannum", scannum);
-                valuesInner.put("warehouse", warehouse);
-                //N代表尚未上传
-                valuesInner.put("uploadflag", "N");
-                db3.insert("PurchaseArrivalBody", null, valuesInner);
-                valuesInner.clear();
-            }
-            values.put("headpk", headpk);
-            values.put("dbilldate", dbilldate);
-            values.put("vbillcode", vbillcode);
-            values.put("ts", ts);
-            values.put("org", org);
-            values.put("num", num);
-            values.put("dr", dr);
-            values.put("flag", "N");
-            // 插入第一条数据
-            db3.insert("PurchaseArrival", null, values);
-            values.clear();
+
+              switch (Integer.parseInt(ob.getDr())){
+                  case 0:
+                      insertDb(ob);
+                      break;
+                  case 1:
+                      db3.delete("PurchaseArrival", "vbillcode=?", new String[]{vbillcode});
+                      db3.delete("PurchaseArrivalBody", "vbillcode=?", new String[]{vbillcode});
+                      db3.delete("PurchaseArrivalScanResult", "vbillcode=?", new String[]{vbillcode});
+                      break;
+                  case 2:
+                      db3.delete("PurchaseArrival", "vbillcode=?", new String[]{vbillcode});
+                      db3.delete("PurchaseArrivalBody", "vbillcode=?", new String[]{vbillcode});
+                      db3.delete("PurchaseArrivalScanResult", "vbillcode=?", new String[]{vbillcode});
+                      insertDb(ob);
+                      break;
+
+              }
+
+
         }
+    }
+
+    private void insertDb(PurchaseArrivalQuery.DataBean ob) {
+        String headpk = ob.getHeadpk();
+        String dbilldate = ob.getDbilldate();
+        String dr = ob.getDr();
+        String vbillcode = ob.getVbillcode();
+        String num = ob.getNum();
+        String ts = ob.getTs();
+        String org = ob.getOrg();
+        List<PurchaseArrivalQuery.DataBean.BodyBean> saleDeliveryDatabodysList = ob.getBody();
+        //使用 ContentValues 来对要添加的数据进行组装
+        ContentValues values = new ContentValues();
+        for (PurchaseArrivalQuery.DataBean.BodyBean obb : saleDeliveryDatabodysList) {
+            String itempk = obb.getItempk();
+            String materialcode = obb.getMaterialcode();
+            String nnum = obb.getNnum();
+            String maccode = obb.getMaccode();
+            String warehouse = obb.getWarehouse();
+            String materialname = obb.getMaterialname();
+            //这里应该执行的是插入第二个表的操作
+            ContentValues valuesInner = new ContentValues();
+            valuesInner.put("headpk", ob.getHeadpk());
+            valuesInner.put("vbillcode", ob.getVbillcode());
+            valuesInner.put("itempk", itempk);
+            valuesInner.put("materialcode", materialcode);
+            valuesInner.put("materialname", materialname);
+            valuesInner.put("maccode", maccode);
+            valuesInner.put("nnum", nnum);
+            //       valuesInner.put("scannum", scannum);
+            valuesInner.put("warehouse", warehouse);
+            //N代表尚未上传
+            valuesInner.put("uploadflag", "N");
+            db3.insert("PurchaseArrivalBody", null, valuesInner);
+            valuesInner.clear();
+        }
+        values.put("headpk", headpk);
+        values.put("dbilldate", dbilldate);
+        values.put("vbillcode", vbillcode);
+        values.put("ts", ts);
+        values.put("org", org);
+        values.put("num", num);
+        values.put("dr", dr);
+        values.put("flag", "N");
+        // 插入第一条数据
+        db3.insert("PurchaseArrival", null, values);
+        values.clear();
     }
 
     private boolean isVbillcodeExist(String vbillcode) {
@@ -656,9 +639,10 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                 list.add(bean);
 
             }
-
+            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),list.get(0).getDbilldate(),PurchaseArrival.this);
             cursor.close();
         }
+
         return list;
     }
     public ArrayList<PurchaseArrivalBean> displayAllSaleDelivery() {

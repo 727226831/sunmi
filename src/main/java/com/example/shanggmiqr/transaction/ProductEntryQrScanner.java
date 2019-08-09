@@ -68,7 +68,7 @@ public class ProductEntryQrScanner extends AppCompatActivity {
 
     private TextView scannnumText;
     //用true代表托盘码箱码非空且不需要更新只需要更新产品码的状态，false代表第一次进入此页面或者箱码托盘码有更新
-
+   private int  chosen_line_nnum;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,8 +110,7 @@ public class ProductEntryQrScanner extends AppCompatActivity {
         //从Intent当中根据key取得value
         if (intent != null) {
             current_itempk_qrRecv = intent.getStringExtra("current_itempk_qrRecv");
-
-
+            chosen_line_nnum=Integer.parseInt(intent.getStringExtra("current_nnum_qrRecv"));
             current_scannum_qrRecv = intent.getStringExtra("current_scannum_qrRecv");
             current_materialcode_qrRecv = intent.getStringExtra("current_materialcode_qrRecv");
             current_ysnum_qrRecv = Integer.parseInt(intent.getStringExtra("current_ysnum_qrRecv"));
@@ -119,6 +118,7 @@ public class ProductEntryQrScanner extends AppCompatActivity {
             current_vbillcode_qrRecv = intent.getStringExtra("current_vbillcode_qrRecv");
             current_maccode_qrRecv=intent.getStringExtra("maccode");
 
+            current_ysnum_qrRecv=current_ysnum_qrRecv-chosen_line_nnum;
         }
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。
@@ -171,11 +171,11 @@ public class ProductEntryQrScanner extends AppCompatActivity {
                     case 0x13:
                         //将数据库的数据显示出来
 
-                        productCodeEditText.setText("");
+                        boxCodeEditText.setText("");
                         //boxCodeEditText.setText("");
                         //plateCodeEditText.setText("");
                         scannnumText.setText("已扫码数量：" + countSum());
-                        productCodeEditText.requestFocus();
+                        boxCodeEditText.requestFocus();
                         List<SaleDeliveryScanResultBean> list = showScannedQR();
                         SaleDeliveryScannerAdapter adapter = new SaleDeliveryScannerAdapter(ProductEntryQrScanner.this, list, mListener2);
                         tableBodyListView.setAdapter(adapter);
@@ -213,7 +213,7 @@ public class ProductEntryQrScanner extends AppCompatActivity {
             count = countSum();
 
 
-            if (count >= Math.abs(current_ysnum_qrRecv)) {
+            if(i>Math.abs(current_ysnum_qrRecv)-1) {
                 Toast.makeText(ProductEntryQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
                 return;
             }

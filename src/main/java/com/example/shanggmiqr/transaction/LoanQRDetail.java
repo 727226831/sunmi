@@ -22,6 +22,7 @@ import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.SaleDeliveryTableQrDetailAdapter;
 import com.example.shanggmiqr.bean.SaleDeliveryQrDetailBean;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -242,6 +243,7 @@ public class LoanQRDetail extends AppCompatActivity {
                 bean.boxcode = cursor.getString(cursor.getColumnIndex("boxcode"));
                 bean.prodcutcode = cursor.getString(cursor.getColumnIndex("prodcutcode"));
                 bean.itemuploadflag = cursor.getString(cursor.getColumnIndex("itemuploadflag"));
+                Log.i("prodcutcode--> ",new Gson().toJson(bean));
                 list.add(bean);
             }
             cursor.close();

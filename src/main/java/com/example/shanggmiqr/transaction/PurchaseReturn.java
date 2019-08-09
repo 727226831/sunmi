@@ -236,11 +236,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
                                         msg.what = 0x11;
                                         purchaseReturnHandler.sendMessage(msg);
                                     }
-                                    String currentTs = Utils.getCurrentDateTimeNew();
-                                    SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestPurchaseReturnTSInfo", 0);
-                                    SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                                    editor5.putString("latest_download_ts_begintime", currentTs);
-                                    editor5.commit();
+
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -324,71 +320,67 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
         for (PurchaseReturnQuery.DataBean ob : saleDeliveryBeanList) {
 
             String vbillcode = ob.getVbillcode();
-            String dbilldate = ob.getDbilldate();
-            String ts = ob.getTs();
-            String org = ob.getOrg();
-            String dr =ob.getDr();
             //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
+             switch (Integer.parseInt(ob.getDr())){
+                 case 0:
+                     insertDb(ob);
+                     break;
+                 case 1:
+                     db3.delete("PurchaseReturn", "vbillcode=?", new String[]{vbillcode});
+                     db3.delete("PurchaseReturnBody", "vbillcode=?", new String[]{vbillcode});
+                     db3.delete("PurchaseReturnScanResult", "vbillcode=?", new String[]{vbillcode});
+                     break;
+                 case 2:
+                     db3.delete("PurchaseReturn", "vbillcode=?", new String[]{vbillcode});
+                     db3.delete("PurchaseReturnBody", "vbillcode=?", new String[]{vbillcode});
+                     db3.delete("PurchaseReturnScanResult", "vbillcode=?", new String[]{vbillcode});
+                     insertDb(ob);
+                     break;
+             }
 
-            if("0".equals(dr)&& isVbillcodeExist(vbillcode)){
-                continue;
-            }
-            //等于1时
-            if("1".equals(dr) || ("2".equals(dr)&&isVbillcodeExist(vbillcode)))
-            {
-                //操作选择二 通过单号删除
-                //删除三张表
-                db3.beginTransaction();
-                try {
-                    db3.delete("PurchaseReturn", "vbillcode=?", new String[]{vbillcode});
-                    db3.delete("PurchaseReturnBody", "vbillcode=?", new String[]{vbillcode});
-                    db3.delete("PurchaseReturnScanResult", "vbillcode=?", new String[]{vbillcode});
-                    db3.setTransactionSuccessful();
-                }
-                catch (Exception ex)
-                {
-                    ex.printStackTrace();
-                }
-                finally {
-                    db3.endTransaction();
-                }
-            }
-            if("1".equals(dr)){
-                continue;
-            }
-            List<PurchaseReturnQuery.DataBean.BodyBean> saleDeliveryDatabodysList = ob.getBody();
-            //使用 ContentValues 来对要添加的数据进行组装
-            ContentValues values = new ContentValues();
-            for (PurchaseReturnQuery.DataBean.BodyBean obb : saleDeliveryDatabodysList) {
-                String itempk = obb.getItempk();
-                String materialcode = obb.getMaterialcode();
-                String nnum = obb.getNnum();
-                String maccode = obb.getMaccode();
-      //          Object warehouse = obb.getWarehouse();
-                String materialname = obb.getMaterialname();
-                //这里应该执行的是插入第二个表的操作
-                ContentValues valuesInner = new ContentValues();
-                valuesInner.put("vbillcode", vbillcode);
-                valuesInner.put("maccode", maccode);
-                valuesInner.put("nnum", nnum);
-                valuesInner.put("itempk", itempk);
-                valuesInner.put("materialcode", materialcode);
-                valuesInner.put("materialname", materialname);
-                //N代表尚未上传
-                valuesInner.put("uploadflag", "N");
-                db3.insert("PurchaseReturnBody", null, valuesInner);
-                valuesInner.clear();
-            }
-            values.put("vbillcode", vbillcode);
-            values.put("dbilldate", dbilldate);
-            values.put("ts", ts);
-            values.put("org", org);
-            values.put("dr", dr);
-            values.put("flag", "N");
-            // 插入第一条数据
-            db3.insert("PurchaseReturn", null, values);
-            values.clear();
+
         }
+    }
+
+    private void insertDb(PurchaseReturnQuery.DataBean ob) {
+        String vbillcode = ob.getVbillcode();
+        String dbilldate = ob.getDbilldate();
+        String ts = ob.getTs();
+        String org = ob.getOrg();
+        String dr =ob.getDr();
+        List<PurchaseReturnQuery.DataBean.BodyBean> saleDeliveryDatabodysList = ob.getBody();
+        //使用 ContentValues 来对要添加的数据进行组装
+        ContentValues values = new ContentValues();
+        for (PurchaseReturnQuery.DataBean.BodyBean obb : saleDeliveryDatabodysList) {
+            String itempk = obb.getItempk();
+            String materialcode = obb.getMaterialcode();
+            String nnum = obb.getNnum();
+            String maccode = obb.getMaccode();
+            //          Object warehouse = obb.getWarehouse();
+            String materialname = obb.getMaterialname();
+            //这里应该执行的是插入第二个表的操作
+            ContentValues valuesInner = new ContentValues();
+            valuesInner.put("vbillcode", vbillcode);
+            valuesInner.put("maccode", maccode);
+            valuesInner.put("nnum", nnum);
+            valuesInner.put("itempk", itempk);
+            valuesInner.put("materialcode", materialcode);
+            valuesInner.put("materialname", materialname);
+            //N代表尚未上传
+            valuesInner.put("uploadflag", "N");
+            db3.insert("PurchaseReturnBody", null, valuesInner);
+            valuesInner.clear();
+        }
+        values.put("vbillcode", vbillcode);
+        values.put("dbilldate", dbilldate);
+        values.put("ts", ts);
+        values.put("num",ob.getNum());
+        values.put("org", org);
+        values.put("dr", dr);
+        values.put("flag", "N");
+        // 插入第一条数据
+        db3.insert("PurchaseReturn", null, values);
+        values.clear();
     }
 
     private boolean isVbillcodeExist(String vbillcode) {
@@ -427,25 +419,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
         return cwarename;
     }
 
-    private String getDefaultEndTime() {
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        return String.valueOf(year) + "-" + String.valueOf(month) + "-" + String.valueOf(day) + " " + "23:59:59";
-    }
 
-    private String countScannedQRCode(String vbillcode,String vcooporderbcode_b, String matrcode) {
-        String count = "0";
-        Cursor cursor2 = db3.rawQuery("select prodcutcode from PurchaseReturnScanResult where vbillcode=? and materialcode=? and itempk=? ", new String[]{vbillcode, matrcode,vcooporderbcode_b});
-        if (cursor2 != null && cursor2.getCount() > 0) {
-            //判断cursor中是否存在数据
-            count = String.valueOf(cursor2.getCount());
-            cursor2.close();
-            return count;
-        }
-        return count;
-    }
 
     private void popupQuery() {
         LayoutInflater layoutInflater = LayoutInflater.from(PurchaseReturn.this);
@@ -639,7 +613,9 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
                 }
             }
             cursor.close();
+            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),list.get(0).getDbilldate(),PurchaseReturn.this);
         }
+
         return list;
     }
 

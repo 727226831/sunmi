@@ -731,10 +731,11 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
                 list.add(bean);
-
+                DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),list.get(0).getDbilldate(),SaleDelivery.this);
             }
 
         cursor.close();
+
         return list;
     }
     public ArrayList<SaleDeliveryBean> displayAllSaleDelivery() {

@@ -66,9 +66,10 @@ public class OtherEntryDetail extends AppCompatActivity {
     private String otherEntryUploadDataResp;
     private Handler otherEntryDetailHandler = null;
     private ZLoadingDialog dialog;
-
+    private String scannum="0";
     String workcode;
     String title="";
+    OtherEntryBodyTableAdapter adapter;
     int type;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,8 +122,9 @@ public class OtherEntryDetail extends AppCompatActivity {
 
         dbilldateText.setText("单据日期:" + current_dbilldateRecv);
         listAllBodyPostition = QueryOtherEntryBody(current_pobillcodeRecv);
-        final OtherEntryBodyTableAdapter adapter = new OtherEntryBodyTableAdapter(OtherEntryDetail.this, listAllBodyPostition, mListener);
+        adapter = new OtherEntryBodyTableAdapter(OtherEntryDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
+        adapter.select(0);
         tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -134,6 +136,8 @@ public class OtherEntryDetail extends AppCompatActivity {
                 chosen_line_nnum = otherOutgoingBodyBean.getNnum();
                 chosen_line_uploadnum = otherOutgoingBodyBean.getUploadnum();
                 chosen_line_vcooporderbcode_b = otherOutgoingBodyBean.getVcooporderbcode_b();
+                scannum=otherOutgoingBodyBean.getScannum();
+
                 //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
             }
         });
@@ -161,6 +165,11 @@ public class OtherEntryDetail extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
+
+                if(Integer.parseInt(chosen_line_uploadnum)!=chosen_line_nnum-Integer.parseInt(scannum)){
+                    Toast.makeText(OtherEntryDetail.this, "数量不正确", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -239,25 +248,13 @@ public class OtherEntryDetail extends AppCompatActivity {
                         String s = msg.getData().getString("uploadResp");
                  //       Toast.makeText(OtherEntryDetail.this, s, Toast.LENGTH_LONG).show();
                         listAllBodyPostition = QueryOtherEntryBody(current_pobillcodeRecv);
-                        final OtherEntryBodyTableAdapter adapter = new OtherEntryBodyTableAdapter(OtherEntryDetail.this, listAllBodyPostition, mListener);
+                        adapter = new OtherEntryBodyTableAdapter(OtherEntryDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
-                        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                adapter.select(position);
-                                otherEntryScanButton.setEnabled(true);
-                                OtherBodyBean otherOutgoingBodyBean = (OtherBodyBean) adapter.getItem(position);
-                                chosen_line_maccode = otherOutgoingBodyBean.getMaccode();
-                                chosen_line_materialcode = otherOutgoingBodyBean.getMaterialcode();
-                                chosen_line_nnum = otherOutgoingBodyBean.getNnum();
-                                chosen_line_uploadnum = otherOutgoingBodyBean.getUploadnum();
-                                chosen_line_vcooporderbcode_b = otherOutgoingBodyBean.getVcooporderbcode_b();
+                        adapter.notifyDataSetChanged();
 
-                            }
-                        });
 
                         Intent intent = new Intent(OtherEntryDetail.this, OtherEntry.class);
-                        intent.putExtra("type",2);
+                        intent.putExtra("type",type);
                         startActivity(intent);
                         finish();
 
@@ -388,22 +385,10 @@ public class OtherEntryDetail extends AppCompatActivity {
         super.onResume();
         otherEntryScanButton.setEnabled(false);
         listAllBodyPostition = QueryOtherEntryBody(current_pobillcodeRecv);
-        final OtherEntryBodyTableAdapter adapter = new OtherEntryBodyTableAdapter(OtherEntryDetail.this, listAllBodyPostition, mListener);
+        adapter = new OtherEntryBodyTableAdapter(OtherEntryDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
-        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapter.select(position);
-                otherEntryScanButton.setEnabled(true);
-                OtherBodyBean otherOutgoingBodyBean = (OtherBodyBean) adapter.getItem(position);
-                chosen_line_maccode = otherOutgoingBodyBean.getMaccode();
-                chosen_line_materialcode = otherOutgoingBodyBean.getMaterialcode();
-                chosen_line_nnum = otherOutgoingBodyBean.getNnum();
-                chosen_line_uploadnum = otherOutgoingBodyBean.getUploadnum();
-                chosen_line_vcooporderbcode_b = otherOutgoingBodyBean.getVcooporderbcode_b();
-                //Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
-            }
-        });
+        adapter.notifyDataSetChanged();
+
     }
 
     private String uploadOutgingPobill(String workcode) throws IOException, XmlPullParserException {

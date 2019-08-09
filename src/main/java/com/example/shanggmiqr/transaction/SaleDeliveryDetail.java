@@ -122,7 +122,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         zLoadingDialog= new ZLoadingDialog(SaleDeliveryDetail.this);
         zLoadingDialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
                 .setLoadingColor(Color.BLUE)//颜色
-                .setHintText("数据信息下载中...")
+                .setHintText("正在连接...")
                 .setCancelable(false)
                 .setCanceledOnTouchOutside(false)
                 .setHintTextSize(16) // 设置字体大小 dp
@@ -185,123 +185,22 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                             .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(final DialogInterface dialog, int which) {
-                                    zLoadingDialog.show();
-                                    // TODO Auto-generated method stub
-                                    new Thread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (Utils.isNetworkConnected(SaleDeliveryDetail.this)) {
-                                                try {
-                                                    //Y代表已经上传过
-                                                    if (iaAlreadyUploadAll()) {
-                                                        Toast.makeText(SaleDeliveryDetail.this, "该发货单已经全部上传", Toast.LENGTH_LONG).show();
-                                                    } else if (isCwarenameSame()) {
+                                    dialog.dismiss();
+                                    pushData();
 
-
-                                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R08", db4,current_sale_delivery_vbillcodeRecv,
-                                                               SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
-                                                        zLoadingDialog.dismiss();
-                                                        if (!(null == uploadResp)) {
-                                                            if (!(null == lisitemtall)) {
-
-                                                                SalesRespBean respBean = new Gson().fromJson(uploadResp, SalesRespBean.class);
-                                                                SalesRespBeanValue respBeanValue =new Gson().fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                                                Bundle bundle = new Bundle();
-                                                                bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                                                Message msg = new Message();
-                                                                if (respBeanValue.getErrno().equals("0")) {
-                                                                    //19弹出erromsg
-                                                                    updateAllItemUploadFlag(lisitemtall);
-                                                                    msg.what = 0x15;
-                                                                } else {
-                                                                    //19弹出erromsg
-                                                                    msg.what = 0x19;
-                                                                }
-                                                                msg.setData(bundle);
-                                                                saleDeliveryDetailHandler.sendMessage(msg);
-                                                            }
-                                                        } else {
-                                                            Message msg = new Message();
-                                                            msg.what = 0x18;
-                                                            saleDeliveryDetailHandler.sendMessage(msg);
-                                                        }
-                                                    } else {
-                                                        Toast.makeText(SaleDeliveryDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
-                                                    }
-
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                    Toast.makeText(SaleDeliveryDetail.this, e.toString(), Toast.LENGTH_LONG).show();
-                                                    dialog.dismiss();
-
-                                                    return;
-                                                }
-                                            }
-                                        }
-                                    }).start();
                                 }
                             })
                             .setNegativeButton("取消", new DialogInterface.OnClickListener() {
 
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    // TODO Auto-generated method stub
-                                    return;
+                            dialog.dismiss();
                                 }
                             })
                             .show();
                 } else {
 
-                    zLoadingDialog.show();
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (Utils.isNetworkConnected(SaleDeliveryDetail.this)) {
-                                try {
-
-                                    //Y代表已经上传过
-                                    if (iaAlreadyUploadAll()) {
-                                        Toast.makeText(SaleDeliveryDetail.this, "该发货单已经全部上传", Toast.LENGTH_LONG).show();
-                                    } else if (isCwarenameSame()) {
-
-                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R08", db4,current_sale_delivery_vbillcodeRecv,
-                                                SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
-                                        zLoadingDialog.dismiss();
-                                        if (!(null == uploadResp)) {
-                                            if (!(null == lisitemtall)) {
-                                                Gson gson = new Gson();
-                                                SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                                Gson gson2 = new Gson();
-                                                SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                                Bundle bundle = new Bundle();
-                                                bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                                Message msg = new Message();
-                                                if (respBeanValue.getErrno().equals("0")) {
-                                                    //19弹出erromsg
-                                                    updateAllItemUploadFlag(lisitemtall);
-                                                    msg.what = 0x15;
-                                                } else {
-                                                    //19弹出erromsg
-                                                    msg.what = 0x19;
-                                                }
-                                                msg.setData(bundle);
-                                                saleDeliveryDetailHandler.sendMessage(msg);
-                                            }
-                                        } else {
-                                            Message msg = new Message();
-                                            msg.what = 0x18;
-                                            saleDeliveryDetailHandler.sendMessage(msg);
-                                        }
-                                    } else {
-                                        Toast.makeText(SaleDeliveryDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
-                                    }
-
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                    }).start();
+                  pushData();
                 }
 
             }
@@ -321,117 +220,21 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                             .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(final DialogInterface dialog, int which) {
-                                    // TODO Auto-generated method stub
-                                    zLoadingDialog.show();
-                                    new Thread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (Utils.isNetworkConnected(SaleDeliveryDetail.this)) {
-                                                try {
-                                                    //Y代表已经上传过
-                                                    if (iaAlreadyUploadSingle(chosen_line_vcooporderbcode_b)) {
 
-                                                        Toast.makeText(SaleDeliveryDetail.this, "该行已经上传", Toast.LENGTH_LONG).show();
-                                                    } else {
-
-
-                                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R08",db4,current_sale_delivery_vbillcodeRecv,
-                                                                SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
-                                                        zLoadingDialog.dismiss();
-                                                        if (!(null == uploadResp)) {
-                                                            if (!(null == listitem)) {
-                                                                Gson gson = new Gson();
-                                                                SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                                                Gson gson2 = new Gson();
-                                                                SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                                                Bundle bundle = new Bundle();
-                                                                bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                                                Message msg = new Message();
-                                                                if (respBeanValue.getErrno().equals("0")) {
-                                                                    //19弹出erromsg
-                                                                    updateItemUploadFlag(listitem);
-                                                                    msg.what = 0x11;
-                                                                } else {
-                                                                    //19弹出erromsg
-                                                                    msg.what = 0x19;
-                                                                }
-                                                                msg.setData(bundle);
-                                                                saleDeliveryDetailHandler.sendMessage(msg);
-                                                            }
-                                                        } else {
-                                                            Message msg = new Message();
-                                                            msg.what = 0x18;
-                                                            saleDeliveryDetailHandler.sendMessage(msg);
-                                                        }
-                                                    }
-
-                                                } catch (Exception e) {
-                                                     e.printStackTrace();
-                                                     zLoadingDialog.dismiss();
-
-                                                }
-                                            }
-                                        }
-                                    }).start();
+                                    dialog.dismiss();
+                                  pushData();
                                 }
                             })
                             .setNegativeButton("取消", new DialogInterface.OnClickListener() {
 
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    return;
+                                  dialog.dismiss();
                                 }
                             })
                             .show();
                 }else{
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (Utils.isNetworkConnected(SaleDeliveryDetail.this)) {
-                                try {
-                                    //Y代表已经上传过
-                                    if (iaAlreadyUploadSingle(chosen_line_vcooporderbcode_b)) {
-                                        Toast.makeText(SaleDeliveryDetail.this, "该行已经上传", Toast.LENGTH_LONG).show();
-                                    } else {
-
-                                        String uploadResp = DataHelper.uploadSaleDeliveryVBill("R08", db4,current_sale_delivery_vbillcodeRecv,
-                                                SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
-                                        zLoadingDialog.dismiss();
-                                        if (!(null == uploadResp)) {
-                                            if (!(null == listitem)) {
-                                                Gson gson = new Gson();
-                                                SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                                Gson gson2 = new Gson();
-                                                SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                                Bundle bundle = new Bundle();
-                                                bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                                Message msg = new Message();
-                                                if (respBeanValue.getErrno().equals("0")) {
-                                                    //19弹出erromsg
-                                                    updateItemUploadFlag(listitem);
-                                                    msg.what = 0x11;
-                                                } else {
-                                                    //19弹出erromsg
-                                                    msg.what = 0x19;
-                                                }
-                                                msg.setData(bundle);
-                                                saleDeliveryDetailHandler.sendMessage(msg);
-                                            }
-                                        } else {
-                                            Message msg = new Message();
-                                            msg.what = 0x18;
-                                            saleDeliveryDetailHandler.sendMessage(msg);
-                                        }
-                                    }
-
-                                } catch (Exception e) {
-                                     e.printStackTrace();
-                                    zLoadingDialog.dismiss();
-
-                                }
-                            }
-                        }
-                    }).start();
+                   pushData();
                 }
 
             }
@@ -511,6 +314,61 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                 }
             }
         };
+    }
+
+    private void pushData() {
+        zLoadingDialog.show();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (Utils.isNetworkConnected(SaleDeliveryDetail.this)) {
+                    try {
+                        //Y代表已经上传过
+                        if (iaAlreadyUploadAll()) {
+                            Toast.makeText(SaleDeliveryDetail.this, "该发货单已经全部上传", Toast.LENGTH_LONG).show();
+                        } else if (isCwarenameSame()) {
+
+
+                            String uploadResp = DataHelper.uploadSaleDeliveryVBill("R08", db4,current_sale_delivery_vbillcodeRecv,
+                                    SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
+                            zLoadingDialog.dismiss();
+                            if (!(null == uploadResp)) {
+                                if (!(null == lisitemtall)) {
+
+                                    SalesRespBean respBean = new Gson().fromJson(uploadResp, SalesRespBean.class);
+                                    SalesRespBeanValue respBeanValue =new Gson().fromJson(respBean.getValue(), SalesRespBeanValue.class);
+                                    Bundle bundle = new Bundle();
+                                    bundle.putString("uploadResp", respBeanValue.getErrmsg());
+                                    Message msg = new Message();
+                                    if (respBeanValue.getErrno().equals("0")) {
+                                        //19弹出erromsg
+                                        updateAllItemUploadFlag(lisitemtall);
+                                        msg.what = 0x15;
+                                    } else {
+                                        //19弹出erromsg
+                                        msg.what = 0x19;
+                                    }
+                                    msg.setData(bundle);
+                                    saleDeliveryDetailHandler.sendMessage(msg);
+                                }
+                            } else {
+                                Message msg = new Message();
+                                msg.what = 0x18;
+                                saleDeliveryDetailHandler.sendMessage(msg);
+                            }
+                        } else {
+                            Toast.makeText(SaleDeliveryDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(SaleDeliveryDetail.this, e.toString(), Toast.LENGTH_LONG).show();
+
+                        return;
+                    }
+                }
+            }
+        }).start();
     }
 
     private void myadapter() {
@@ -595,7 +453,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     protected void onStart() {
 
         super.onStart();
-        Log.i("on start-->","");
+
         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
         adapter = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
@@ -837,20 +695,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
 
 
 
-    private String getCwarehousecode(String cwarename) {
-        Cursor cursor = db4.rawQuery("select code from Warehouse where name=?",
-                new String[]{cwarename});
-        String cwarehousecode = null;
-        if (cursor != null && cursor.getCount() > 0) {
-            while (cursor.moveToNext()) {
-                cwarehousecode = cursor.getString(cursor.getColumnIndex("code"));
-            }
-            cursor.close();
-        } else {
-            cwarehousecode = "";
-        }
-        return cwarehousecode;
-    }
+
 
     public String QueryMaccodeFromDB(String vbillcode, String vcooporderbcode_b, String matrcode) {
         String maccode = "error";

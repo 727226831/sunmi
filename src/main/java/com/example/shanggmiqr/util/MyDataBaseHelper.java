@@ -75,7 +75,7 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
             + "id integer primary key autoincrement," + "vbillcode text,"+ "vcooporderbcode_b text,"+ "matrcode text," + "platecode text,"
             + "boxcode text," + "num text," + "prodcutcode text," + "itemuploadflag text,"+ "xlh text)";
     public static final String PurchaseReturn = "create table PurchaseReturn ("
-            + "id integer primary key autoincrement,"+ "vbillcode text," + "dbilldate text,"+ "dr integer,"+ "ts text," + "flag text," + "org text)";
+            + "id integer primary key autoincrement,"+ "vbillcode text," + "dbilldate text,"+ "dr integer,"+ "ts text," + "flag text," + "num text," + "org text)";
     public static final String PurchaseReturnBody = "create table PurchaseReturnBody ("
             + "id integer primary key autoincrement," + "vbillcode text,"+ "itempk text," + "materialname text," + "nnum text,"
             + "warehouse text," + "maccode text," + "materialcode text," + "scannum text,"+"issn text,"+ "uploadflag text,"+ "orginal_cwarename text)";

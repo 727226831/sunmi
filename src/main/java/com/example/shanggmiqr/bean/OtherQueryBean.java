@@ -63,7 +63,16 @@ public class OtherQueryBean {
             public String cwarecode;
             public String cwarename;
             public String dbilldate;
-            public String dr;
+
+            public int getDr() {
+                return dr;
+            }
+
+            public void setDr(int dr) {
+                this.dr = dr;
+            }
+
+            public int dr;
             private List<OtherQueryBean.DataBean.BodyBean> body;
 
             public void setPobillcode(String pobillcode) {
@@ -81,9 +90,7 @@ public class OtherQueryBean {
             public void setDbilldate(String dbilldate) {
                 this.dbilldate = dbilldate;
             }
-            public void setDr(String dr) {
-                this.dr = dr;
-            }
+
             public void setBody(List<OtherQueryBean.DataBean.BodyBean> body) {
                 this.body = body;
             }
@@ -103,9 +110,7 @@ public class OtherQueryBean {
             public String getDbilldate() {
                 return dbilldate;
             }
-            public String getDr() {
-                return dr;
-            }
+
 
             public List<OtherQueryBean.DataBean.BodyBean> getBody() {
                 return body;
