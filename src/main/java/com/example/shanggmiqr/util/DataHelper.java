@@ -749,11 +749,9 @@ public class DataHelper {
 
             }
             cursor.close();
-        for (int i = 0; i <otherOutgoingSend.getBody().size() ; i++) {
 
-        }
             for (int i = 0; i <otherOutgoingSend.getBody().size() ; i++) {
-                if(otherOutgoingSend.getBody().get(i).getScannum().equals("0")){
+                if(otherOutgoingSend.getBody().get(i).getScannum()==null||otherOutgoingSend.getBody().get(i).getScannum().equals("0")){
                    otherOutgoingSend.getBody().remove(i);
                    i--;
                 }else if(otherOutgoingSend.getBody().get(i).getUploadflag().equals("Y")){

@@ -22,7 +22,7 @@ public class AllocateTransferBodyBean {
     public String address;
     public String materialcode;
     public String materialclasscode;
-    public String nnum;
+    public String nnum="0";
     public String rwarehousecode;
     public String cwarehousecode;
 

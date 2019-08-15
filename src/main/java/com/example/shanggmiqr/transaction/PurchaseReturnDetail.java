@@ -264,12 +264,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
             public void run() {
                 if (Utils.isNetworkConnected(PurchaseReturnDetail.this)) {
                     try {
-                        //Y代表已经上传过
-                        if (iaAlreadyUploadSingle(itempk)) {
-                            Message msg = new Message();
-                            msg.what = 0x13;
-                            saleDeliveryDetailHandler.sendMessage(msg);
-                        } else {
+
                             String uploadResp = DataHelper.uploadSaleDeliveryVBill("R41",db4, current_sale_delivery_vbillcodeRecv,itempk,
                                     PurchaseReturnDetail.this,"",expressCode,getIntent().getIntExtra("type",-1));
                             if (!(null == uploadResp)) {
@@ -298,7 +293,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                                 msg.what = 0x18;
                                 saleDeliveryDetailHandler.sendMessage(msg);
                             }
-                        }
+
 
                     } catch (Exception e) {
                         e.printStackTrace();

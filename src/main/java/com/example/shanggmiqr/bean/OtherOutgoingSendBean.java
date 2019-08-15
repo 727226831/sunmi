@@ -73,6 +73,25 @@ public class OtherOutgoingSendBean implements Serializable {
         public List<SnBean> sn;
         public String vcooporderbcode_b;
 
+        public String getScannum() {
+            return scannum;
+        }
+
+        public void setScannum(String scannum) {
+            this.scannum = scannum;
+        }
+
+        public String getUploadflag() {
+            return uploadflag;
+        }
+
+        public void setUploadflag(String uploadflag) {
+            this.uploadflag = uploadflag;
+        }
+
+        private String scannum;
+        private String uploadflag;
+
         public String getItempk() {
             return itempk;
         }

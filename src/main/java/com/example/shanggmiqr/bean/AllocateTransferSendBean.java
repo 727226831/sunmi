@@ -137,6 +137,16 @@ public class AllocateTransferSendBean {
         public List<SnBean> sn;
         private String drwarehouse;
 
+        public String getUploadflag() {
+            return uploadflag;
+        }
+
+        public void setUploadflag(String uploadflag) {
+            this.uploadflag = uploadflag;
+        }
+
+        private String uploadflag;
+
         public String getDrwarehouse() {
             return drwarehouse;
         }

@@ -852,7 +852,7 @@ public class LoanDetail extends AppCompatActivity {
         SoapObject request = new SoapObject(namespace, methodName);
         // 设置需调用WebService接口需要传入的两个参数string、string1
         ArrayList<SaleDeliverySendBean.BodyBean> bodylist = new ArrayList<SaleDeliverySendBean.BodyBean>();
-        Cursor cursor2 = db4.rawQuery("select itempk,materialcode,cwarename,nnum,scannum from LoanBody where pobillcode=? ", new String[]{current_sale_delivery_vbillcodeRecv});
+        Cursor cursor2 = db4.rawQuery("select itempk,materialcode,cwarename,nnum,scannum,uploadflag from LoanBody where pobillcode=? ", new String[]{current_sale_delivery_vbillcodeRecv});
         if (cursor2 != null && cursor2.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor2.moveToNext()) {
@@ -860,7 +860,7 @@ public class LoanDetail extends AppCompatActivity {
                 bean.itempk = cursor2.getString(cursor2.getColumnIndex("itempk"));
                 bean.materialcode = cursor2.getString(cursor2.getColumnIndex("materialcode"));
                 bean.setCwarecode(DataHelper.getCwarehousecode(cursor2.getString(cursor2.getColumnIndex("cwarename")),db4));
-
+                bean.setUploadflag(cursor2.getString(cursor2.getColumnIndex("uploadflag")));
                 String num_check = cursor2.getString(cursor2.getColumnIndex("nnum"));
                 if (Integer.parseInt(num_check) < 0) {
                     current_bisreturn = "Y";
@@ -920,6 +920,17 @@ public class LoanDetail extends AppCompatActivity {
         otherOutgoingSend.setBillmaker(DataHelper.getUser(LoanDetail.this));
         otherOutgoingSend.setWlorgcode(wlCode);
         otherOutgoingSend.setWlbillcode(expressCode);
+        Log.i("-->",new Gson().toJson(otherOutgoingSend));
+        for (int i = 0; i <otherOutgoingSend.getBody().size() ; i++) {
+            if(otherOutgoingSend.getBody().get(i).getNnum().equals("0")){
+                otherOutgoingSend.getBody().remove(i);
+                i--;
+            }else if(otherOutgoingSend.getBody().get(i).getUploadflag().equals("Y")){
+                otherOutgoingSend.getBody().remove(i);
+                i--;
+            }
+
+        }
         Gson gson = new Gson();
         String userSendBean = gson.toJson(otherOutgoingSend);
 

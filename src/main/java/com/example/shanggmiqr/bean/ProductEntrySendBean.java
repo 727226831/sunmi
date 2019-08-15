@@ -63,6 +63,16 @@ public class ProductEntrySendBean {
         public String itempk;
         public String nnum;
         public String pch;
+
+        public String getUploadflag() {
+            return uploadflag;
+        }
+
+        public void setUploadflag(String uploadflag) {
+            this.uploadflag = uploadflag;
+        }
+
+        private String uploadflag;
         public List<SnBean> sn;
 
         public String getItempk() {

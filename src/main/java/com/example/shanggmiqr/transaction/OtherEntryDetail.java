@@ -1,5 +1,6 @@
 package com.example.shanggmiqr.transaction;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -130,6 +131,7 @@ public class OtherEntryDetail extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 adapter.select(position);
                 otherEntryScanButton.setEnabled(true);
+                uploadallOtherentryButton.setEnabled(true);
                 OtherBodyBean otherOutgoingBodyBean = (OtherBodyBean) adapter.getItem(position);
                 chosen_line_maccode = otherOutgoingBodyBean.getMaccode();
                 chosen_line_materialcode = otherOutgoingBodyBean.getMaterialcode();
@@ -137,6 +139,8 @@ public class OtherEntryDetail extends AppCompatActivity {
                 chosen_line_uploadnum = otherOutgoingBodyBean.getUploadnum();
                 chosen_line_vcooporderbcode_b = otherOutgoingBodyBean.getVcooporderbcode_b();
                 scannum=otherOutgoingBodyBean.getScannum();
+
+
 
 
 
@@ -191,7 +195,7 @@ public class OtherEntryDetail extends AppCompatActivity {
                                             msg.setData(bundle);
                                             otherEntryDetailHandler.sendMessage(msg);
                                         } else if (respBean.getIssuccess().equals("Y")) {
-                                            updateAllUploadStatus(current_pobillcodeRecv);
+                                            updateAllUploadStatus();
                                             bundle.putString("uploadResp", respBean.getMsg());
                                             Message msg = new Message();
                                             msg.what = 0x18;
@@ -306,48 +310,43 @@ public class OtherEntryDetail extends AppCompatActivity {
         return true;
     }
 
-    private void updateAllUploadStatus(String current_pobillcodeRecv) {
-        Cursor cursor=null;
-        switch (type){
-            case 1:
-              //  db4.execSQL("update OtherEntryScanResult set itemuploadflag=? where pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
-                //所有行号发送状态全部置为Y
-                db4.execSQL("update OtherEntryBody set uploadflag=? where pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
-                //其他出入库只运行成功发送一次，故更新flag为Y
-                db4.execSQL("update OtherEntry set flag=? where pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
-               cursor = db4.rawQuery("select vcooporderbcode_b,scannum from OtherEntryBody where uploadflag=? and pobillcode=?", new String[]{"Y",current_pobillcodeRecv});
-                if (cursor != null && cursor.getCount() > 0) {
-                    while (cursor.moveToNext()) {
-                        String tempnum = cursor.getString(cursor.getColumnIndex("scannum"));
-                        String vcooporderbcode_b = cursor.getString(cursor.getColumnIndex("vcooporderbcode_b"));
-                        db4.execSQL("update OtherEntryBody set uploadnum=? where pobillcode=? and vcooporderbcode_b=?", new String[]{tempnum, current_pobillcodeRecv, vcooporderbcode_b});
+    private void updateAllUploadStatus() {
+        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
+
+            if(!listAllBodyPostition.get(i).getScannum().equals("0")){
+
+                if(listAllBodyPostition.get(i).getNnum()==Integer.parseInt(listAllBodyPostition.get(i).getScannum())) {
+                    ContentValues contentValues=new ContentValues();
+                    contentValues.put("uploadflag","Y");
+                    contentValues.put("uploadnum",listAllBodyPostition.get(i).getScannum());
+                    switch (type){
+                        case 1:
+                            db4.update("OtherEntryBody",contentValues,"pobillcode=? and vcooporderbcode_b=?",
+                                    new String[]{current_pobillcodeRecv, listAllBodyPostition.get(i).getVcooporderbcode_b()});
+                            break;
+                        case 2:
+
+                            db4.update("OtherOutgoingBody",contentValues,"pobillcode=? and vcooporderbcode_b=?",
+                                    new String[]{current_pobillcodeRecv, listAllBodyPostition.get(i).getVcooporderbcode_b()});
+                            break;
                     }
-                    cursor.close();
+
+                    db4.execSQL("update SaleDeliveryScanResult set itemuploadflag=? where vbillcode=? and vcooporderbcode_b=?",
+                            new String[]{"Y", current_pobillcodeRecv, listAllBodyPostition.get(i).getVcooporderbcode_b()});
+
                 }
-                break;
-            case 2:
-                //单个item扫描结果全部置为Y
-              //  db4.execSQL("update OtherOutgoingScanResult set itemuploadflag=? where pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
-                //所有行号发送状态全部置为Y
-                db4.execSQL("update OtherOutgoingBody set uploadflag=? where pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
-                //其他出入库只运行成功发送一次，故更新flag为Y
-                db4.execSQL("update OtherOutgoing set flag=? where pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
-                cursor = db4.rawQuery("select vcooporderbcode_b,scannum from OtherOutgoingBody where uploadflag=? and pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
-                if (cursor != null && cursor.getCount() > 0) {
-                    while (cursor.moveToNext()) {
-                        String tempnum = cursor.getString(cursor.getColumnIndex("scannum"));
-                        String vcooporderbcode_b = cursor.getString(cursor.getColumnIndex("vcooporderbcode_b"));
-                        db4.execSQL("update OtherOutgoingBody set uploadnum=? where pobillcode=? and vcooporderbcode_b=?", new String[]{tempnum, current_pobillcodeRecv, vcooporderbcode_b});
-                    }
-                    cursor.close();
-                }
-                break;
+            }
         }
-        db4.execSQL("update SaleDeliveryScanResult set itemuploadflag=? where vbillcode=?", new String[]{"Y", current_pobillcodeRecv});
-        //单个item扫描结果全部置为Y
+
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        otherEntryScanButton.setEnabled(false);
+        uploadallOtherentryButton.setEnabled(false);
+    }
 
     public ArrayList<OtherBodyBean> QueryOtherEntryBody(String current_pobillcodeRecv) {
         ArrayList<OtherBodyBean> list = new ArrayList<OtherBodyBean>();
@@ -413,11 +412,11 @@ public class OtherEntryDetail extends AppCompatActivity {
         Cursor cursor2=null;
         switch (type){
             case 1:
-                cursor2 = db4.rawQuery("select materialcode,nnum,pch,vcooporderbcode_b,scannum from OtherEntryBody where pobillcode=?",
+                cursor2 = db4.rawQuery("select materialcode,nnum,pch,vcooporderbcode_b,scannum,uploadflag from OtherEntryBody where pobillcode=?",
                         new String[]{current_pobillcodeRecv});
                 break;
             case 2:
-                cursor2 = db4.rawQuery("select materialcode,nnum,pch,vcooporderbcode_b,scannum from OtherOutgoingBody where pobillcode=?",
+                cursor2 = db4.rawQuery("select materialcode,nnum,pch,vcooporderbcode_b,scannum,uploadflag from OtherOutgoingBody where pobillcode=?",
                         new String[]{current_pobillcodeRecv});
                 break;
         }
@@ -429,9 +428,11 @@ public class OtherEntryDetail extends AppCompatActivity {
                 bean.materialcode = cursor2.getString(cursor2.getColumnIndex("materialcode"));
                 //要求上传的是扫描的数量，虽然名字是nnum
                 bean.nnum = cursor2.getString(cursor2.getColumnIndex("scannum"));
+                bean.setScannum(cursor2.getString(cursor2.getColumnIndex("scannum")));
                 bean.pch = cursor2.getString(cursor2.getColumnIndex("pch"));
                 bean.vcooporderbcode_b = cursor2.getString(cursor2.getColumnIndex("vcooporderbcode_b"));
                 bean.setItempk( cursor2.getString(cursor2.getColumnIndex("vcooporderbcode_b")));
+                bean.setUploadflag(cursor2.getString(cursor2.getColumnIndex("uploadflag")));
                 ArrayList<OtherOutgoingSendBean.BodyBean.SnBean> snlist = new ArrayList<OtherOutgoingSendBean.BodyBean.SnBean>();
                 Cursor cursor3=null;
 
@@ -459,6 +460,16 @@ public class OtherEntryDetail extends AppCompatActivity {
 
 
         OtherOutgoingSendBean otherOutgoingSend = new OtherOutgoingSendBean("APP", current_pobillcodeRecv, current_cwarecodeRecv, bodylist);
+        for (int i = 0; i <otherOutgoingSend.getBody().size() ; i++) {
+            if(otherOutgoingSend.getBody().get(i).getScannum().equals("0")){
+                otherOutgoingSend.getBody().remove(i);
+                i--;
+            }else if(otherOutgoingSend.getBody().get(i).getUploadflag().equals("Y")){
+                otherOutgoingSend.getBody().remove(i);
+                i--;
+            }
+
+        }
         Gson gson = new Gson();
         String userSendBean = gson.toJson(otherOutgoingSend);
         request.addProperty("string", workcode);

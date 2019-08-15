@@ -110,6 +110,9 @@ public class SaleDeliverySendBean {
         this.wlbill = wlbill;
         this.body = body;
     }
+    public SaleDeliverySendBean(){
+
+    }
 
     public String getCwhsmanagercode() {
         return cwhsmanagercode;
@@ -213,6 +216,16 @@ public class SaleDeliverySendBean {
 
         public String materialcode;
         public String nnum;
+
+        public String getScannum() {
+            return scannum;
+        }
+
+        public void setScannum(String scannum) {
+            this.scannum = scannum;
+        }
+
+        private String scannum;
         public String pch;
         public List<SnBean> sn;
 
@@ -255,6 +268,16 @@ public class SaleDeliverySendBean {
         }
 
         public String itempk;
+
+        public String getUploadflag() {
+            return uploadflag;
+        }
+
+        public void setUploadflag(String uploadflag) {
+            this.uploadflag = uploadflag;
+        }
+
+        private String uploadflag;
 
 
 

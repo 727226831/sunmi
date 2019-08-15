@@ -464,7 +464,8 @@ public class ProductEntryDetail extends AppCompatActivity {
     private void updateData(String uplodaflag,ProductEntryBodyBean productEntryBodyBean) {
         ContentValues contentValues=new ContentValues();
         contentValues.put("uploadflag",uplodaflag);
-        contentValues.put("nnum",productEntryBodyBean.getNnum());
+        int nnum=Integer.parseInt(productEntryBodyBean.getNnum())+Integer.parseInt(productEntryBodyBean.getScannum());
+        contentValues.put("nnum",nnum+"");
         contentValues.put("ysnum",productEntryBodyBean.getYsnum());
         contentValues.put("scannum",productEntryBodyBean.getScannum());
         db4.update("ProductEntryBody",contentValues,"billcode=? and itempk=?",
@@ -489,13 +490,14 @@ public class ProductEntryDetail extends AppCompatActivity {
         SoapObject request = new SoapObject(namespace, methodName);
         // 设置需调用WebService接口需要传入的两个参数string、string1
         ArrayList<ProductEntrySendBean.BodyBean> bodylist = new ArrayList<ProductEntrySendBean.BodyBean>();
-        Cursor cursor2 = db4.rawQuery("select itempk,materialcode,ysnum,nnum,scannum from ProductEntryBody where billcode=? ", new String[]{current_sale_delivery_vbillcodeRecv});
+        Cursor cursor2 = db4.rawQuery("select itempk,materialcode,ysnum,nnum,scannum,uploadflag from ProductEntryBody where billcode=? ", new String[]{current_sale_delivery_vbillcodeRecv});
         if (cursor2 != null && cursor2.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor2.moveToNext()) {
                 ProductEntrySendBean.BodyBean bean = new ProductEntrySendBean.BodyBean();
                 bean.itempk = cursor2.getString(cursor2.getColumnIndex("itempk"));
                 String num_check = cursor2.getString(cursor2.getColumnIndex("nnum"));
+                bean.setUploadflag(cursor2.getString(cursor2.getColumnIndex("uploadflag")));
                 bean.pch = "";
                 int scanNum = 0;
                 ArrayList<ProductEntrySendBean.BodyBean.SnBean> snlist = new ArrayList<ProductEntrySendBean.BodyBean.SnBean>();
@@ -540,6 +542,9 @@ public class ProductEntryDetail extends AppCompatActivity {
         }
         for (int i = 0; i <otherOutgoingSend.getBody().size() ; i++) {
             if(otherOutgoingSend.getBody().get(i).getNnum().equals("0")){
+                otherOutgoingSend.getBody().remove(i);
+                i--;
+            }else if(otherOutgoingSend.getBody().get(i).getUploadflag().equals("Y")){
                 otherOutgoingSend.getBody().remove(i);
                 i--;
             }

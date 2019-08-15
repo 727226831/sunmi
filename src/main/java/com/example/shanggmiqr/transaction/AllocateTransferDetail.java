@@ -119,7 +119,6 @@ public class AllocateTransferDetail extends AppCompatActivity {
         zLoadingDialog= new ZLoadingDialog(AllocateTransferDetail.this);
         zLoadingDialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
                 .setLoadingColor(Color.BLUE)//颜色
-                .setHintText("数据信息下载中...")
                 .setCancelable(false)
                 .setCanceledOnTouchOutside(false)
                 .setHintTextSize(16) // 设置字体大小 dp
@@ -399,7 +398,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
         chosen_line_rwarehousecode = local_saleDeliveryBodyBean.getRwarehousecode();
         chosen_line_scannum = local_saleDeliveryBodyBean.getScannum();
         chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-
+        //updateAllUploadFlag();
 
     }
 
@@ -576,13 +575,15 @@ public class AllocateTransferDetail extends AppCompatActivity {
                     Log.i("update-->",listAllBodyPostition.get(i).getItempk()+"/PY");
                 }else {
                     db4.execSQL("update AllocateTransferBody set uploadflag=? where billno=? and itempk=? ",
-                            new String[]{"Y", current_sale_delivery_vbillcodeRecv,  listAllBodyPostition.get(i).getItempk()});
+                            new String[]{"Y", current_sale_delivery_vbillcodeRecv,listAllBodyPostition.get(i).getItempk()});
                     Log.i("update-->",listAllBodyPostition.get(i).getItempk()+"/Y");
                 }
+                db4.execSQL("update AllocateTransferScanResult set itemuploadflag=? where billno=? and itempk=? ",
+                        new String[]{"Y", current_sale_delivery_vbillcodeRecv,  listAllBodyPostition.get(i).getItempk()});
+                Log.i("update scan-->",listAllBodyPostition.get(i).getItempk()+"/Y");
             }
         }
-        db4.execSQL("update AllocateTransferScanResult set itemuploadflag=? where billno=? and itempk=? ",
-                new String[]{"Y", current_sale_delivery_vbillcodeRecv,  chosen_line_itempk});
+
 
 
     }
@@ -605,7 +606,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
         SoapObject request = new SoapObject(namespace, methodName);
         // 设置需调用WebService接口需要传入的两个参数string、string1
         ArrayList<AllocateTransferSendBean.BodyBean> bodylist = new ArrayList<AllocateTransferSendBean.BodyBean>();
-            Cursor cursor2 = db4.rawQuery("select itempk,materialcode,address,nnum,scannum,rwarehousecode,cwarehousecode from AllocateTransferBody where billno=? ", new String[]{current_sale_delivery_vbillcodeRecv});
+            Cursor cursor2 = db4.rawQuery("select itempk,materialcode,address,nnum,scannum,rwarehousecode,cwarehousecode,uploadflag from AllocateTransferBody where billno=? ", new String[]{current_sale_delivery_vbillcodeRecv});
         if (cursor2 != null && cursor2.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor2.moveToNext()) {
@@ -615,6 +616,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                 bean.materialcode = cursor2.getString(cursor2.getColumnIndex("materialcode"));
                 bean.setCwarehousecode(cursor2.getString(cursor2.getColumnIndex("cwarehousecode")));
                 bean.setDrwarehouse(cursor2.getString(cursor2.getColumnIndex("rwarehousecode")));
+                bean.setUploadflag(cursor2.getString(cursor2.getColumnIndex("uploadflag")));
 
                 int scanNum = 0;
                 ArrayList<AllocateTransferSendBean.BodyBean.SnBean> snlist = new ArrayList<AllocateTransferSendBean.BodyBean.SnBean>();
@@ -677,6 +679,9 @@ public class AllocateTransferDetail extends AppCompatActivity {
        otherOutgoingSend.setCwhsmanagercode(DataHelper.getUser(AllocateTransferDetail.this));
         for (int i = 0; i <otherOutgoingSend.getBody().size() ; i++) {
              if(otherOutgoingSend.getBody().get(i).getSfnum().equals("0")){
+                 otherOutgoingSend.getBody().remove(i);
+                 i--;
+             }else if(otherOutgoingSend.getBody().get(i).getUploadflag().equals("Y")){
                  otherOutgoingSend.getBody().remove(i);
                  i--;
              }
