@@ -195,6 +195,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                                         dialog.dismiss();
                                         return;
                                     }
+                                    DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),SaleDelivery.this);
                                     Gson gson7 = new Gson();
                                     final SaleDeliveryQuery saleDeliveryQuery = gson7.fromJson(saleDeliveryData, SaleDeliveryQuery.class);
 
@@ -731,7 +732,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
                 list.add(bean);
-                DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),list.get(0).getDbilldate(),SaleDelivery.this);
+
             }
 
         cursor.close();

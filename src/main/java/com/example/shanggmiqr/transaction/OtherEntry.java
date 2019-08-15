@@ -230,6 +230,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                                         dialog.dismiss();
                                         return;
                                     }
+                                    DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),OtherEntry.this);
                                     Gson gson7 = new Gson();
                                     OtherQueryBean otherEntryBean = gson7.fromJson(outEntryData, OtherQueryBean.class);
 
@@ -637,7 +638,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
                 list.add(bean);
 
             }
-            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),list.get(0).getDbilldate(),OtherEntry.this);
+
             cursor.close();
         }
 

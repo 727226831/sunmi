@@ -135,8 +135,6 @@ public class OtherEntryQRDetail extends AppCompatActivity {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
                 OtherOutgoingQrDetailBean bean = new OtherOutgoingQrDetailBean();
-//                bean.platecode = cursor.getString(cursor.getColumnIndex("platecode"));
-//                bean.boxcode = cursor.getString(cursor.getColumnIndex("boxcode"));
                 bean.prodcutcode = cursor.getString(cursor.getColumnIndex("prodcutcode"));
                 bean.itemuploadflag = cursor.getString(cursor.getColumnIndex("itemuploadflag"));
                 list.add(bean);

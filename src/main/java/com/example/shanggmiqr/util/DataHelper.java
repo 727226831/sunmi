@@ -194,7 +194,7 @@ public class DataHelper {
         ContentValues contentValues=new ContentValues();
         contentValues.put("scannum",scannum);
 
-        Log.i("update scannum-->","is run"+type);
+
         switch (type){
             case 0:
                 db.update("SaleDeliveryBody",contentValues,"vbillcode=? and vcooporderbcode_b=?",
@@ -257,6 +257,7 @@ public class DataHelper {
         }
 
         for (OtherQueryBean.DataBean ob : otherEntryBeanList) {
+
             switch (ob.getDr()){
                 case 0:
                     insertData(ob,db,otherbodyTable,otherTable);
@@ -497,7 +498,7 @@ public class DataHelper {
         String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
         return  begintime;
     }
-    public  static  void putLatestdownloadbegintime(int type,String time,Context context){
+    public  static  void putLatestdownloadbegintime(int type,Context context){
         String name=null;
         switch (type){
             case 0:
@@ -527,7 +528,7 @@ public class DataHelper {
 
         }
         SharedPreferences latestDBTimeInfo = context.getSharedPreferences(name, 0);
-        latestDBTimeInfo.edit().putString("latest_download_ts_begintime",time).commit();
+        latestDBTimeInfo.edit().putString("latest_download_ts_begintime",Utils.getCurrentDateTimeNew()).commit();
 
 
     }
@@ -601,7 +602,7 @@ public class DataHelper {
         return tempperiod;
     }
 
-    public static String uploadSaleDeliveryVBill(String workcode, SQLiteDatabase db,String vbillcode,Context context,String company,
+    public static String uploadSaleDeliveryVBill(String workcode, SQLiteDatabase db,String vbillcode,String itempk,Context context,String company,
     String expresscode,int type) {
         String WSDL_URI = BaseConfig.getNcUrl();//wsdl 的uri
         String namespace = "http://schemas.xmlsoap.org/soap/envelope/";//namespace
@@ -613,15 +614,16 @@ public class DataHelper {
 
         String shunm="0";
         // 设置需调用WebService接口需要传入的两个参数string、string1
+
         ArrayList<SaleDeliverySendBean.BodyBean> bodylist = new ArrayList<SaleDeliverySendBean.BodyBean>();
         Cursor cursor = null;
         switch (type){
             case 0:
-                cursor=db.rawQuery("select * from SaleDeliveryBody where vbillcode=? ",
+                cursor=db.rawQuery("select * from SaleDeliveryBody where vbillcode=?  ",
                         new String[]{vbillcode});
                 break;
             case 6:
-                cursor=db.rawQuery("select * from PurchaseArrivalBody where vbillcode=? ",
+                cursor=db.rawQuery("select * from PurchaseArrivalBody where vbillcode=?   ",
                         new String[]{vbillcode});
                 break;
             case 7:
@@ -634,19 +636,24 @@ public class DataHelper {
 
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
-
                 SaleDeliverySendBean.BodyBean bean = new SaleDeliverySendBean.BodyBean();
+
+                bean.nnum=cursor.getString(cursor.getColumnIndex("nnum"));
+
                 switch (type){
                     case 0:
                         bean.itempk = cursor.getString(cursor.getColumnIndex("vcooporderbcode_b"));
                         bean.materialcode = cursor.getString(cursor.getColumnIndex("matrcode"));
                         warehousecode = getCwarehousecode(cursor.getString(cursor.getColumnIndex("cwarename")),db);
+                        bean.setUploadflag(cursor.getString(cursor.getColumnIndex("uploadflag")));
+
                         break;
                     case 6:
                         bean.itempk = cursor.getString(cursor.getColumnIndex("itempk"));
                         bean.materialcode = cursor.getString(cursor.getColumnIndex("materialcode"));
                         warehousecode = cursor.getString(cursor.getColumnIndex("warehouse"));
                         bean.setWarehouse(cursor.getString(cursor.getColumnIndex("warehouse")));
+                        bean.setUploadflag(cursor.getString(cursor.getColumnIndex("uploadflag")));
 
                         break;
                     case 7:
@@ -654,8 +661,14 @@ public class DataHelper {
                         bean.materialcode = cursor.getString(cursor.getColumnIndex("materialcode"));
                         bean.setWarehouse(cursor.getString(cursor.getColumnIndex("warehouse")));
                         warehousecode = cursor.getString(cursor.getColumnIndex("warehouse"));
+                        bean.setUploadflag(cursor.getString(cursor.getColumnIndex("uploadflag")));
 
                         break;
+                }
+
+                bean.setScannum(cursor.getString(cursor.getColumnIndex("scannum")));
+                if(bean.getWarehouse()==null){
+                    bean.setWarehouse("");
                 }
 
 
@@ -666,7 +679,7 @@ public class DataHelper {
 
 
                 bean.pch = "";
-                int scanNum = 0;
+
                 ArrayList<SaleDeliverySendBean.BodyBean.SnBean> snlist = new ArrayList<SaleDeliverySendBean.BodyBean.SnBean>();
 
                     Cursor cursor3 = db.rawQuery("select prodcutcode,xlh from SaleDeliveryScanResult where  vbillcode=? and matrcode=? and vcooporderbcode_b=? and itemuploadflag=?",
@@ -678,38 +691,25 @@ public class DataHelper {
                             String prodcutcode=cursor3.getString(cursor3.getColumnIndex("prodcutcode"));
 
                             snbean.txm = prodcutcode;
-                            if(prodcutcode.length()>5) {
-                                snbean.xlh = prodcutcode.substring(4, prodcutcode.length());
-                            }else {
-                                snbean.xlh="";
-                            }
+                            snbean.xlh = cursor3.getString(cursor3.getColumnIndex("xlh"));
                             snbean.xm = "";
                             snbean.tp = "";
-
-                            scanNum += 1;
                             snlist.add(snbean);
                             shunm=cursor3.getCount()+"";
                         }
                         cursor3.close();
-                   if(type!=0 && shunm.equals("0")){
-                       return  "{\"name\":\"anyType\",\"namespace\":\"http://www.w3.org/2001/XMLSchema\"," +
-                               "\"value\":\"{\\\"errno\\\":\\\"1\\\",\\\"errmsg\\\":\\\"数量不能为空\\\"}\",\"attributes\":[]}";
-                   }
+
                     bean.setShnum(shunm);
                     bean.sn = snlist;
                     //提交过一次的二次提交时不应该被计数
-                    bean.nnum = String.valueOf(scanNum);
+
                     bodylist.add(bean);
                 }
             cursor.close();
 
 
 
-        if (bodylist.size()==0){
 
-            Toast.makeText(context, "请先扫码再进行发货上传操作", Toast.LENGTH_LONG).show();
-            return null;
-        }
         //通过物流公司名称计算物流公司编号
         String wlCode = "";
         Cursor cursorLogistics = db.rawQuery("select code from LogisticsCompany where name=?",
@@ -728,6 +728,7 @@ public class DataHelper {
             otherOutgoingSend.setCwhsmanagercode( currentAccount.getString("user",""));
             otherOutgoingSend.setAppuser(currentAccount.getString("user",""));
             otherOutgoingSend.setNcode(vbillcode);
+
 
             switch (type){
 
@@ -748,6 +749,20 @@ public class DataHelper {
 
             }
             cursor.close();
+        for (int i = 0; i <otherOutgoingSend.getBody().size() ; i++) {
+
+        }
+            for (int i = 0; i <otherOutgoingSend.getBody().size() ; i++) {
+                if(otherOutgoingSend.getBody().get(i).getScannum().equals("0")){
+                   otherOutgoingSend.getBody().remove(i);
+                   i--;
+                }else if(otherOutgoingSend.getBody().get(i).getUploadflag().equals("Y")){
+                    otherOutgoingSend.getBody().remove(i);
+                    i--;
+                }
+
+           }
+
 
             Gson gson = new Gson();
             String userSendBean = gson.toJson(otherOutgoingSend);
@@ -755,7 +770,7 @@ public class DataHelper {
             request.addProperty("string", workcode);
             request.addProperty("string1", userSendBean);
 
-  //      }
+
         Log.i("request-->",request.toString());
 
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);

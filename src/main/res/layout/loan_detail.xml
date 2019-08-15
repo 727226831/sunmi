@@ -67,6 +67,7 @@
                 android:text="扫码" />
 
             <Button
+                android:visibility="gone"
                 android:id="@+id/upload_loanDetail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -85,7 +86,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="95dp"
                 android:layout_marginTop="10dp"
-                android:text="全部提交" />
+                android:text="提交" />
 
         </LinearLayout>
 

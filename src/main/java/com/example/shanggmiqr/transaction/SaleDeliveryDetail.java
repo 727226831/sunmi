@@ -3,13 +3,11 @@ package com.example.shanggmiqr.transaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -26,32 +24,21 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.shanggmiqr.BusinessOperation;
-import com.example.shanggmiqr.MainActivity;
-import com.example.shanggmiqr.bean.PurchaseArrivalBean;
 import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.SaleDeliveryBodyTableAdapter;
 import com.example.shanggmiqr.bean.SaleDeliveryBodyBean;
-import com.example.shanggmiqr.bean.SaleDeliverySendBean;
 import com.example.shanggmiqr.bean.SaleDeliveryUploadFlagBean;
 import com.example.shanggmiqr.bean.SalesRespBean;
 import com.example.shanggmiqr.bean.SalesRespBeanValue;
-import com.example.shanggmiqr.util.BaseConfig;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
 import com.google.gson.Gson;
 import com.zyao89.view.zloading.ZLoadingDialog;
 import com.zyao89.view.zloading.Z_TYPE;
 
-import org.ksoap2.serialization.SoapObject;
-import org.ksoap2.serialization.SoapSerializationEnvelope;
-import org.ksoap2.transport.HttpTransportSE;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.IOException;;
+;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -98,11 +85,15 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     //要上传行号的集合
     private List<String> list;
     //要上传的产品码的集合
-    private List<String> listitem;
-    private List<SaleDeliveryUploadFlagBean> lisitemtall;
+    private List<String> listAll;
+
+
+
     //nnum为正 bisreturn为N 为负则为Y
 
     private ZLoadingDialog zLoadingDialog;
+    private int selectposition;
+    private Boolean isSingle=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,6 +166,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 expressCode = expressCodeEditText.getText().toString();
+                isSingle=false;
                 if ("".equals(expressCode) || "".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)) {
                     if("".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)){
                         chooseLogisticscompany ="";
@@ -186,7 +178,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                 @Override
                                 public void onClick(final DialogInterface dialog, int which) {
                                     dialog.dismiss();
-                                    pushData();
+                                    pushData(null);
 
                                 }
                             })
@@ -200,7 +192,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                             .show();
                 } else {
 
-                  pushData();
+                  pushData(null);
                 }
 
             }
@@ -209,6 +201,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 expressCode = expressCodeEditText.getText().toString();
+                isSingle=true;
 
                 if ("".equals(expressCode) || "".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)) {
                     if("".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)){
@@ -222,7 +215,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                 public void onClick(final DialogInterface dialog, int which) {
 
                                     dialog.dismiss();
-                                  pushData();
+                                  pushData(chosen_line_vcooporderbcode_b);
                                 }
                             })
                             .setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -234,7 +227,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                             })
                             .show();
                 }else{
-                   pushData();
+                    pushData(chosen_line_vcooporderbcode_b);
                 }
 
             }
@@ -273,10 +266,12 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                         updateAllUploadFlag();
                         if (isAllItemUpload()) {
                             Intent intent = new Intent(SaleDeliveryDetail.this, SaleDelivery.class);
+                            intent.putExtra("type",0);
                             startActivity(intent);
                             finish();
                         }
                         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
+
                         adapter= new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
@@ -316,7 +311,8 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         };
     }
 
-    private void pushData() {
+    private void pushData(final String itempk) {
+
         zLoadingDialog.show();
         new Thread(new Runnable() {
             @Override
@@ -329,11 +325,10 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                         } else if (isCwarenameSame()) {
 
 
-                            String uploadResp = DataHelper.uploadSaleDeliveryVBill("R08", db4,current_sale_delivery_vbillcodeRecv,
+                            String uploadResp = DataHelper.uploadSaleDeliveryVBill("R08", db4,current_sale_delivery_vbillcodeRecv,itempk,
                                     SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
                             zLoadingDialog.dismiss();
                             if (!(null == uploadResp)) {
-                                if (!(null == lisitemtall)) {
 
                                     SalesRespBean respBean = new Gson().fromJson(uploadResp, SalesRespBean.class);
                                     SalesRespBeanValue respBeanValue =new Gson().fromJson(respBean.getValue(), SalesRespBeanValue.class);
@@ -342,7 +337,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                     Message msg = new Message();
                                     if (respBeanValue.getErrno().equals("0")) {
                                         //19弹出erromsg
-                                        updateAllItemUploadFlag(lisitemtall);
+
                                         msg.what = 0x15;
                                     } else {
                                         //19弹出erromsg
@@ -350,7 +345,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                     }
                                     msg.setData(bundle);
                                     saleDeliveryDetailHandler.sendMessage(msg);
-                                }
+
                             } else {
                                 Message msg = new Message();
                                 msg.what = 0x18;
@@ -458,28 +453,33 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         adapter = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
+        select(0);
         tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapter.select(position);
-                saleDeliveryScanButton.setEnabled(true);
-                uploadSingleButton.setEnabled(true);
-                SaleDeliveryBodyBean local_saleDeliveryBodyBean = (SaleDeliveryBodyBean) adapter.getItem(position);
-
-                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getVcooporderbcode_b();
-                chosen_line_matrname = local_saleDeliveryBodyBean.getMatrname();
-                chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
-                chosen_line_matrcode = local_saleDeliveryBodyBean.getMatrcode();
-                chosen_line_customer = local_saleDeliveryBodyBean.getCustomer();
-                chosen_line_maccode = QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, local_saleDeliveryBodyBean.getVcooporderbcode_b(), local_saleDeliveryBodyBean.getMatrcode());
-                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannnum();
-                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-
+                select(position);
 
 
             }
         });
+
+    }
+
+    private void select(int position) {
+
+        adapter.select(position);
+        saleDeliveryScanButton.setEnabled(true);
+        uploadSingleButton.setEnabled(true);
+        SaleDeliveryBodyBean local_saleDeliveryBodyBean = listAllBodyPostition.get(position);
+        chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getVcooporderbcode_b();
+        chosen_line_matrname = local_saleDeliveryBodyBean.getMatrname();
+        chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
+        chosen_line_matrcode = local_saleDeliveryBodyBean.getMatrcode();
+        chosen_line_customer = local_saleDeliveryBodyBean.getCustomer();
+        chosen_line_maccode = QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, local_saleDeliveryBodyBean.getVcooporderbcode_b(), local_saleDeliveryBodyBean.getMatrcode());
+        chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
+        chosen_line_scannnum = local_saleDeliveryBodyBean.getScannnum();
+        chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
 
     }
 
@@ -506,49 +506,11 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         }
     }
 
-    private void updateItemUploadFlag(List<String> listitem) {
-        for (String send : listitem) {
-            db4.execSQL("update SaleDeliveryScanResult set itemuploadflag=? where vbillcode=? and vcooporderbcode_b=? and matrcode=? and prodcutcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, chosen_line_matrcode, send});
-        }
-    }
 
-    //扫描上传的prodcutcode更新状态
-    private void updateAllItemUploadFlag(List<SaleDeliveryUploadFlagBean> saleDeliveryUploadFlagBean) {
-        for (SaleDeliveryUploadFlagBean sdu : saleDeliveryUploadFlagBean) {
-            String curr_vbillcode = sdu.getVbillcode();
-            String curr_Vcooporderbcode_b = sdu.getVcooporderbcode_b();
-            String curr_Prodcutcode = sdu.getProdcutcode();
-            db4.execSQL("update SaleDeliveryScanResult set itemuploadflag=? where vbillcode=? and vcooporderbcode_b=? and prodcutcode=?", new String[]{"Y", curr_vbillcode, curr_Vcooporderbcode_b, curr_Prodcutcode});
-        }
-    }
 
-    private boolean iaAlreadyUploadSingle(String chosen_line_vcooporderbcode_b) {
-        Cursor cursor3 = db4.rawQuery("select vcooporderbcode_b from SaleDeliveryBody where vbillcode=? and vcooporderbcode_b=? and uploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, "Y"});
-        lisitemtall = new ArrayList<SaleDeliveryUploadFlagBean>();
-        // Cursor cursor3 = db3.rawQuery(sql3, null);
-        if (cursor3 != null && cursor3.getCount() > 0) {
-            return true;
-        } else {
-            //判断cursor中是否存在数据
-            //     while (cursor3.moveToNext()) {
-            list = new ArrayList<String>();
-            list.add(chosen_line_vcooporderbcode_b);
-            Cursor cursor4 = db4.rawQuery("select prodcutcode,itemuploadflag from SaleDeliveryScanResult where vbillcode=? and vcooporderbcode_b=? and itemuploadflag=?",
-                    new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, "N"});
-            listitem = new ArrayList<String>();
-            if (cursor4 != null && cursor4.getCount() > 0) {
-                //判断cursor中是否存在数据
-                while (cursor4.moveToNext()) {
-                    listitem.add(cursor4.getString(cursor4.getColumnIndex("prodcutcode")));
-                }
-                cursor4.close();
-            }
-            //      }
-            cursor3.close();
-            return false;//false代表有未上传的
-        }
-    }
+
+
+
 
     private boolean iaAlreadyUploadAll() {
         Cursor cursor = db4.rawQuery("select vbillcode from SaleDelivery where vbillcode=? and flag=?",
@@ -556,7 +518,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         if (cursor != null && cursor.getCount() > 0) {
             return true;
         }
-        lisitemtall = new ArrayList<SaleDeliveryUploadFlagBean>();
+
         Cursor cursor3 = db4.rawQuery("select vbillcode,vcooporderbcode_b from SaleDeliveryBody where vbillcode=? and uploadflag=?",
                 new String[]{current_sale_delivery_vbillcodeRecv, "N"});
         Cursor cursorpy = db4.rawQuery("select vbillcode,vcooporderbcode_b from SaleDeliveryBody where vbillcode=? and uploadflag=?",
@@ -575,7 +537,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                         itemall.vbillcode = cursor4.getString(cursor4.getColumnIndex("vbillcode"));
                         itemall.vcooporderbcode_b = cursor4.getString(cursor4.getColumnIndex("vcooporderbcode_b"));
                         itemall.prodcutcode = cursor4.getString(cursor4.getColumnIndex("prodcutcode"));
-                        lisitemtall.add(itemall);
+
                     }
                     cursor4.close();
                 }
@@ -595,7 +557,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                         itemall2.vbillcode = cursor5.getString(cursor5.getColumnIndex("vbillcode"));
                         itemall2.vcooporderbcode_b = cursor5.getString(cursor5.getColumnIndex("vcooporderbcode_b"));
                         itemall2.prodcutcode = cursor5.getString(cursor5.getColumnIndex("prodcutcode"));
-                        lisitemtall.add(itemall2);
+
                     }
                     cursor5.close();
                 }
@@ -615,9 +577,9 @@ public class SaleDeliveryDetail extends AppCompatActivity {
             while (cursor32.moveToNext()) {
                 String nnum = cursor32.getString(cursor32.getColumnIndex("nnum"));
                 if (cursor31.getCount() == Math.abs(Integer.parseInt(nnum))) {
-                    db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=? and matrcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, chosen_line_matrcode});
+                    db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=? ", new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b});
                 } else if (cursor31.getCount() < Math.abs(Integer.parseInt(nnum))) {
-                    db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=? and matrcode=?", new String[]{"PY", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, chosen_line_matrcode});
+                    db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=? ", new String[]{"PY", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b});
                 }
                 cursor31.close();
                 cursor32.close();
@@ -626,31 +588,24 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     }
 
     private void updateAllUploadFlag() {
-        Cursor cursor31 = db4.rawQuery("select vcooporderbcode_b from SaleDeliveryScanResult where vbillcode=?",
-                new String[]{current_sale_delivery_vbillcodeRecv});
-        if (cursor31 != null && cursor31.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor31.moveToNext()) {
-                Cursor cursor3 = db4.rawQuery("select prodcutcode,itemuploadflag from SaleDeliveryScanResult where vbillcode=? and vcooporderbcode_b=? and itemuploadflag=?",
-                        new String[]{current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("vcooporderbcode_b")), "Y"});
-                Cursor cursor32 = db4.rawQuery("select nnum,matrcode from SaleDeliveryBody where vbillcode=? and vcooporderbcode_b=?",
-                        new String[]{current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("vcooporderbcode_b"))});
-                if (cursor3 != null && cursor3.getCount() > 0 && cursor32 != null && cursor32.getCount() > 0) {
-                    while (cursor32.moveToNext()) {
-                        String nnum = cursor32.getString(cursor32.getColumnIndex("nnum"));
-                        String matrcode = cursor32.getString(cursor32.getColumnIndex("matrcode"));
-                        if (cursor3.getCount() == Math.abs(Integer.parseInt(nnum))) {
-                            db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=? and matrcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("vcooporderbcode_b")), matrcode});
-                        } else if (cursor3.getCount() < Math.abs(Integer.parseInt(nnum))) {
-                            db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=? and matrcode=?", new String[]{"PY", current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("vcooporderbcode_b")), matrcode});
-                        }
-                        cursor3.close();
-                        cursor32.close();
-                    }
+        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
+            if(Integer.parseInt(listAllBodyPostition.get(i).getScannnum())!=0){
+                if(Integer.parseInt(listAllBodyPostition.get(i).getNnum())==Integer.parseInt(listAllBodyPostition.get(i).getScannnum())){
+                    db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=?",
+                            new String[]{"Y", current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(i).getVcooporderbcode_b()});
+                    Log.i("update",listAllBodyPostition.get(i).getVcooporderbcode_b()+"/Y");
+                }else {
+                    db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=? ",
+                            new String[]{"PY", current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(i).getVcooporderbcode_b()});
+                    Log.i("update",listAllBodyPostition.get(i).getVcooporderbcode_b()+"/PY");
                 }
+
             }
-            cursor31.close();
+
         }
+        db4.execSQL("update SaleDeliveryScanResult set itemuploadflag=? where vbillcode=? ",
+                new String[]{"Y", current_sale_delivery_vbillcodeRecv});
+
     }
 
 
@@ -660,7 +615,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        Log.i("on restart-->","");
+
         saleDeliveryDetailHandler.sendEmptyMessage(0x22);
 
     }
@@ -673,6 +628,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         Cursor cursor= db4.rawQuery("select vcooporderbcode_b,cwarehousecode,cwarename,matrcode,matrname," +
                         "nnum,scannum,customer,uploadflag from SaleDeliveryBody where vbillcode=?",
                 new String[]{current_sale_delivery_vbillcodeRecv});
+
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
                 SaleDeliveryBodyBean bean = new SaleDeliveryBodyBean();
@@ -682,14 +638,14 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                 bean.matrname = cursor.getString(cursor.getColumnIndex("matrname"));
                 bean.nnum = cursor.getString(cursor.getColumnIndex("nnum"));
                 bean.scannnum = cursor.getString(cursor.getColumnIndex("scannum"));
-
                 bean.Customer = cursor.getString(cursor.getColumnIndex("customer"));
                 bean.uploadflag = cursor.getString(cursor.getColumnIndex("uploadflag"));
                 list.add(bean);
+                Log.i("select-->",bean.getVcooporderbcode_b()+"/"+bean.uploadflag);
             }
             cursor.close();
 
-
+        Log.i("querySaleDeliveryBody",new Gson().toJson(listAllBodyPostition));
         return list;
     }
 

@@ -26,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.shanggmiqr.bean.DataBean;
+import com.example.shanggmiqr.bean.LoanBean;
 import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.LoanBodyTableAdapter;
@@ -101,12 +102,12 @@ public class LoanDetail extends AppCompatActivity {
     //nnum为正 bisreturn为N 为负则为Y
     private String current_bisreturn = "N";
     private ZLoadingDialog dialog;
-
+    LoanBodyTableAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.loan_detail);
-        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        final android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -139,30 +140,7 @@ public class LoanDetail extends AppCompatActivity {
         spinner = findViewById(R.id.spinner_logistics_company_loanDetail);
         //加载数据
         myadapter();
-        listAllBodyPostition = QueryLoanBody(current_sale_delivery_vbillcodeRecv);
-        final LoanBodyTableAdapter adapter = new LoanBodyTableAdapter(LoanDetail.this, listAllBodyPostition, mListener);
-        tableBodyListView.setAdapter(adapter);
-        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapter.select(position);
-                saleDeliveryScanButton.setEnabled(true);
-                uploadSingleButton.setEnabled(true);
-                LoanBodyBean local_saleDeliveryBodyBean = (LoanBodyBean) adapter.getItem(position);
 
-                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getItempk();
-              //  chosen_line_matrname = local_saleDeliveryBodyBean.getMaccode();
-                chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
-                chosen_line_matrcode = local_saleDeliveryBodyBean.getMaterialcode();
-                chosen_line_customer = local_saleDeliveryBodyBean.getVemo();
-                chosen_line_maccode = QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, local_saleDeliveryBodyBean.getItempk(), local_saleDeliveryBodyBean.getMaterialcode());
-                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannum();
-                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-
-
-            }
-        });
         saleDeliveryScanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -517,29 +495,10 @@ public class LoanDetail extends AppCompatActivity {
                             finish();
                         }
                         listAllBodyPostition = QueryLoanBody(current_sale_delivery_vbillcodeRecv);
-                        final LoanBodyTableAdapter adapterNew = new LoanBodyTableAdapter(LoanDetail.this, listAllBodyPostition, mListener);
-                        tableBodyListView.setAdapter(adapterNew);
-                        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                adapterNew.select(position);
-                                saleDeliveryScanButton.setEnabled(true);
-                                uploadSingleButton.setEnabled(true);
-                                LoanBodyBean local_saleDeliveryBodyBean = (LoanBodyBean) adapterNew.getItem(position);
+                        adapter= new LoanBodyTableAdapter(LoanDetail.this, listAllBodyPostition, mListener);
+                        tableBodyListView.setAdapter(adapter);
+                        adapter.notifyDataSetChanged();
 
-                                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getItempk();
-                         //       chosen_line_matrname = local_saleDeliveryBodyBean.getMaccode();
-                                chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
-                                chosen_line_matrcode = local_saleDeliveryBodyBean.getMaterialcode();
-                                chosen_line_maccode = QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, local_saleDeliveryBodyBean.getItempk(), local_saleDeliveryBodyBean.getMaterialcode());
-                                chosen_line_customer = local_saleDeliveryBodyBean.getVemo();
-                                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannum();
-                                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-
-                                //        Toast.makeText(SaleDeliveryDetail.this,chosen_line_matrcode,Toast.LENGTH_LONG).show();
-                            }
-                        });
 
                         break;
                     case 0x12:
@@ -559,31 +518,16 @@ public class LoanDetail extends AppCompatActivity {
                         Toast.makeText(LoanDetail.this, s2, Toast.LENGTH_LONG).show();
                         updateAllUploadFlag();
                         if (isAllItemUpload()) {
-                            Intent intent = new Intent(LoanDetail.this, SaleDelivery.class);
+                            Intent intent = new Intent(LoanDetail.this,LoanBill.class);
+                            intent.putExtra("type",4);
                             startActivity(intent);
                             finish();
                         }
                         listAllBodyPostition = QueryLoanBody(current_sale_delivery_vbillcodeRecv);
-                        final LoanBodyTableAdapter adapterNew2 = new LoanBodyTableAdapter(LoanDetail.this, listAllBodyPostition, mListener);
-                        tableBodyListView.setAdapter(adapterNew2);
-                        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                adapterNew2.select(position);
-                                saleDeliveryScanButton.setEnabled(true);
-                                uploadSingleButton.setEnabled(true);
-                                LoanBodyBean local_saleDeliveryBodyBean = (LoanBodyBean) adapterNew2.getItem(position);
-                                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getItempk();
-                             //   chosen_line_matrname = local_saleDeliveryBodyBean.getMaccode();
-                                chosen_line_matrcode = local_saleDeliveryBodyBean.getMaterialcode();
-                                chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
-                                chosen_line_maccode = QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, local_saleDeliveryBodyBean.getItempk(), local_saleDeliveryBodyBean.getMaterialcode());
-                                chosen_line_customer = local_saleDeliveryBodyBean.getVemo();
-                                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannum();
-                                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-                            }
-                        });
+                       adapter = new LoanBodyTableAdapter(LoanDetail.this, listAllBodyPostition, mListener);
+                        tableBodyListView.setAdapter(adapter);
+                        adapter.notifyDataSetChanged();
+
                         break;
                     case 0x16:
                         Toast.makeText(LoanDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
@@ -615,6 +559,36 @@ public class LoanDetail extends AppCompatActivity {
                 }
             }
         };
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        listAllBodyPostition = QueryLoanBody(current_sale_delivery_vbillcodeRecv);
+        adapter = new LoanBodyTableAdapter(LoanDetail.this, listAllBodyPostition, mListener);
+        tableBodyListView.setAdapter(adapter);
+        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                adapter.select(position);
+                saleDeliveryScanButton.setEnabled(true);
+                uploadSingleButton.setEnabled(true);
+                LoanBodyBean local_saleDeliveryBodyBean = (LoanBodyBean) adapter.getItem(position);
+
+                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getItempk();
+                chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
+                chosen_line_matrcode = local_saleDeliveryBodyBean.getMaterialcode();
+                chosen_line_customer = local_saleDeliveryBodyBean.getVemo();
+                chosen_line_maccode = QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, local_saleDeliveryBodyBean.getItempk(), local_saleDeliveryBodyBean.getMaterialcode());
+                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
+                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannum();
+                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
+
+
+
+
+            }
+        });
     }
 
     private void myadapter() {
@@ -818,22 +792,18 @@ public class LoanDetail extends AppCompatActivity {
     }
 
     private void updateUploadFlag() {
-        Cursor cursor31 = db4.rawQuery("select prodcutcode,itemuploadflag from LoanScanResult where pobillcode=? and itempk=? and itemuploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, "Y"});
-        Cursor cursor32 = db4.rawQuery("select nnum from LoanBody where pobillcode=? and itempk=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b});
-        if (cursor31 != null && cursor31.getCount() > 0 && cursor32 != null && cursor32.getCount() > 0) {
-            while (cursor32.moveToNext()) {
-                String nnum = cursor32.getString(cursor32.getColumnIndex("nnum"));
-                if (cursor31.getCount() == Math.abs(Integer.parseInt(nnum))) {
-                    db4.execSQL("update LoanBody set uploadflag=? where pobillcode=? and itempk=? and materialcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, chosen_line_matrcode});
-                } else if (cursor31.getCount() < Math.abs(Integer.parseInt(nnum))) {
-                    db4.execSQL("update LoanBody set uploadflag=? where pobillcode=? and itempk=? and materialcode=?", new String[]{"PY", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, chosen_line_matrcode});
-                }
-                cursor31.close();
-                cursor32.close();
-            }
+          Log.i("num",chosen_line_nnum+"/"+chosen_line_scannnum);
+        if(Integer.parseInt(chosen_line_nnum)==Integer.parseInt(chosen_line_scannnum)){
+            db4.execSQL("update LoanBody set uploadflag=? where pobillcode=? and itempk=? and materialcode=?",
+                    new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, chosen_line_matrcode});
+        }else {
+            db4.execSQL("update LoanBody set uploadflag=? where pobillcode=? and itempk=? and materialcode=?",
+                    new String[]{"PY", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, chosen_line_matrcode});
         }
+        db4.execSQL("update LoanScanResult set itemuploadflag=? where pobillcode=? and itempk=? ",
+                new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b});
+
+
     }
 
     private void updateAllUploadFlag() {
@@ -996,33 +966,7 @@ public class LoanDetail extends AppCompatActivity {
         return saleDeliveryUploadDataResp;
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        saleDeliveryScanButton.setEnabled(false);
-        uploadSingleButton.setEnabled(false);
-        listAllBodyPostition = QueryLoanBody(current_sale_delivery_vbillcodeRecv);
-        final LoanBodyTableAdapter adapterNew = new LoanBodyTableAdapter(LoanDetail.this, listAllBodyPostition, mListener);
-        tableBodyListView.setAdapter(adapterNew);
-        tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapterNew.select(position);
-                saleDeliveryScanButton.setEnabled(true);
-                uploadSingleButton.setEnabled(true);
-                LoanBodyBean local_saleDeliveryBodyBean = (LoanBodyBean) adapterNew.getItem(position);
-                chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getItempk();
-              //  chosen_line_matrname = local_saleDeliveryBodyBean.getMaccode();
-                chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
-                chosen_line_matrcode = local_saleDeliveryBodyBean.getMaterialcode();
-                chosen_line_maccode = QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, local_saleDeliveryBodyBean.getItempk(), local_saleDeliveryBodyBean.getMaterialcode());
-                chosen_line_customer = local_saleDeliveryBodyBean.getVemo();
-                chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
-                chosen_line_scannnum = local_saleDeliveryBodyBean.getScannum();
-                chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-            }
-        });
-    }
+
 
     public ArrayList<LoanBodyBean> QueryLoanBody(String current_sale_delivery_vbillcodeRecv) {
         ArrayList<LoanBodyBean> list = new ArrayList<LoanBodyBean>();
@@ -1084,7 +1028,7 @@ public class LoanDetail extends AppCompatActivity {
             intent.putExtra("current_vcooporderbcode_b_qr", listAllBodyPostition.get(position).getItempk());
             intent.putExtra("current_nnum_qr", listAllBodyPostition.get(position).getNnum());
             intent.putExtra("current_cwarename_qr", listAllBodyPostition.get(position).getCwarename());
-      //      intent.putExtra("current_matrname_qr", listAllBodyPostition.get(position).getMaccode());
+
             intent.putExtra("current_matrcode_qr", listAllBodyPostition.get(position).getMaterialcode());
             intent.putExtra("current_maccode_qr", QueryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(position).getItempk(), listAllBodyPostition.get(position).getMaterialcode()));
             intent.putExtra("current_customer_qr", listAllBodyPostition.get(position).getVemo());

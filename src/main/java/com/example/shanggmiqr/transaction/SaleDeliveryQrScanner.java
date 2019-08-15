@@ -241,7 +241,12 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                         if(isSN){
                             getData();
                         }else {
-                            insertQrDBForSaleDelivery("");
+                            boxCodeEditTextContent= Arrays.asList(boxCodeEditText.getText().toString().split("\\s"));
+                            for (int i = 0; i <boxCodeEditTextContent.size() ; i++) {
+                                insertQrDBForSaleDelivery(boxCodeEditTextContent.get(i));
+                            }
+                            boxCodeEditText.setText("");
+
                         }
                         break;
 
@@ -280,7 +285,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
             if(productcode.isEmpty()){
                 return;
             }
-            Log.i("qr rule-->",productcode.length()+"/"+DataHelper.getLengthInQrRule(current_maccode_qrRecv,db5));
+
             if(productcode.length() != DataHelper.getLengthInQrRule(current_maccode_qrRecv,db5)){
                 Toast.makeText(SaleDeliveryQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
                 return;
@@ -315,13 +320,16 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
             while (cursornew.moveToNext()) {
                 String temp = cursornew.getString(cursornew.getColumnIndex("cwarename"));
                 if (temp.equals("") || temp.equals("请选择仓库")) {
+                    cursornew.close();
                     return true;
                 } else {
+                    cursornew.close();
                     return false;
                 }
             }
             cursornew.close();
         }
+        cursornew.close();
         return false;
     }
 
@@ -428,14 +436,16 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
 
     private boolean isAlreadyScanned(String s) {
-        Cursor cursor = db5.rawQuery("select * from SaleDeliveryScanResult where vbillcode=? and prodcutcode=? and vcooporderbcode_b=?",
+        Cursor cursor = db5.rawQuery("select num from SaleDeliveryScanResult where vbillcode=? and prodcutcode=? and vcooporderbcode_b=?",
                 new String[]{current_vbillcode_qrRecv, s, current_vcooporderbcode_b_qrRecv});
         while (cursor != null && cursor.getCount() > 0) {
 
             if (cursor.getCount() > 0) {
+                cursor.close();
                 return true;
             }// //有城市在数据库已存在，返回true
         }
+        cursor.close();
         return false;
     }
 

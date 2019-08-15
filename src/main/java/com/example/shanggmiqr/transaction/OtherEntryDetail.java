@@ -124,7 +124,7 @@ public class OtherEntryDetail extends AppCompatActivity {
         listAllBodyPostition = QueryOtherEntryBody(current_pobillcodeRecv);
         adapter = new OtherEntryBodyTableAdapter(OtherEntryDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
-        adapter.select(0);
+
         tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -137,6 +137,8 @@ public class OtherEntryDetail extends AppCompatActivity {
                 chosen_line_uploadnum = otherOutgoingBodyBean.getUploadnum();
                 chosen_line_vcooporderbcode_b = otherOutgoingBodyBean.getVcooporderbcode_b();
                 scannum=otherOutgoingBodyBean.getScannum();
+
+
 
                 //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
             }
@@ -251,8 +253,6 @@ public class OtherEntryDetail extends AppCompatActivity {
                         adapter = new OtherEntryBodyTableAdapter(OtherEntryDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
-
-
                         Intent intent = new Intent(OtherEntryDetail.this, OtherEntry.class);
                         intent.putExtra("type",type);
                         startActivity(intent);
@@ -310,7 +310,7 @@ public class OtherEntryDetail extends AppCompatActivity {
         Cursor cursor=null;
         switch (type){
             case 1:
-                db4.execSQL("update OtherEntryScanResult set itemuploadflag=? where pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
+              //  db4.execSQL("update OtherEntryScanResult set itemuploadflag=? where pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
                 //所有行号发送状态全部置为Y
                 db4.execSQL("update OtherEntryBody set uploadflag=? where pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
                 //其他出入库只运行成功发送一次，故更新flag为Y
@@ -327,7 +327,7 @@ public class OtherEntryDetail extends AppCompatActivity {
                 break;
             case 2:
                 //单个item扫描结果全部置为Y
-                db4.execSQL("update OtherOutgoingScanResult set itemuploadflag=? where pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
+              //  db4.execSQL("update OtherOutgoingScanResult set itemuploadflag=? where pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
                 //所有行号发送状态全部置为Y
                 db4.execSQL("update OtherOutgoingBody set uploadflag=? where pobillcode=?", new String[]{"Y", current_pobillcodeRecv});
                 //其他出入库只运行成功发送一次，故更新flag为Y
@@ -343,6 +343,7 @@ public class OtherEntryDetail extends AppCompatActivity {
                 }
                 break;
         }
+        db4.execSQL("update SaleDeliveryScanResult set itemuploadflag=? where vbillcode=?", new String[]{"Y", current_pobillcodeRecv});
         //单个item扫描结果全部置为Y
 
     }
@@ -470,7 +471,7 @@ public class OtherEntryDetail extends AppCompatActivity {
         envelope.bodyOut = request;
         envelope.dotNet = false;
 
-            HttpTransportSE se = new HttpTransportSE(WSDL_URI,60000);
+            HttpTransportSE se = new HttpTransportSE(WSDL_URI,120000);
             //  se.call(null, envelope);//调用 version1.2
             //version1.1 需要如下soapaction
             runOnUiThread(new Runnable() {

@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -209,6 +210,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
                                         dialog.dismiss();
                                         return;
                                     }
+                                    DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),PurchaseReturn.this);
                                     Gson gson7 = new Gson();
                                     PurchaseReturnQuery purchaseReturnQuery = gson7.fromJson(saleDeliveryData, PurchaseReturnQuery.class);
                                     int pagetotal = Integer.parseInt(purchaseReturnQuery.getPagetotal());
@@ -318,7 +320,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
 
         List<PurchaseReturnQuery.DataBean> saleDeliveryBeanList = saleDeliveryQuery.getData();
         for (PurchaseReturnQuery.DataBean ob : saleDeliveryBeanList) {
-
+            Log.i("PurchaseReturn-->",new Gson().toJson(ob));
             String vbillcode = ob.getVbillcode();
             //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
              switch (Integer.parseInt(ob.getDr())){
@@ -383,41 +385,10 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
         values.clear();
     }
 
-    private boolean isVbillcodeExist(String vbillcode) {
-        Cursor cursor2 = db3.rawQuery("select vbillcode from PurchaseReturn where vbillcode=?", new String[]{vbillcode});
-        if (cursor2 != null && cursor2.getCount() > 0) {
-            //判断cursor中是否存在数据
-            cursor2.close();
-            return true;
-        }else {
-            return false;
-        }
-    }
 
-    private String existOriginalCwarename(String cwarehousecode) {
-        String flag;
-        if (cwarehousecode.equals("")){
-            flag ="N";
-        }else{
-            flag ="Y";
-        }
-        return flag;
-    }
 
-    private String getCwarename(String cwarehousecode) {
-        Cursor cursor = db3.rawQuery("select name from Warehouse where code=?",
-                new String[]{cwarehousecode});
-        String cwarename=null;
-        if (cursor != null && cursor.getCount() > 0) {
-            while (cursor.moveToNext()) {
-                cwarename = cursor.getString(cursor.getColumnIndex("name"));
-            }
-            cursor.close();
-        }else{
-            cwarename = "";
-        }
-        return cwarename;
-    }
+
+
 
 
 
@@ -613,7 +584,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
                 }
             }
             cursor.close();
-            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),list.get(0).getDbilldate(),PurchaseReturn.this);
+
         }
 
         return list;

@@ -194,7 +194,7 @@ public class LoanQrScanner extends AppCompatActivity {
             count = countSum();
 
 
-            if (count >= Math.abs(current_nnum_qrRecv)) {
+            if (i >= Math.abs(current_nnum_qrRecv)) {
                 Toast.makeText(LoanQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
                 return;
             }
@@ -392,7 +392,7 @@ public class LoanQrScanner extends AppCompatActivity {
                         values.put("platecode", "");
                         values.put("boxcode", "");
                         values.put("prodcutcode", productcode);
-                        values.put("num", current_nnum_qrRecv);
+                        values.put("num", "1");
                         values.put("itemuploadflag", "N");
                         values.put("xlh", DataHelper.getXlh(db5,productcode,current_maccode_qrRecv));
                         // 插入第一条数据

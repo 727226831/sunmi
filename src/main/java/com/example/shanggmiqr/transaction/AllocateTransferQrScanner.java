@@ -356,7 +356,7 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
                         values.put("platecode", "");
                         values.put("boxcode", "");
                         values.put("prodcutcode", productcode);
-                        values.put("num", current_nnum_qrRecv);
+                        values.put("num", "1");
                         values.put("itemuploadflag", "N");
                         values.put("xlh", DataHelper.getXlh(db5,productcode,maccode));
                         // 插入第一条数据

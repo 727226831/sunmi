@@ -209,6 +209,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                                         dialog.dismiss();
                                         return;
                                     }
+                                    DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),LoanBill.this);
                                     Gson gson7 = new Gson();
                                     LoanQuery loanQuery = gson7.fromJson(loanData, LoanQuery.class);
                                     int pagetotal = Integer.parseInt(loanQuery.getPagetotal());
@@ -695,7 +696,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                 list.add(bean);
 
             }
-            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),list.get(0).getDbilldate(),LoanBill.this);
+
             cursor.close();
         }
 

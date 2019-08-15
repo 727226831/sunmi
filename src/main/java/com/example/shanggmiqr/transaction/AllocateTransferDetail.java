@@ -115,8 +115,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
         saleDeliveryScanButton = (Button) findViewById(R.id.scan_allocateTransfer);
         uploadAll_saleDeliveryButton = (Button) findViewById(R.id.uploadall_allocateTransfer);
         uploadSingleButton = (Button) findViewById(R.id.upload_allocateTransfer);
-        saleDeliveryScanButton.setEnabled(false);
-        uploadSingleButton.setEnabled(false);
+
         zLoadingDialog= new ZLoadingDialog(AllocateTransferDetail.this);
         zLoadingDialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
                 .setLoadingColor(Color.BLUE)//颜色
@@ -150,13 +149,15 @@ public class AllocateTransferDetail extends AppCompatActivity {
         listAllBodyPostition = QueryAllocateTransferBody(current_sale_delivery_vbillcodeRecv);
         adapter= new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
-        adapter.select(0);
+
         tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 select(position);
             }
         });
+       select(0);
+
         saleDeliveryScanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -252,24 +253,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                     case 0x10:
                         Toast.makeText(AllocateTransferDetail.this, "请检查网络连接", Toast.LENGTH_LONG).show();
                         break;
-                    case 0x11:
-                        zLoadingDialog.dismiss();
-                        expressCodeEditText.setText("");
-                        spinner.setSelection(logisticscompanies.size() - 1, true);
-                        String s = msg.getData().getString("uploadResp");
-                        Toast.makeText(AllocateTransferDetail.this, s, Toast.LENGTH_LONG).show();
-                        updateUploadFlag();
-                        if (isAllItemUpload()) {
-                            Intent intent = new Intent(AllocateTransferDetail.this, AllocateTransfer.class);
-                            startActivity(intent);
-                            finish();
-                        }
-                        listAllBodyPostition = QueryAllocateTransferBody(current_sale_delivery_vbillcodeRecv);
-                       adapter = new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
-                        tableBodyListView.setAdapter(adapter);
-                        adapter.notify();
 
-                        break;
                     case 0x12:
                         Toast.makeText(AllocateTransferDetail.this, "该发货单已经全部上传", Toast.LENGTH_LONG).show();
                         break;
@@ -295,7 +279,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                         listAllBodyPostition = QueryAllocateTransferBody(current_sale_delivery_vbillcodeRecv);
                         adapter = new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
-                       adapter.notify();
+                       adapter.notifyDataSetChanged();
                         break;
                     case 0x16:
                         Toast.makeText(AllocateTransferDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
@@ -331,10 +315,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
 
     private void pushData() {
 
-        if(Integer.parseInt(chosen_line_scannum)==0){
-            Toast.makeText(AllocateTransferDetail.this, "数量不能为0", Toast.LENGTH_LONG).show();
-            return;
-        }
+
         zLoadingDialog.show();
         new Thread(new Runnable() {
             @Override
@@ -390,7 +371,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                             allocateTransferDetailHandler.sendMessage(msg);
                         }
 
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                         Bundle bundle = new Bundle();
                         bundle.putString("Exception111", e.toString());
@@ -398,16 +379,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                         msg.what = 0x17;
                         msg.setData(bundle);
                         allocateTransferDetailHandler.sendMessage(msg);
-                        return;
-                    } catch (XmlPullParserException e) {
-                        e.printStackTrace();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("Exception111", e.toString());
-                        Message msg = new Message();
-                        msg.what = 0x17;
-                        msg.setData(bundle);
-                        allocateTransferDetailHandler.sendMessage(msg);
-                        return;
+
                     }
                 }
             }
@@ -416,14 +388,10 @@ public class AllocateTransferDetail extends AppCompatActivity {
 
     private void select(int position) {
         adapter.select(position);
-        saleDeliveryScanButton.setEnabled(true);
-        uploadSingleButton.setEnabled(true);
-        AllocateTransferBodyBean local_saleDeliveryBodyBean = (AllocateTransferBodyBean) adapter.getItem(position);
-
+        AllocateTransferBodyBean local_saleDeliveryBodyBean =listAllBodyPostition.get(position);
         chosen_line_itempk = local_saleDeliveryBodyBean.getItempk();
         chosen_line_address = local_saleDeliveryBodyBean.getAddress();
         chosen_line_materialcode = local_saleDeliveryBodyBean.getMaterialcode();
-
         chosen_line_materialclasscode = local_saleDeliveryBodyBean.getMaterialclasscode();
         chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
         maccode=local_saleDeliveryBodyBean.getMaccode();
@@ -431,6 +399,8 @@ public class AllocateTransferDetail extends AppCompatActivity {
         chosen_line_rwarehousecode = local_saleDeliveryBodyBean.getRwarehousecode();
         chosen_line_scannum = local_saleDeliveryBodyBean.getScannum();
         chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
+
+
     }
 
     @Override
@@ -593,51 +563,28 @@ public class AllocateTransferDetail extends AppCompatActivity {
         return false;
     }
 
-    private void updateUploadFlag() {
-        Cursor cursor31 = db4.rawQuery("select prodcutcode,itemuploadflag from AllocateTransferScanResult where billno=? and itempk=? and itemuploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_itempk, "Y"});
-        Cursor cursor32 = db4.rawQuery("select nnum from AllocateTransferBody where billno=? and itempk=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_itempk});
-        if (cursor31 != null && cursor31.getCount() > 0 && cursor32 != null && cursor32.getCount() > 0) {
-            while (cursor32.moveToNext()) {
-                String nnum = cursor32.getString(cursor32.getColumnIndex("nnum"));
-                if (cursor31.getCount() == Math.abs(Integer.parseInt(nnum))) {
-                    db4.execSQL("update AllocateTransferBody set uploadflag=? where billno=? and itempk=? and materialcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_itempk, chosen_line_materialcode});
-                } else if (cursor31.getCount() < Math.abs(Integer.parseInt(nnum))) {
-                    db4.execSQL("update AllocateTransferBody set uploadflag=? where billno=? and itempk=? and materialcode=?", new String[]{"PY", current_sale_delivery_vbillcodeRecv, chosen_line_itempk, chosen_line_materialcode});
-                }
-                cursor31.close();
-                cursor32.close();
-            }
-        }
-    }
+
 
     private void updateAllUploadFlag() {
-        Cursor cursor31 = db4.rawQuery("select itempk from AllocateTransferScanResult where billno=?",
-                new String[]{current_sale_delivery_vbillcodeRecv});
-        if (cursor31 != null && cursor31.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor31.moveToNext()) {
-                Cursor cursor3 = db4.rawQuery("select prodcutcode,itemuploadflag from AllocateTransferScanResult where billno=? and itempk=? and itemuploadflag=?",
-                        new String[]{current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("itempk")), "Y"});
-                Cursor cursor32 = db4.rawQuery("select nnum,materialcode from AllocateTransferBody where billno=? and itempk=?",
-                        new String[]{current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("itempk"))});
-                if (cursor3 != null && cursor3.getCount() > 0 && cursor32 != null && cursor32.getCount() > 0) {
-                    while (cursor32.moveToNext()) {
-                        String nnum = cursor32.getString(cursor32.getColumnIndex("nnum"));
-                        String matrcode = cursor32.getString(cursor32.getColumnIndex("materialcode"));
-                        if (cursor3.getCount() == Math.abs(Integer.parseInt(nnum))) {
-                            db4.execSQL("update AllocateTransferBody set uploadflag=? where billno=? and itempk=? and materialcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("itempk")), matrcode});
-                        } else if (cursor3.getCount() < Math.abs(Integer.parseInt(nnum))) {
-                            db4.execSQL("update AllocateTransferBody set uploadflag=? where billno=? and itempk=? and materialcode=?", new String[]{"PY", current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("itempk")), matrcode});
-                        }
-                        cursor3.close();
-                        cursor32.close();
-                    }
+        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
+            Log.i("scan-->",new Gson().toJson(listAllBodyPostition.get(i)));
+            if(Integer.parseInt(listAllBodyPostition.get(i).getScannum())!=0) {
+
+                if(Integer.parseInt(listAllBodyPostition.get(i).getNnum())!=Integer.parseInt(listAllBodyPostition.get(i).getScannum())) {
+                    db4.execSQL("update AllocateTransferBody set uploadflag=? where billno=? and itempk=? ",
+                            new String[]{"PY", current_sale_delivery_vbillcodeRecv,listAllBodyPostition.get(i).getItempk()});
+                    Log.i("update-->",listAllBodyPostition.get(i).getItempk()+"/PY");
+                }else {
+                    db4.execSQL("update AllocateTransferBody set uploadflag=? where billno=? and itempk=? ",
+                            new String[]{"Y", current_sale_delivery_vbillcodeRecv,  listAllBodyPostition.get(i).getItempk()});
+                    Log.i("update-->",listAllBodyPostition.get(i).getItempk()+"/Y");
                 }
             }
-            cursor31.close();
         }
+        db4.execSQL("update AllocateTransferScanResult set itemuploadflag=? where billno=? and itempk=? ",
+                new String[]{"Y", current_sale_delivery_vbillcodeRecv,  chosen_line_itempk});
+
+
     }
 
     private String uploadSaleDeliveryVBill(String workcode, List<String> list) throws IOException, XmlPullParserException {
@@ -728,7 +675,12 @@ public class AllocateTransferDetail extends AppCompatActivity {
        otherOutgoingSend.setWlbillcode(expressCode);
       // otherOutgoingSend.setCwarehousecode(wlCode);
        otherOutgoingSend.setCwhsmanagercode(DataHelper.getUser(AllocateTransferDetail.this));
-
+        for (int i = 0; i <otherOutgoingSend.getBody().size() ; i++) {
+             if(otherOutgoingSend.getBody().get(i).getSfnum().equals("0")){
+                 otherOutgoingSend.getBody().remove(i);
+                 i--;
+             }
+        }
         Gson gson = new Gson();
         String userSendBean = gson.toJson(otherOutgoingSend);
 
@@ -751,7 +703,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
         // SoapObject object = (SoapObject) envelope.bodyIn;
         Object object = envelope.getResponse();
         saleDeliveryUploadDataResp = new Gson().toJson(object);
-
+        Log.i("response-->",saleDeliveryUploadDataResp);
         return saleDeliveryUploadDataResp;
     }
 
@@ -773,7 +725,6 @@ public class AllocateTransferDetail extends AppCompatActivity {
                 bean.materialcode = cursor.getString(cursor.getColumnIndex("materialcode"));
                 bean.materialclasscode = cursor.getString(cursor.getColumnIndex("materialclasscode"));
                 bean.nnum = cursor.getString(cursor.getColumnIndex("nnum"));
-
                 bean.rwarehousecode=DataHelper.getCwarename(cursor.getString(cursor.getColumnIndex("rwarehousecode")),db4);
                 bean.cwarehousecode=DataHelper.getCwarename(cursor.getString(cursor.getColumnIndex("cwarehousecode")),db4);
                 bean.scannum = cursor.getString(cursor.getColumnIndex("scannum"));

@@ -76,7 +76,7 @@ public class LoanQRDetail extends AppCompatActivity {
         if (_intent != null) {
             current_vcooporderbcode_b_qrRecv = _intent.getStringExtra("current_vcooporderbcode_b_qr");
             current_nnum_qrRecv = _intent.getStringExtra("current_nnum_qr");
-      //      current_matrname_qrRecv = _intent.getStringExtra("current_matrname_qr");
+            current_matrname_qrRecv = _intent.getStringExtra("current_matrname_qr");
             current_cwarename_qrRecv = _intent.getStringExtra("current_cwarename_qr");
             current_matrcode_qrRecv = _intent.getStringExtra("current_matrcode_qr");
             current_maccode_qrRecv = _intent.getStringExtra("current_maccode_qr");
@@ -114,7 +114,7 @@ public class LoanQRDetail extends AppCompatActivity {
             }
         });
         vcooporderbcode_bText.setText("行号  :" + current_vcooporderbcode_b_qrRecv);
-        matrnameText.setText("物料名称:" + current_matrname_qrRecv);
+
         matrcodeText.setText("物料编码:" + current_matrcode_qrRecv);
         numQRText.setText("发货数量:" + current_nnum_qrRecv);
         vbillcodeText.setText("发货单号:" + current_vbillcode_qrRecv);

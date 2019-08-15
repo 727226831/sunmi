@@ -194,6 +194,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                                         dialog.dismiss();
                                         return;
                                     }
+                                    DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),PurchaseArrival.this);
                                     Gson gson7 = new Gson();
                                     PurchaseArrivalQuery saleDeliveryQuery = gson7.fromJson(saleDeliveryData, PurchaseArrivalQuery.class);
 
@@ -639,7 +640,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                 list.add(bean);
 
             }
-            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),list.get(0).getDbilldate(),PurchaseArrival.this);
+
             cursor.close();
         }
 

@@ -211,6 +211,7 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
                                         dialog.dismiss();
                                         return;
                                     }
+                                    DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),ProductEntry.this);
                                     ProductEntryQuery productEntryQuery = new Gson().fromJson(productEntryData, ProductEntryQuery.class);
                                     int pagetotal = Integer.parseInt(productEntryQuery.getPagetotal());
                                     if (pagetotal == 1) {
@@ -669,7 +670,7 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
             }
 
             cursor.close();
-            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),list.get(0).getDbilldate(),ProductEntry.this);
+
         }
 
 

@@ -104,7 +104,7 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
                     intent.putExtra("current_nnum_qrRecv", current_nnum_qrRecv);
                     intent.putExtra("current_vbillcode_qrRecv", current_vbillcode_qrRecv);
                     intent.putExtra("type",getIntent().getIntExtra("type",-1));
-                    Log.i("type3-->",getIntent().getIntExtra("type",-1)+"");
+
                     startActivity(intent);
                 } else {
                     Toast.makeText(SaleDeliveryQRDetail.this, "已经执行发货操作的行号不允许再进行操作", Toast.LENGTH_LONG).show();
@@ -136,8 +136,7 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
         }
 
         listAllBodyPostition = QuerySaleDeliveryBody(current_matrcode_qrRecv);
-        String current_scanSum = countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv);
-        insertCountOfScannedQRCode(current_scanSum);
+
         SaleDeliveryTableQrDetailAdapter adapter = new SaleDeliveryTableQrDetailAdapter(SaleDeliveryQRDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
     }
@@ -175,7 +174,7 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
     private void updateWarehouseInfo(String name, String current_vbillcode_qrRecv, String current_vcooporderbcode_b_qrRecv) {
         if (!name.equals("请选择仓库")) {
             db5.execSQL("update SaleDeliveryBody set cwarename=?  where vbillcode=? and vcooporderbcode_b=?", new String[]{name, current_vbillcode_qrRecv, current_vcooporderbcode_b_qrRecv});
-            //   db5.execSQL("update SaleDeliveryBody set cwarename=?  where vbillcode=? and vcooporderbcode_b=?", new String[]{name, current_vbillcode_qrRecv, current_vcooporderbcode_b_qrRecv});
+
         }
     }
 
@@ -227,21 +226,20 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
     public ArrayList<SaleDeliveryQrDetailBean> QuerySaleDeliveryBody(String current_matrcode_qrRecv) {
         ArrayList<SaleDeliveryQrDetailBean> list = new ArrayList<SaleDeliveryQrDetailBean>();
         Cursor cursor=null;
-        Log.i("bill",current_vbillcode_qrRecv);
-        Log.i("matrcode",current_matrcode_qrRecv);
-        Log.i("itempk",current_vcooporderbcode_b_qrRecv);
-        switch (getIntent().getIntExtra("type",-1)){
-            case 7:
-                cursor = db5.rawQuery("select prodcutcode,itemuploadflag from PurchaseReturnScanResult where vbillcode=? and materialcode=? " +
-                        "and itempk=?", new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv,
-                        current_vcooporderbcode_b_qrRecv});
-                break;
-                default:
-                    cursor = db5.rawQuery("select prodcutcode,itemuploadflag from SaleDeliveryScanResult where vbillcode=? and matrcode=? " +
-                            "and vcooporderbcode_b=?", new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv,
-                            current_vcooporderbcode_b_qrRecv});
-                    break;
-        }
+
+//        switch (getIntent().getIntExtra("type",-1)){
+//            case 7:
+//                cursor = db5.rawQuery("select prodcutcode,itemuploadflag from PurchaseReturnScanResult where vbillcode=? and materialcode=? " +
+//                        "and itempk=?", new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv,
+//                        current_vcooporderbcode_b_qrRecv});
+//                break;
+//                default:
+//
+//                    break;
+//        }
+        cursor = db5.rawQuery("select prodcutcode,itemuploadflag from SaleDeliveryScanResult where vbillcode=? and matrcode=? " +
+                "and vcooporderbcode_b=?", new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv,
+                current_vcooporderbcode_b_qrRecv});
 
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据

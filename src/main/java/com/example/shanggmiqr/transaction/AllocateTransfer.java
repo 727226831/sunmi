@@ -206,6 +206,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                                         dialog.dismiss();
                                         return;
                                     }
+                                    DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),AllocateTransfer.this);
                                     Gson gson7 = new Gson();
                                     AllocateTransferQuery allocateTransferQuery = gson7.fromJson(allocateTransferData, AllocateTransferQuery.class);
                                     int pagetotal = Integer.parseInt(allocateTransferQuery.getPagetotal());
@@ -604,7 +605,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                 list.add(bean);
 
             }
-            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),list.get(0).getDbilldate(),AllocateTransfer.this);
+
             cursor.close();
         }
 
