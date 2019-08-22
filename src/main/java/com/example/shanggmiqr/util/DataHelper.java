@@ -22,6 +22,7 @@ import com.example.shanggmiqr.bean.LoginBean;
 import com.example.shanggmiqr.bean.OtherQueryBean;
 import com.example.shanggmiqr.bean.QrcodeRule;
 import com.example.shanggmiqr.bean.SaleDeliveryBean;
+import com.example.shanggmiqr.bean.SaleDeliveryQuery;
 import com.example.shanggmiqr.bean.SaleDeliverySendBean;
 import com.example.shanggmiqr.transaction.SaleDelivery;
 import com.example.shanggmiqr.transaction.SaleDeliveryDetail;
@@ -176,11 +177,11 @@ public class DataHelper {
         }
         Cursor cursor = db.rawQuery("select code from Material where materialbarcode=?",
                 new String[]{scannedMaccode});
-
+        Log.i("valid",matrcode+"/"+scannedMaccode);
         //判断cursor中是否存在数据
         while (cursor.moveToNext()) {
             String code = cursor.getString(cursor.getColumnIndex("code"));
-
+            Log.i("valid-->",matrcode+"/"+code);
             if (code.equals(matrcode)) {
                 cursor.close();
                 return true;
@@ -423,8 +424,32 @@ public class DataHelper {
 
         // 获取返回的结果
        String otherOutgoingDataResp = object.getProperty(0).toString();
+       dataRecord(workCode+"-"+pagenum+"-",request.toString()+"\r\n"+otherOutgoingDataResp);
         return otherOutgoingDataResp;
     }
+
+    private static void dataRecord(String title,String string) {
+        String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+        SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("日志yyyy年MM月dd日HH时mm分ss秒");
+        File file=new File(sdCardDir+"/sunmi");
+        if(!file.exists()){
+            file.mkdir();
+        }
+        Date curDate =  new Date(System.currentTimeMillis());
+        file=new File(sdCardDir+"/sunmi",title+formatter.format(curDate)+".txt");
+        FileOutputStream outputStream=null;
+        try {
+            outputStream=new FileOutputStream(file);
+            outputStream.write("\r\n".getBytes());
+            outputStream.write(string.getBytes());
+
+
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public static String getUser(Context context) {
         SharedPreferences currentAccount= context.getSharedPreferences("current_account", 0);

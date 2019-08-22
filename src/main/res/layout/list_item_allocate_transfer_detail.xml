@@ -19,11 +19,9 @@
         android:visibility="invisible"
         android:textSize="10dp"
         android:focusable="false"/>
-    <View
-        android:layout_width="1.5dip"
-        android:layout_height="fill_parent"
-        android:background="#B4B3B3"/>
+
     <TextView
+        android:visibility="gone"
         android:id="@+id/vcooporderbcode_b_allocatetransfer_detail"
         android:layout_width="0dip"
         android:layout_height="wrap_content"

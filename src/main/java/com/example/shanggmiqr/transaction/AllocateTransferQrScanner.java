@@ -249,7 +249,7 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
             if(productcode.isEmpty()){
                 return;
             }
-            Log.i("maccode-->",maccode);
+
             if(productcode.length() != DataHelper.getLengthInQrRule(maccode,db5)){
                 Toast.makeText(AllocateTransferQrScanner.this, "条码或二维码错误", Toast.LENGTH_LONG).show();
                 return;

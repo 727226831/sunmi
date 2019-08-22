@@ -37,6 +37,7 @@
             app:left_x="0"
             app:left_y="0"/>
         <TextView
+            android:visibility="gone"
             android:id="@+id/qrcode_xm_loan"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

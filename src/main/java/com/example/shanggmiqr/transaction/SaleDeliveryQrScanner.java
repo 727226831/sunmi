@@ -28,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.shanggmiqr.util.DataHelper;
+import com.example.shanggmiqr.util.ToastShow;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.SaleDeliveryScannerAdapter;
 import com.example.shanggmiqr.bean.SaleDeliveryScanResultBean;
@@ -138,10 +139,12 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
+
                 if(mHandler.hasMessages(0x19)){
                     mHandler.removeMessages(0x19);
                 }
                 mHandler.sendEmptyMessageDelayed(0x19,1000);
+
             }
         });
 
@@ -222,6 +225,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                         tableBodyListView.setAdapter(adapter);
                         int current_scanSum =countSum();
                         scannnumText.setText("已扫码数量：" + current_scanSum);
+
                         DataHelper.updateScannum(db5,current_scanSum,current_vbillcode_qrRecv,
                                 current_vcooporderbcode_b_qrRecv,getIntent().getIntExtra("type",-1));
 
@@ -237,17 +241,19 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                         Toast.makeText(SaleDeliveryQrScanner.this, "错误："+exception, Toast.LENGTH_LONG).show();
                         break;
                     case 0x19:
-                        mHandler.removeMessages(0x19);
+
                         if(isSN){
                             getData();
                         }else {
                             boxCodeEditTextContent= Arrays.asList(boxCodeEditText.getText().toString().split("\\s"));
-                            for (int i = 0; i <boxCodeEditTextContent.size() ; i++) {
+
+                            for (int i = 0; i <boxCodeEditTextContent.size(); i++) {
                                 insertQrDBForSaleDelivery(boxCodeEditTextContent.get(i));
                             }
                             boxCodeEditText.setText("");
 
                         }
+                        mHandler.removeMessages(0x19);
                         break;
 
                     default:
@@ -269,7 +275,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
             if(i>Math.abs(current_nnum_qrRecv)-1)
             {
-                Toast.makeText(SaleDeliveryQrScanner.this, "已扫描指定数量", Toast.LENGTH_LONG).show();
+                ToastShow.show(SaleDeliveryQrScanner.this, "已扫描指定数量", Toast.LENGTH_SHORT);
                 return;
 
             }
@@ -477,10 +483,13 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
     private void insertQrDBForSaleDelivery(final String productcode) {
 //插入临时数据库保持条码信息并显示在此页面
-        if (count >= Math.abs(current_nnum_qrRecv)) {
-            Toast.makeText(SaleDeliveryQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG).show();
+
+        if (countSum()==Math.abs(current_nnum_qrRecv)) {
+            ToastShow.show(SaleDeliveryQrScanner.this, "已经扫描指定数量", Toast.LENGTH_LONG);
             return;
         }
+
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -508,8 +517,10 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                         }
                         // 插入第一条数据
                         if(productcode.equals("")){
-                            for (int i = 0; i <Integer.parseInt(editTextSN.getText().toString()) ; i++) {
-                                db5.insert("SaleDeliveryScanResult", null, values);
+                            if(!editTextSN.getText().toString().isEmpty()) {
+                                for (int i = 0; i < Integer.parseInt(editTextSN.getText().toString()); i++) {
+                                    db5.insert("SaleDeliveryScanResult", null, values);
+                                }
                             }
                         }else {
                             db5.insert("SaleDeliveryScanResult", null, values);

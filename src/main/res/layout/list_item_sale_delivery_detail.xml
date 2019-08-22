@@ -114,12 +114,10 @@
         android:textSize="10dp"
         android:gravity="center"
         android:text="已扫码数量" />
-    <View
-        android:layout_width="1.5dip"
-        android:layout_height="fill_parent"
-        android:background="#B4B3B3"/>
+
 
     <TextView
+        android:visibility="gone"
         android:id="@+id/customer_saledetail"
         android:layout_width="0dip"
         android:layout_height="wrap_content"

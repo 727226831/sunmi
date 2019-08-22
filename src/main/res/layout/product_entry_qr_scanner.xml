@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -38,12 +39,24 @@
             android:layout_marginLeft="10dp"
             android:text="箱码:" />
 
-        <EditText
+
+        <scut.carson_ho.diy_view.SuperEditText
             android:id="@+id/productentry_boxcode_scanner"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="33dp"
-            android:inputType="textNoSuggestions" />
+            android:inputType="textNoSuggestions"
+            app:delete_height="40"
+            app:delete_width="40"
+            app:delete_x="0"
+            app:delete_y="0"
+            app:ic_delete="@drawable/delete"
+            app:ic_left_click="@drawable/ic_left_click"
+            app:ic_left_unclick="@drawable/ic_left_unclick"
+            app:left_height="0"
+            app:left_width="0"
+            app:left_x="0"
+            app:left_y="0"/>
     </LinearLayout>
 
     <LinearLayout

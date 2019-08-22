@@ -450,7 +450,7 @@ public class ProductEntryDetail extends AppCompatActivity {
             int ysnum=Integer.parseInt(listAllBodyPostition.get(i).getYsnum());
             int scannum=Integer.parseInt(listAllBodyPostition.get(i).getScannum());
 
-            if(scannum!=0){
+            if(scannum!=0 ){
 
                 if(scannum==(ysnum-nnum)){
                     updateData("Y",listAllBodyPostition.get(i));
@@ -462,10 +462,14 @@ public class ProductEntryDetail extends AppCompatActivity {
     }
 
     private void updateData(String uplodaflag,ProductEntryBodyBean productEntryBodyBean) {
+        if(productEntryBodyBean.getUploadflag().equals("Y")){
+            return;
+        }
         ContentValues contentValues=new ContentValues();
         contentValues.put("uploadflag",uplodaflag);
-        int nnum=Integer.parseInt(productEntryBodyBean.getNnum())+Integer.parseInt(productEntryBodyBean.getScannum());
-        contentValues.put("nnum",nnum+"");
+        if(uplodaflag.equals("Y")) {
+            contentValues.put("nnum", productEntryBodyBean.getYsnum());
+        }
         contentValues.put("ysnum",productEntryBodyBean.getYsnum());
         contentValues.put("scannum",productEntryBodyBean.getScannum());
         db4.update("ProductEntryBody",contentValues,"billcode=? and itempk=?",

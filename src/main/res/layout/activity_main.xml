@@ -29,7 +29,7 @@
                 android:textSize="17sp" />
 
             <EditText
-                android:text="APP01"
+
                 android:id="@+id/accountEdittext"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -62,7 +62,7 @@
 
             <EditText
                 android:inputType="textPassword"
-                android:text="654321"
+
                 android:id="@+id/pwdEdittext"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
