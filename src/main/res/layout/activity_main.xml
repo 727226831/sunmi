@@ -61,6 +61,7 @@
                 android:textSize="17sp" />
 
             <EditText
+                android:digits="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 android:inputType="textPassword"
 
                 android:id="@+id/pwdEdittext"
@@ -70,7 +71,7 @@
                 android:layout_marginLeft="32dip"
                 android:layout_toRightOf="@id/pwd"
                 android:background="@null"
-                android:hint="请输入密码"
+                android:hint="密码只能有0-9 A-Z a-z"
                 android:textSize="15sp" />
         </RelativeLayout>
     </RelativeLayout>

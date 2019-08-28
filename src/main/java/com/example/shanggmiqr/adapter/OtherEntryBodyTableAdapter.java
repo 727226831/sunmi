@@ -84,8 +84,8 @@ public class OtherEntryBodyTableAdapter extends BaseAdapter{
             viewHolder.vcooporderbcode_b = (TextView)convertView.findViewById(R.id.vcooporderbcode_b_otherentry) ;
             viewHolder.materialcode = (TextView)convertView.findViewById(R.id.materialcode_otherentry) ;
             viewHolder.maccode = (TextView) convertView.findViewById(R.id.id_otherentry);
-            viewHolder.nnum = (TextView) convertView.findViewById(R.id.goods_name_otherentry);
-            viewHolder.uploadnum = (TextView) convertView.findViewById(R.id.uploadnum_otherentry);
+            viewHolder.nnum = (TextView) convertView.findViewById(R.id.uploadnum_otherentry);
+            viewHolder.uploadnum = (TextView) convertView.findViewById(R.id.goods_name_otherentry);
             viewHolder.scannum = (TextView) convertView.findViewById(R.id.scannednum_otherentry);
             viewHolder.uploadflag = (TextView) convertView.findViewById(R.id.uploadflag_otherentry);
             viewHolder.viewBtn = (Button)convertView.findViewById(R.id.detail_otherentry);

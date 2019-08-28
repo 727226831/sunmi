@@ -488,16 +488,14 @@ public class LoanDetail extends AppCompatActivity {
                         String s = msg.getData().getString("uploadResp");
                         Toast.makeText(LoanDetail.this, s, Toast.LENGTH_LONG).show();
                         updateUploadFlag();
-                        if (isAllItemUpload()) {
-                            Intent intent = new Intent(LoanDetail.this, LoanBill.class);
-                            intent.putExtra("type",4);
-                            startActivity(intent);
-                            finish();
-                        }
                         listAllBodyPostition = QueryLoanBody(current_sale_delivery_vbillcodeRecv);
                         adapter= new LoanBodyTableAdapter(LoanDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
+                        if (isAllItemUpload()) {
+                            finish();
+                        }
+
 
 
                         break;
@@ -518,9 +516,6 @@ public class LoanDetail extends AppCompatActivity {
                         Toast.makeText(LoanDetail.this, s2, Toast.LENGTH_LONG).show();
                         updateAllUploadFlag();
                         if (isAllItemUpload()) {
-                            Intent intent = new Intent(LoanDetail.this,LoanBill.class);
-                            intent.putExtra("type",4);
-                            startActivity(intent);
                             finish();
                         }
                         listAllBodyPostition = QueryLoanBody(current_sale_delivery_vbillcodeRecv);
@@ -651,21 +646,28 @@ public class LoanDetail extends AppCompatActivity {
     }
 
     private boolean isAllItemUpload() {
-        Cursor cursor00 = db4.rawQuery("select itempk from LoanBody where pobillcode=? and uploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, "Y"});
-        Cursor cursor01 = db4.rawQuery("select itempk from LoanBody where pobillcode=?",
-                new String[]{current_sale_delivery_vbillcodeRecv});
-        int t1=cursor00.getCount();
-        int t2=cursor01.getCount();
-        if (t1 > 0 && t1 == t2) {
-            db4.execSQL("update Loan set flag=? where pobillcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv});
-            return true;
-        } else if (t1 > 0 && t1 < t2) {
-            db4.execSQL("update Loan set flag=? where pobillcode=?", new String[]{"PY", current_sale_delivery_vbillcodeRecv});
-            return false;
-        } else {
-            return false;
+        int count=0;
+        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
+            if(listAllBodyPostition.get(i).getUploadflag().equals("Y")){
+                count++;
+            }
         }
+        String flag="";
+        if(count==0){
+            flag="N";
+        }else if(count!=listAllBodyPostition.size()){
+            flag="PY";
+        }else {
+            flag="Y";
+        }
+
+        db4.execSQL("update Loan set flag=? where pobillcode=?", new String[]{flag, current_sale_delivery_vbillcodeRecv});
+        if(flag.equals("Y")){
+            return true;
+        }else {
+            return  false;
+        }
+
     }
 
     private boolean isCwarenameSame() {
@@ -792,7 +794,7 @@ public class LoanDetail extends AppCompatActivity {
     }
 
     private void updateUploadFlag() {
-          Log.i("num",chosen_line_nnum+"/"+chosen_line_scannnum);
+
         if(Integer.parseInt(chosen_line_nnum)==Integer.parseInt(chosen_line_scannnum)){
             db4.execSQL("update LoanBody set uploadflag=? where pobillcode=? and itempk=? and materialcode=?",
                     new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, chosen_line_matrcode});

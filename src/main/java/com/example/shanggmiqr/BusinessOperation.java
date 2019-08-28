@@ -81,12 +81,12 @@ public class BusinessOperation extends AppCompatActivity {
     public class NormalAdapter extends RecyclerView.Adapter<NormalAdapter.VH>{
         //② 创建ViewHolder
         public  class VH extends RecyclerView.ViewHolder{
-            ImageView imageView;
+            TextView textView;
             LinearLayout linearLayout;
             public VH(View v) {
                 super(v);
                linearLayout=v.findViewById(R.id.l_layout);
-               imageView=v.findViewById(R.id.iv_menu);
+                textView=v.findViewById(R.id.tv_menu);
             }
         }
 
@@ -99,23 +99,29 @@ public class BusinessOperation extends AppCompatActivity {
         @Override
         public void onBindViewHolder(VH holder,final int position) {
             if (mDatas.get(position).getMenucode().equals("XSCK")){
-                holder.imageView.setBackgroundResource(R.drawable.sale_delivery);
-            } else if (mDatas.get(position).getMenucode().equals("QTCK")){
-                holder.imageView.setBackgroundResource(R.drawable.other_outgoing);
-            } else if (mDatas.get(position).getMenucode().equals("QTRK")){
-                holder.imageView.setBackgroundResource(R.drawable.other_entry);
-            }else if (mDatas.get(position).getMenucode().equals("CGRK")){
-                holder.imageView.setBackgroundResource(R.drawable.purchase_arrival);
-            }else if (mDatas.get(position).getMenucode().equals("JCCK")){
-                holder.imageView.setBackgroundResource(R.drawable.loan);
-            }else if (mDatas.get(position).getMenucode().equals("CCPRK")){
-                holder.imageView.setBackgroundResource(R.drawable.product_entry);
-            } else if (mDatas.get(position).getMenucode().equals("DBCK")){
-                holder.imageView.setBackgroundResource(R.drawable.allocate);
-            }else if (mDatas.get(position).getMenucode().equals("CGTH")){
-                holder.imageView.setBackgroundResource(R.drawable.purchase_return);
 
+                holder.textView.setBackgroundResource(R.color.color1);
+            } else if (mDatas.get(position).getMenucode().equals("QTCK")){
+
+                holder.textView.setBackgroundResource(R.color.color2);
+            } else if (mDatas.get(position).getMenucode().equals("QTRK")){
+
+                holder.textView.setBackgroundResource(R.color.color3);
+            }else if (mDatas.get(position).getMenucode().equals("CGRK")){
+
+                holder.textView.setBackgroundResource(R.color.color4);
+            }else if (mDatas.get(position).getMenucode().equals("JCCK")){
+                holder.textView.setBackgroundResource(R.color.color5);
+            }else if (mDatas.get(position).getMenucode().equals("CCPRK")){
+                holder.textView.setBackgroundResource(R.color.color6);
+            } else if (mDatas.get(position).getMenucode().equals("DBCK")){
+                holder.textView.setBackgroundResource(R.color.color7);
+            }else if (mDatas.get(position).getMenucode().equals("CGTH")){
+                holder.textView.setBackgroundResource(R.color.color8);
+            }else if (mDatas.get(position).getMenucode().equals("CKCK")){
+                holder.textView.setBackgroundResource(R.color.blue);
             }
+            holder.textView.setText(mDatas.get(position).getMenuname());
             holder.linearLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -144,7 +150,12 @@ public class BusinessOperation extends AppCompatActivity {
                         intent=new Intent(BusinessOperation.this,PurchaseReturn.class);
                         intent.putExtra("type",7);
 
+                    }else if (mDatas.get(position).getMenucode().equals("CKCK")){
+                        intent=new Intent(BusinessOperation.this,SaleDelivery.class);
+                        intent.putExtra("type",8);
+
                     }
+                    intent.putExtra("title",mDatas.get(position).getMenuname());
                     intent.putExtra("from_business_operation", "Y");
                     startActivity(intent);
                 }

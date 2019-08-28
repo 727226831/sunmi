@@ -19,7 +19,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:text="发货单号:" />
+                android:text="单号:" />
 
             <TextView
                 android:id="@+id/vcooporderbcode_b_saledeliveryqr"
@@ -47,7 +47,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="发货数量:" />
+                android:text="数量:" />
             <LinearLayout
                 android:visibility="gone"
                 android:layout_width="260dp"

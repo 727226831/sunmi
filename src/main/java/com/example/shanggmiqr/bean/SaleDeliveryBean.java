@@ -27,6 +27,16 @@ public class SaleDeliveryBean {
     public int dr;
     String matrcode;
 
+    public String getCwarename() {
+        return cwarename;
+    }
+
+    public void setCwarename(String cwarename) {
+        this.cwarename = cwarename;
+    }
+
+    private String cwarename;
+
     public String getMatrcode() {
         return matrcode;
     }
@@ -80,6 +90,25 @@ public class SaleDeliveryBean {
     String nnum;
     String prodcutcode;
     String xlh;
+    public String wlcode;
+
+    public String getWlcode() {
+        return wlcode;
+    }
+
+    public void setWlcode(String wlcode) {
+        this.wlcode = wlcode;
+    }
+
+    public String getWlbill() {
+        return wlbill;
+    }
+
+    public void setWlbill(String wlbill) {
+        this.wlbill = wlbill;
+    }
+
+    public String wlbill;
 
     public boolean isSelected = false;
     public SaleDeliveryBean(){

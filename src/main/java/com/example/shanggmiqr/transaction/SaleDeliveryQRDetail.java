@@ -64,6 +64,7 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+        actionBar.setTitle(getIntent().getStringExtra("title")+"条码明细");
         helper5 = new MyDataBaseHelper(SaleDeliveryQRDetail.this, "ShangmiData", null, 1);
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。

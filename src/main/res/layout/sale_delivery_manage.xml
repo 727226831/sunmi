@@ -10,7 +10,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="3dp"
-            android:text="下载发货单"/>
+            android:text="下载单据"/>
         <Button
             android:id="@+id/query_sale_delivery"
             android:layout_width="wrap_content"

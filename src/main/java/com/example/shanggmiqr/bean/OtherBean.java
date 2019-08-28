@@ -12,6 +12,16 @@ public class OtherBean {
     public String cwarename;
     public String dbilldate;
     public int dr;
+
+    public String getFlag() {
+        return flag;
+    }
+
+    public void setFlag(String flag) {
+        this.flag = flag;
+    }
+
+    private String flag;
     private boolean isSelected = false;
 
     String matrname;

@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
@@ -33,6 +34,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.shanggmiqr.BusinessOperation;
+import com.example.shanggmiqr.Url.iUrl;
+import com.example.shanggmiqr.adapter.PurchaseArrivalAdapter;
+import com.example.shanggmiqr.bean.PurchaseArrivalBean;
 import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.PurchaseReturnAdapter;
@@ -51,8 +55,12 @@ import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -79,6 +87,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
     private List<String> uploadflag;
     private TextView lst_downLoad_ts;
     private TextView time;
+    private Button buttonExport;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +100,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
         if (actionBar != null) {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle(getIntent().getStringExtra("title"));
         }
         lst_downLoad_ts = (TextView)findViewById(R.id.last_downLoad_ts_purchase_return);
         //显示最后一次的下载时间
@@ -109,6 +119,8 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
         displayallPurchaseReturnButton.setOnClickListener(this);
 
         tableListView = (ListView) findViewById(R.id.list_purchase_return);
+        buttonExport=findViewById(R.id.b_export);
+        buttonExport.setOnClickListener(this);
         List<PurchaseReturnBean> list = querySaleDelivery();
         listAllPostition = list;
         final PurchaseReturnAdapter adapter1 = new PurchaseReturnAdapter(PurchaseReturn.this, list, mListener);
@@ -148,7 +160,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
                                 //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
                             }
                         });
-                        Toast.makeText(PurchaseReturn.this, "采购退货单下载完成", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x18:
                         String s = msg.getData().getString("uploadResp");
@@ -172,11 +184,9 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
     }
 
     @Override
-    public void onResume()
-    {
-        super.onResume();
-        //返回之后重新下载
-        //downloadDeliveryButton.performClick();
+    protected void onStart() {
+        super.onStart();
+       purchaseReturnHandler.sendEmptyMessage(0x11);
     }
 
     @Override
@@ -210,9 +220,9 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
                                         dialog.dismiss();
                                         return;
                                     }
-                                    DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),PurchaseReturn.this);
+
                                     Gson gson7 = new Gson();
-                                    PurchaseReturnQuery purchaseReturnQuery = gson7.fromJson(saleDeliveryData, PurchaseReturnQuery.class);
+                                    final PurchaseReturnQuery purchaseReturnQuery = gson7.fromJson(saleDeliveryData, PurchaseReturnQuery.class);
                                     int pagetotal = Integer.parseInt(purchaseReturnQuery.getPagetotal());
                                     if (pagetotal == 1) {
                                         insertDownloadDataToDB(purchaseReturnQuery);
@@ -224,7 +234,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
                                             @Override
                                             public void run() {
                                                 dialog.dismiss();
-                                                Toast.makeText(PurchaseReturn.this, "采购退货单已经是最新", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(PurchaseReturn.this, purchaseReturnQuery.getErrmsg(), Toast.LENGTH_LONG).show();
                                             }
                                         });
                                     } else {
@@ -242,6 +252,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
+                                            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),PurchaseReturn.this);
                                             SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestPurchaseReturnTSInfo", 0);
                                             String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "2018-09-01 00:00:01");
                                             lst_downLoad_ts.setText("最后一次下载:"+begintime);
@@ -293,6 +304,9 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
                         //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
                     }
                 });
+                break;
+            case R.id.b_export:
+                exportData(exportList);
                 break;
         }
     }
@@ -393,6 +407,8 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
 
 
     private void popupQuery() {
+        List<String> listWarehouse;
+
         LayoutInflater layoutInflater = LayoutInflater.from(PurchaseReturn.this);
         View textEntryView = layoutInflater.inflate(R.layout.query_outgoing_dialog, null);
         final EditText codeNumEditText = (EditText) textEntryView.findViewById(R.id.codenum);
@@ -400,30 +416,27 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
         final Spinner flag_spinner = (Spinner) textEntryView.findViewById(R.id.upload_flag_spinner);
         final Button showdailogTwo = (Button)  textEntryView.findViewById(R.id.showdailogTwo);
         time = (TextView)  textEntryView.findViewById(R.id.timeshow_saledelivery);
-        SharedPreferences currentTimePeriod= getSharedPreferences("query_purchasereturn", 0);
-        final String tempperiod =currentTimePeriod.getString("current_account","2018-09-01 至 2018-12-17");
+
+        String tempperiod =DataHelper.getQueryTime(PurchaseReturn.this,getIntent().getIntExtra("type",-1));
         showdailogTwo.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 showDialogTwo();
             }
         });
-        test = queryWarehouseInfo();
-        test.add("");
-        uploadflag = new ArrayList();
-        uploadflag.add("是");
-        uploadflag.add("部分上传");
-        uploadflag.add("否");
-        final ArrayAdapter adapter = new ArrayAdapter(
-                PurchaseReturn.this, android.R.layout.simple_spinner_item, test);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-        spinner.setSelection(test.size() - 1, true);
-        query_cwarename =adapter.getItem(test.size() - 1).toString();
+
+        //仓库选择
+        listWarehouse = DataHelper.queryWarehouseInfo(db3);
+        listWarehouse.add("");
+        final ArrayAdapter arrayAdapter = new ArrayAdapter(
+                PurchaseReturn.this, android.R.layout.simple_spinner_item, listWarehouse);
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(arrayAdapter);
+        spinner.setSelection(listWarehouse.size()-1);
         spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                query_cwarename=adapter.getItem(i).toString();
+                query_cwarename=arrayAdapter.getItem(i).toString();
             }
 
             @Override
@@ -431,34 +444,45 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
 
             }
         });
+
+
+        //订单选择
+        uploadflag = new ArrayList();
+        uploadflag.add("否");
+        uploadflag.add("部分上传");
+        uploadflag.add("是");
+        uploadflag.add("全部");
         final ArrayAdapter adapter2 = new ArrayAdapter(
                 PurchaseReturn.this, android.R.layout.simple_spinner_item, uploadflag);
         adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         flag_spinner.setAdapter(adapter2);
-        flag_spinner.setSelection(uploadflag.size() - 1, true);
-        if ("是".equals(adapter2.getItem(uploadflag.size() - 1).toString())){
-            query_uploadflag = "Y";
-        } else if ("否".equals(adapter2.getItem(uploadflag.size() - 1).toString())){
-            query_uploadflag = "N";
-        } else {
-            query_uploadflag = "PY";
-        }
-        flag_spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
+
+        flag_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-               if ("是".equals(adapter2.getItem(i).toString())){
-                   query_uploadflag = "Y";
-               } else if ("否".equals(adapter2.getItem(i).toString())){
-                   query_uploadflag = "N";
-               } else {
-                   query_uploadflag = "PY";
-               }
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                switch (position){
+                    case 0:
+                        query_uploadflag = "N";
+                        break;
+                    case 1:
+                        query_uploadflag = "PY";
+                        break;
+                    case 2:
+                        query_uploadflag = "Y";
+                        break;
+                    case 3:
+                        query_uploadflag = "ALL";
+                        break;
+
+                }
             }
+
             @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
+            public void onNothingSelected(AdapterView<?> parent) {
 
             }
         });
+
         AlertDialog.Builder ad1 = new AlertDialog.Builder(PurchaseReturn.this);
         ad1.setTitle("出入查询条件:");
         ad1.setView(textEntryView);
@@ -466,26 +490,13 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
         ad1.setPositiveButton("查询", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int i) {
                 String temp=codeNumEditText.getText().toString();
-                if(query_cwarename == null){
-                    query_cwarename = adapter.getItem(test.size() - 1).toString();
-                }
-                if(query_uploadflag == null){
-                    query_uploadflag = "N";
-                }
-                ArrayList<PurchaseReturnBean> bean1 = query(temp,query_cwarename,query_uploadflag);
-                listAllPostition = bean1;
-                final PurchaseReturnAdapter adapter3 = new PurchaseReturnAdapter(PurchaseReturn.this, bean1, mListener);
-                tableListView.setAdapter(adapter3);
-                tableListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        adapter3.select(position);
-                        PurchaseReturnBean saleDelivery1Bean = (PurchaseReturnBean) adapter3.getItem(position);
-                        chosen_line_vbillcode = saleDelivery1Bean.getVbillcode();
-                        chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
-                        //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
-                    }
-                });
+                exportList= queryexport(temp,query_cwarename,query_uploadflag);
+                listAllPostition=new ArrayList<>();
+                listAllPostition=removeDuplicate(exportList);
+                PurchaseReturnAdapter adapter=new PurchaseReturnAdapter(PurchaseReturn.this,exportList,mListener);
+                tableListView.setAdapter(adapter);
+
+
 
             }
         });
@@ -495,8 +506,77 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
             }
         });
         ad1.show();// 显示对话框
-        time.setText(tempperiod);
+
     }
+
+    List<PurchaseReturnBean> exportList;
+
+    private    List<PurchaseReturnBean>  removeDuplicate(List<PurchaseReturnBean> list)  {
+        List<PurchaseReturnBean>  beanList=new ArrayList<>();
+        beanList.addAll(list);
+
+        for  ( int  i  =   0 ; i  <  beanList.size()  -   1 ; i ++ )  {
+
+            for  ( int  j  =  beanList.size()  -   1 ; j  >  i; j -- )  {
+
+                if  (beanList.get(j).getVbillcode().equals(beanList.get(i).getVbillcode()))  {
+                    beanList.remove(j);
+                }
+            }
+        }
+        return beanList;
+    }
+    private ArrayList<PurchaseReturnBean> queryexport(String vbillcode,String current_cwarename,String query_uploadflag) {
+        ArrayList<PurchaseReturnBean> list = new ArrayList<>();
+        SharedPreferences currentTimePeriod= getSharedPreferences("query_purchasereturn", 0);
+        String start_temp = currentTimePeriod.getString("starttime", iUrl.begintime);
+        String end_temp = currentTimePeriod.getString("endtime", Utils.getDefaultEndTime());
+        Cursor cursor=null;
+        if(query_uploadflag.equals("ALL")){
+            cursor = db3.rawQuery("select PurchaseReturn.vbillcode, PurchaseReturn.dbilldate,PurchaseReturnbody.materialcode,PurchaseReturn.dr," +
+                    "PurchaseReturnbody.materialname,PurchaseReturnbody.maccode,PurchaseReturnbody.nnum,saledeliveryscanresult.prodcutcode," +
+                    "saledeliveryscanresult.xlh" + " from PurchaseReturn inner join PurchaseReturnbody on PurchaseReturn.vbillcode=PurchaseReturnbody.vbillcode " +
+                    "left join saledeliveryscanresult on PurchaseReturnbody.vbillcode=saledeliveryscanresult.vbillcode " +
+                    "and PurchaseReturnbody.itempk=saledeliveryscanresult.vcooporderbcode_b where PurchaseReturn.vbillcode" +
+                    " like '%" + vbillcode + "%' and PurchaseReturnbody.warehouse"+ " like '%" + current_cwarename + "%' order by dbilldate desc", null);
+
+        }else {
+            cursor = db3.rawQuery("select PurchaseReturn.vbillcode, PurchaseReturn.dbilldate,PurchaseReturnbody.materialcode,PurchaseReturn.dr," +
+                    "PurchaseReturnbody.materialname,PurchaseReturnbody.maccode,PurchaseReturnbody.nnum,saledeliveryscanresult.prodcutcode," +
+                    "saledeliveryscanresult.xlh" + " from PurchaseReturn inner join PurchaseReturnbody on PurchaseReturn.vbillcode=PurchaseReturnbody.vbillcode " +
+                    "left join saledeliveryscanresult on PurchaseReturnbody.vbillcode=saledeliveryscanresult.vbillcode " +
+                    "and PurchaseReturnbody.itempk=saledeliveryscanresult.vcooporderbcode_b where PurchaseReturnbody.uploadflag=? and PurchaseReturn.vbillcode" +
+                    " like '%" + vbillcode + "%' and PurchaseReturnbody.warehouse"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
+
+        }
+
+
+        //判断cursor中是否存在数据
+        while (cursor.moveToNext()) {
+
+            PurchaseReturnBean bean = new PurchaseReturnBean();
+
+            bean.vbillcode = cursor.getString(cursor.getColumnIndex("vbillcode"));
+            bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
+            bean.setMaterialcode(cursor.getString(cursor.getColumnIndex("materialcode")));
+            bean.setMaterialname(cursor.getString(cursor.getColumnIndex("materialname")));
+            bean.setMaccode(cursor.getString(cursor.getColumnIndex("maccode")));
+            bean.setNnum(cursor.getString(cursor.getColumnIndex("nnum")));
+            bean.setProdcutcode(cursor.getString(cursor.getColumnIndex("prodcutcode")));
+            bean.setXlh(cursor.getString(cursor.getColumnIndex("xlh")));
+            bean.dr= cursor.getInt(cursor.getColumnIndex("dr"));
+
+
+            if (DataHelper.queryTimePeriod(bean.vbillcode,start_temp,end_temp,getIntent().getIntExtra("type",-1),db3)) {
+                list.add(bean);
+            }
+
+        }
+        cursor.close();
+
+        return list;
+    }
+
     private void showDialogTwo() {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_date, null);
         final DatePicker startTime = (DatePicker) view.findViewById(R.id.st);
@@ -551,70 +631,44 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
         startTime.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
         endTime.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
     }
-    private List<String> queryWarehouseInfo() {
-        List<String> cars = new ArrayList<>();
-        Cursor cursornew = db3.rawQuery("select name from Warehouse",
-                null);
-        if (cursornew != null && cursornew.getCount() > 0) {
-            while (cursornew.moveToNext()) {
-                String name = cursornew.getString(cursornew.getColumnIndex("name"));
-                cars.add(name);
-            }
-            cursornew.close();
+    private void exportData( List<PurchaseReturnBean> exportList) {
+        Log.i("exportList",new Gson().toJson(exportList));
+        String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+        SimpleDateFormat formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
+        File file=new File(sdCardDir+"/sunmi");
+        if(!file.exists()){
+            file.mkdir();
         }
-        return cars;
-    }
-    public ArrayList<PurchaseReturnBean> query(String vbillcode,String current_cwarename,String query_uploadflag) {
-        ArrayList<PurchaseReturnBean> list = new ArrayList<PurchaseReturnBean>();
-        SharedPreferences currentTimePeriod= getSharedPreferences("query_purchasereturn", 0);
-        String start_temp = currentTimePeriod.getString("starttime","2018-09-01 00:00:01");
-        String end_temp = currentTimePeriod.getString("endtime", Utils.getDefaultEndTime());
-        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr from PurchaseReturn where flag=? and vbillcode like '%" + vbillcode + "%' order by dbilldate desc", new String[]{query_uploadflag});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-                PurchaseReturnBean bean = new PurchaseReturnBean();
-                bean.vbillcode = cursor.getString(cursor.getColumnIndex("vbillcode"));
-                bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
-                bean.dr= cursor.getInt(cursor.getColumnIndex("dr"));
-                if(queryCwarename(current_cwarename, bean.vbillcode)){
-                    if (queryTimePeriod(bean.vbillcode,start_temp,end_temp)) {
-                        list.add(bean);
-                    }
+        Date curDate =  new Date(System.currentTimeMillis());
+        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        Toast.makeText(PurchaseReturn.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
+        FileOutputStream outputStream=null;
+        try {
+            outputStream=new FileOutputStream(file);
+            outputStream.write(("发货单号"+"\t"+ "单据日期"+"\t"+"物料编码"+"\t"+"物料名称"+"\t"+
+                    "物料大类"+"\t"+"序列号"+"\t"+"条形码"+"\t").getBytes());
+            for (int j = 0; j <exportList.size() ; j++) {
+                if(exportList.get(j).getXlh()!=null ) {
+                    outputStream.write("\r\n".getBytes());
+                    outputStream.write((exportList.get(j).getVbillcode()+"\t"
+                            +exportList.get(j).getDbilldate()+"\t"
+                            +exportList.get(j).getMaterialcode()+"\t"
+                            +exportList.get(j).getMaterialname()+"\t"
+                            +exportList.get(j).getMaccode()+"\t"
+                            +exportList.get(j).getXlh()+"\t"
+                            +exportList.get(j).getProdcutcode()).getBytes());
                 }
+
             }
-            cursor.close();
+            outputStream.close();
 
-        }
-
-        return list;
-    }
-
-    private boolean queryTimePeriod(String vbillcode,String startTime,String endTime) {
-        Cursor cursor = db3.rawQuery("SELECT * FROM PurchaseReturn WHERE vbillcode =? and " +
-                "dbilldate>=? and dbilldate<?",
-        new String[] {vbillcode, startTime, endTime});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            cursor.close();
-            return true;
-        }else{
-            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    private boolean queryCwarename(String current_cwarename,String vbillcode) {
 
-        Cursor cursor = db3.rawQuery("select vbillcode from PurchaseReturnBody where vbillcode =? and cwarename like '%" + current_cwarename + "%'  ", new String[]{vbillcode});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-            }
-            cursor.close();
-            return true;
-        }
-        return false;
-    }
+
 
 
 

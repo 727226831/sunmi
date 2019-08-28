@@ -1,5 +1,7 @@
 package com.example.shanggmiqr.bean;
 
+import com.facebook.stetho.Stetho;
+
 /**
  * Created by weiyt.jiang on 2018/8/3.
  */
@@ -25,6 +27,72 @@ public class PurchaseArrivalBean {
     public String vbillcode;
     public String dbilldate;
     public int dr;
+   private String materialcode;
+
+    public String getFlag() {
+        return flag;
+    }
+
+    public void setFlag(String flag) {
+        this.flag = flag;
+    }
+
+    private String flag;
+
+    public String getMaterialcode() {
+        return materialcode;
+    }
+
+    public void setMaterialcode(String materialcode) {
+        this.materialcode = materialcode;
+    }
+
+    public String getMaterialname() {
+        return materialname;
+    }
+
+    public void setMaterialname(String materialname) {
+        this.materialname = materialname;
+    }
+
+    public String getMaccode() {
+        return maccode;
+    }
+
+    public void setMaccode(String maccode) {
+        this.maccode = maccode;
+    }
+
+    public String getNnum() {
+        return nnum;
+    }
+
+    public void setNnum(String nnum) {
+        this.nnum = nnum;
+    }
+
+    public String getProdcutcode() {
+        return prodcutcode;
+    }
+
+    public void setProdcutcode(String prodcutcode) {
+        this.prodcutcode = prodcutcode;
+    }
+
+    public String getXlh() {
+        return xlh;
+    }
+
+    public void setXlh(String xlh) {
+        this.xlh = xlh;
+    }
+
+    private String materialname;
+   private String maccode;
+   private String nnum;
+   private String prodcutcode;
+   private String xlh;
+
 
     public boolean isSelected = false;
     public PurchaseArrivalBean(){

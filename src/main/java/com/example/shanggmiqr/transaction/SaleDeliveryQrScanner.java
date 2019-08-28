@@ -14,7 +14,6 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -78,6 +77,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
     private EditText editTextSN;
     boolean isSN;
     ZLoadingDialog zLoadingDialog;
+    Boolean isWarehouse=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,7 +153,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
         scannnumText.setText("已扫码数量：" +  countSum());
         spinner = findViewById(R.id.saledelivery_spinner_scanner_text);
-        myadapter();
+        initWarehouse();
         List<SaleDeliveryScanResultBean> list = showScannedQR();
         zLoadingDialog= new ZLoadingDialog(SaleDeliveryQrScanner.this);
         zLoadingDialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
@@ -179,23 +179,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //截取产品码的第五位到第九位，查看是否与物料大类匹配
-                if(isSN){
-                    getData();
-                }else {
-                    if(editTextSN.getText().toString().isEmpty()){
-                        return;
-                    }
-                    if(Integer.parseInt(editTextSN.getText().toString())>Math.abs(current_nnum_qrRecv)){
-                        Toast.makeText(SaleDeliveryQrScanner.this, "不能大于指定数量", Toast.LENGTH_LONG).show();
-                        return;
-                    }
-                    zLoadingDialog.show();
-                    insertQrDBForSaleDelivery("");
-                  //  zLoadingDialog.dismiss();
-
-
-
-                }
+              insertScan();
 
             }
         });
@@ -218,7 +202,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                         Toast.makeText(SaleDeliveryQrScanner.this, "用户数据下载成功", Toast.LENGTH_LONG).show();
                         break;
                     case 0x13:
-                        zLoadingDialog.dismiss();
+
                          boxCodeEditText.requestFocus();
                         List<SaleDeliveryScanResultBean> list = showScannedQR();
                         SaleDeliveryScannerAdapter adapter = new SaleDeliveryScannerAdapter(SaleDeliveryQrScanner.this, list, mListener2);
@@ -246,10 +230,14 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                             getData();
                         }else {
                             boxCodeEditTextContent= Arrays.asList(boxCodeEditText.getText().toString().split("\\s"));
-
-                            for (int i = 0; i <boxCodeEditTextContent.size(); i++) {
-                                insertQrDBForSaleDelivery(boxCodeEditTextContent.get(i));
+                            if(boxCodeEditTextContent.size()>Math.abs(current_nnum_qrRecv)){
+                                Toast.makeText(SaleDeliveryQrScanner.this, "不能大于指定数量", Toast.LENGTH_LONG).show();
+                                return;
                             }
+                            zLoadingDialog.show();
+                            editTextSN.setText(boxCodeEditTextContent.size()+"");
+                            insertQrDBForSaleDelivery("");
+                            zLoadingDialog.dismiss();
                             boxCodeEditText.setText("");
 
                         }
@@ -261,6 +249,25 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                 }
             }
         };
+    }
+
+    private void insertScan() {
+        if(isSN){
+            getData();
+        }else {
+            if(editTextSN.getText().toString().isEmpty()){
+                return;
+            }
+            if(Integer.parseInt(editTextSN.getText().toString())>Math.abs(current_nnum_qrRecv)){
+                Toast.makeText(SaleDeliveryQrScanner.this, "不能大于指定数量", Toast.LENGTH_LONG).show();
+                return;
+            }
+            zLoadingDialog.show();
+            insertQrDBForSaleDelivery("");
+            zLoadingDialog.dismiss();
+
+
+        }
     }
 
 
@@ -284,7 +291,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                 Toast.makeText(SaleDeliveryQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
                 return;
             }
-            if (isCwarenameEmpty()) {
+            if (isWarehouse==false) {
                 Toast.makeText(SaleDeliveryQrScanner.this, "请选择仓库信息", Toast.LENGTH_LONG).show();
                 return;
             }
@@ -319,35 +326,19 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
        return true;
    }
-    private boolean isCwarenameEmpty() {
-        Cursor cursornew = db5.rawQuery("select cwarename from SaleDeliveryBody where vbillcode=? and vcooporderbcode_b=?",
-                new String[]{current_vbillcode_qrRecv, current_vcooporderbcode_b_qrRecv});
-        if (cursornew != null && cursornew.getCount() > 0) {
-            while (cursornew.moveToNext()) {
-                String temp = cursornew.getString(cursornew.getColumnIndex("cwarename"));
-                if (temp.equals("") || temp.equals("请选择仓库")) {
-                    cursornew.close();
-                    return true;
-                } else {
-                    cursornew.close();
-                    return false;
-                }
-            }
-            cursornew.close();
-        }
-        cursornew.close();
-        return false;
-    }
 
-    private void myadapter() {
+
+    private void initWarehouse() {
         cars = new ArrayList<>();
         cars = DataHelper.queryWarehouseInfo(db5);
 
         if (current_cwarename_qrRecv==null) {
             cars.add("请选择仓库");
+            isWarehouse=false;
         } else {
             cars.add(current_cwarename_qrRecv);
             spinner.setEnabled(false);
+            isWarehouse=true;
         }
         myadapter = new Myadapter(this, R.layout.custom_spinner_layout, cars);
         spinner.setAdapter(myadapter);
@@ -355,6 +346,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 String name = myadapter.getItem(i).toString();
+                isWarehouse=true;
                 updateWarehouseInfo(name, current_vbillcode_qrRecv, current_vcooporderbcode_b_qrRecv,db5);
             }
             @Override

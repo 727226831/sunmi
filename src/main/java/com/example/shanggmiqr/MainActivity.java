@@ -183,12 +183,14 @@ public class MainActivity extends AppCompatActivity {
                 View textEntryView = layoutInflater.inflate(R.layout.proxyserver_setting_dialog, null);
                 final EditText editTextName = (EditText) textEntryView.findViewById(R.id.editTextName);
                 final EditText editTextNumEditText = (EditText) textEntryView.findViewById(R.id.editTextNum);
+                final EditText editTextBegintime=textEntryView.findViewById(R.id.et_begintime);
                 AlertDialog.Builder ad1 = new AlertDialog.Builder(MainActivity.this);
                 ad1.setTitle("WebService设置:");
 
 
                 editTextName.setText(updateConfig.getString("WSDL_URI",iUrl.WSDL_URI));
                 editTextNumEditText.setText(updateConfig.getString("namespace",iUrl.namespace));
+                editTextBegintime.setText(updateConfig.getString("begintime",iUrl.begintime));
                 ad1.setView(textEntryView);
 
 
@@ -196,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
                 ad1.setPositiveButton("更新", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int i) {
 
-
+                        editor.putString("begintime", editTextBegintime.getText().toString());
                         editor.putString("WSDL_URI", editTextName.getText().toString());
                         editor.putString("namespace", editTextNumEditText.getText().toString());
                         editor.commit();

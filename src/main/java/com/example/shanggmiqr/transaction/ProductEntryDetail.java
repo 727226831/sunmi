@@ -95,11 +95,15 @@ public class ProductEntryDetail extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
 
         }
+
         saleDeliveryScanButton = (Button) findViewById(R.id.scan_productEntry);
         uploadAll_saleDeliveryButton = (Button) findViewById(R.id.uploadall_productEntry);
+        if(!getIntent().getStringExtra("flag").equals("N")){
+            saleDeliveryScanButton.setEnabled(false);
+            uploadAll_saleDeliveryButton.setEnabled(false);
+        }
         uploadSingleButton = (Button) findViewById(R.id.upload_productEntry);
-        saleDeliveryScanButton.setEnabled(false);
-        uploadSingleButton.setEnabled(false);
+
         dialog = new ZLoadingDialog(ProductEntryDetail.this);
         helper4 = new MyDataBaseHelper(ProductEntryDetail.this, "ShangmiData", null, 1);
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
@@ -235,15 +239,16 @@ public class ProductEntryDetail extends AppCompatActivity {
                         String s = msg.getData().getString("uploadResp");
                         Toast.makeText(ProductEntryDetail.this, s, Toast.LENGTH_LONG).show();
                         updateUploadFlag();
-                        if (isAllItemUpload()) {
-                            Intent intent = new Intent(ProductEntryDetail.this, SaleDelivery.class);
-                            startActivity(intent);
-                            finish();
-                        }
                         listAllBodyPostition = QueryProductEntryBody(current_sale_delivery_vbillcodeRecv);
                         adapter = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
+
+                        if (isAllItemUpload()) {
+
+                            finish();
+                        }
+
 
 
                         break;
@@ -261,16 +266,15 @@ public class ProductEntryDetail extends AppCompatActivity {
                         String s2 = msg.getData().getString("uploadResp");
                         Toast.makeText(ProductEntryDetail.this, s2, Toast.LENGTH_LONG).show();
                         updateAllUploadFlag();
-                        if (isAllItemUpload()) {
-                            Intent intent = new Intent(ProductEntryDetail.this, ProductEntry.class);
-                            intent.putExtra("type",3);
-                            startActivity(intent);
-                            finish();
-                        }
                         listAllBodyPostition = QueryProductEntryBody(current_sale_delivery_vbillcodeRecv);
                         adapter = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
+                        if (isAllItemUpload()) {
+
+                            finish();
+                        }
+
 
                         break;
                     case 0x16:
@@ -307,8 +311,7 @@ public class ProductEntryDetail extends AppCompatActivity {
 
     private void select(int position) {
         adapter.select(position);
-        saleDeliveryScanButton.setEnabled(true);
-        uploadSingleButton.setEnabled(true);
+
         ProductEntryBodyBean local_saleDeliveryBodyBean = (ProductEntryBodyBean) adapter.getItem(position);
         maccode=local_saleDeliveryBodyBean.getMaccode();
         chosen_line_itempk = local_saleDeliveryBodyBean.getItempk();
@@ -340,21 +343,36 @@ public class ProductEntryDetail extends AppCompatActivity {
 
 
     private boolean isAllItemUpload() {
-        Cursor cursor00 = db4.rawQuery("select itempk from ProductEntryBody where billcode=? and uploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, "Y"});
-        Cursor cursor01 = db4.rawQuery("select itempk from ProductEntryBody where billcode=?",
-                new String[]{current_sale_delivery_vbillcodeRecv});
-        int t1=cursor00.getCount();
-        int t2=cursor01.getCount();
-        if (t1 > 0 && t1 == t2) {
-            db4.execSQL("update ProductEntry set flag=? where billcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv});
-            return true;
-        } else if (t1 > 0 && t1 < t2) {
-            db4.execSQL("update ProductEntry set flag=? where billcode=?", new String[]{"PY", current_sale_delivery_vbillcodeRecv});
-            return false;
-        } else {
-            return false;
+        Boolean isY=false;
+        Boolean isPY=false;
+        String flag="";
+        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
+            if(listAllBodyPostition.get(i).getUploadflag().equals("Y")){
+                isY=true;
+            }else if(listAllBodyPostition.get(i).getUploadflag().equals("PY")){
+                isPY=true;
+            }
         }
+        if(isY && isPY==false){
+            saleDeliveryScanButton.setEnabled(false);
+            uploadAll_saleDeliveryButton.setEnabled(false);
+            flag="Y";
+        }else if(isPY){
+            saleDeliveryScanButton.setEnabled(false);
+            uploadAll_saleDeliveryButton.setEnabled(false);
+            flag="PY";
+        }else {
+            flag="N";
+        }
+
+        db4.execSQL("update ProductEntry set flag=? where billcode=?",
+                new String[]{flag, current_sale_delivery_vbillcodeRecv});
+        if(flag.equals("Y")){
+            return true;
+        }else {
+            return  false;
+        }
+
     }
 
     private boolean isCwarenameSame() {
@@ -651,6 +669,7 @@ public class ProductEntryDetail extends AppCompatActivity {
             intent.putExtra("current_vbillcode_qrRecv", current_sale_delivery_vbillcodeRecv);
             intent.putExtra("maccode",maccode);
             intent.putExtra("type",getIntent().getIntExtra("type",-1));
+            intent.putExtra("flag",getIntent().getStringExtra("flag"));
             startActivity(intent);
         }
     };

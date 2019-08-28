@@ -98,7 +98,7 @@ public class LoanBodyTableAdapter extends BaseAdapter{
             viewHolder = (ViewHolder2) convertView.getTag();
         }
         saleDeliveryBodyBean = (LoanBodyBean) getItem(position);
-        viewHolder.itempk.setText(goods.getItempk());
+        viewHolder.itempk.setText("");
         viewHolder.itempk.setTextSize(10);
         viewHolder.cwarename.setText(goods.getCwarename());
         viewHolder.cwarename.setTextSize(10);

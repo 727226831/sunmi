@@ -11,10 +11,12 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -32,6 +34,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.shanggmiqr.BusinessOperation;
+import com.example.shanggmiqr.Url.iUrl;
+import com.example.shanggmiqr.adapter.OtherEntryTableAdapter;
+import com.example.shanggmiqr.adapter.SaleDeliveryAdapter;
+import com.example.shanggmiqr.bean.AllocateTransferBean;
+import com.example.shanggmiqr.bean.OtherBean;
 import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.LoanAdapter;
@@ -50,8 +57,12 @@ import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -168,15 +179,11 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
         if ("Y".equals(str)) {
             downloadDeliveryButton.performClick();
         }
+        Button buttonExport=findViewById(R.id.b_export);
+        buttonExport.setOnClickListener(this);
     }
 
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-        //返回之后重新下载
-        //downloadDeliveryButton.performClick();
-    }
+
 
     @Override
     public void onClick(View view) {
@@ -209,9 +216,9 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                                         dialog.dismiss();
                                         return;
                                     }
-                                    DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),LoanBill.this);
+
                                     Gson gson7 = new Gson();
-                                    LoanQuery loanQuery = gson7.fromJson(loanData, LoanQuery.class);
+                                    final LoanQuery loanQuery = gson7.fromJson(loanData, LoanQuery.class);
                                     int pagetotal = Integer.parseInt(loanQuery.getPagetotal());
                                     if (pagetotal == 1) {
                                         insertDownloadDataToDB(loanQuery);
@@ -223,7 +230,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                                             @Override
                                             public void run() {
                                                 dialog.dismiss();
-                                                Toast.makeText(LoanBill.this, "借出单已经是最新", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(LoanBill.this, loanQuery.getErrmsg(), Toast.LENGTH_LONG).show();
                                             }
                                         });
                                     } else {
@@ -244,6 +251,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
+                                            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),LoanBill.this);
                                             SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestLoanTSInfo", 0);
                                             String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "2018-09-01 00:00:01");
                                             lst_downLoad_ts.setText("最后一次下载:"+begintime);
@@ -293,6 +301,9 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                         //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
                     }
                 });
+                break;
+            case R.id.b_export:
+                exportData(exportList);
                 break;
         }
     }
@@ -391,16 +402,6 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
         values.clear();
     }
 
-    private boolean isVbillcodeExist(String pobillcode) {
-        Cursor cursor2 = db3.rawQuery("select pobillcode from Loan where pobillcode=?", new String[]{pobillcode});
-        if (cursor2 != null && cursor2.getCount() > 0) {
-            //判断cursor中是否存在数据
-            cursor2.close();
-            return true;
-        }else {
-            return false;
-        }
-    }
 
     private String existOriginalCwarename(String cwarehousecode) {
         String flag;
@@ -412,28 +413,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
         return flag;
     }
 
-    private String getCwarename(String cwarehousecode) {
-        Cursor cursor = db3.rawQuery("select name from Warehouse where code=?",
-                new String[]{cwarehousecode});
-        String cwarename=null;
-        if (cursor != null && cursor.getCount() > 0) {
-            while (cursor.moveToNext()) {
-                cwarename = cursor.getString(cursor.getColumnIndex("name"));
-            }
-            cursor.close();
-        }else{
-            cwarename = "";
-        }
-        return cwarename;
-    }
 
-    private String getDefaultEndTime() {
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        return String.valueOf(year) + "-" + String.valueOf(month) + "-" + String.valueOf(day) + " " + "23:59:59";
-    }
 
     private String countScannedQRCode(String pobillcode,String itempk, String materialcode) {
         String count = "0";
@@ -447,111 +427,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
         return count;
     }
 
-    private void popupQuery() {
-        LayoutInflater layoutInflater = LayoutInflater.from(LoanBill.this);
-        View textEntryView = layoutInflater.inflate(R.layout.query_outgoing_dialog, null);
-        final EditText codeNumEditText = (EditText) textEntryView.findViewById(R.id.codenum);
-        final Spinner spinner = (Spinner) textEntryView.findViewById(R.id.warehouse_spinner);
-        final Spinner flag_spinner = (Spinner) textEntryView.findViewById(R.id.upload_flag_spinner);
-        final Button showdailogTwo = (Button)  textEntryView.findViewById(R.id.showdailogTwo);
-        time = (TextView)  textEntryView.findViewById(R.id.timeshow_saledelivery);
-        SharedPreferences currentTimePeriod= getSharedPreferences("query_loanbill", 0);
-        final String tempperiod =currentTimePeriod.getString("current_account","2018-09-01 至 2018-12-17");
-        showdailogTwo.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showDialogTwo();
-            }
-        });
-        test = queryWarehouseInfo();
-        test.add("");
-        uploadflag = new ArrayList();
-        uploadflag.add("是");
-        uploadflag.add("部分上传");
-        uploadflag.add("否");
-        final ArrayAdapter adapter = new ArrayAdapter(
-                LoanBill.this, android.R.layout.simple_spinner_item, test);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-        spinner.setSelection(test.size() - 1, true);
-        query_cwarename =adapter.getItem(test.size() - 1).toString();
-        spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                query_cwarename=adapter.getItem(i).toString();
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-        final ArrayAdapter adapter2 = new ArrayAdapter(
-                LoanBill.this, android.R.layout.simple_spinner_item, uploadflag);
-        adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        flag_spinner.setAdapter(adapter2);
-        flag_spinner.setSelection(uploadflag.size() - 1, true);
-        if ("是".equals(adapter2.getItem(uploadflag.size() - 1).toString())){
-            query_uploadflag = "Y";
-        } else if ("否".equals(adapter2.getItem(uploadflag.size() - 1).toString())){
-            query_uploadflag = "N";
-        } else {
-            query_uploadflag = "PY";
-        }
-        flag_spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-               if ("是".equals(adapter2.getItem(i).toString())){
-                   query_uploadflag = "Y";
-               } else if ("否".equals(adapter2.getItem(i).toString())){
-                   query_uploadflag = "N";
-               } else {
-                   query_uploadflag = "PY";
-               }
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-        AlertDialog.Builder ad1 = new AlertDialog.Builder(LoanBill.this);
-        ad1.setTitle("出入查询条件:");
-        ad1.setView(textEntryView);
-        time.setText(tempperiod);
-        ad1.setPositiveButton("查询", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int i) {
-                String temp=codeNumEditText.getText().toString();
-                if(query_cwarename == null){
-                    query_cwarename = adapter.getItem(test.size() - 1).toString();
-                }
-                if(query_uploadflag == null){
-                    query_uploadflag = "N";
-                }
-                ArrayList<LoanBean> bean1 = query(temp,query_cwarename,query_uploadflag);
-                listAllPostition = bean1;
-                final LoanAdapter adapter3 = new LoanAdapter(LoanBill.this, bean1, mListener);
-                tableListView.setAdapter(adapter3);
-                tableListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        adapter3.select(position);
-                        SaleDeliveryBean saleDelivery1Bean = (SaleDeliveryBean) adapter3.getItem(position);
-                        chosen_line_vbillcode = saleDelivery1Bean.getVbillcode();
-                        chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
-                        //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
-                    }
-                });
-
-            }
-        });
-        ad1.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int i) {
-
-            }
-        });
-        ad1.show();// 显示对话框
-        time.setText(tempperiod);
-    }
     private void showDialogTwo() {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_date, null);
         final DatePicker startTime = (DatePicker) view.findViewById(R.id.st);
@@ -606,68 +482,210 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
         startTime.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
         endTime.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
     }
-    private List<String> queryWarehouseInfo() {
-        List<String> cars = new ArrayList<>();
-        Cursor cursornew = db3.rawQuery("select name from Warehouse",
-                null);
-        if (cursornew != null && cursornew.getCount() > 0) {
-            while (cursornew.moveToNext()) {
-                String name = cursornew.getString(cursornew.getColumnIndex("name"));
-                cars.add(name);
+
+    private void popupQuery() {
+        List<String> listWarehouse;
+
+        LayoutInflater layoutInflater = LayoutInflater.from(LoanBill.this);
+        View textEntryView = layoutInflater.inflate(R.layout.query_outgoing_dialog, null);
+        final EditText codeNumEditText = (EditText) textEntryView.findViewById(R.id.codenum);
+        final Spinner spinner = (Spinner) textEntryView.findViewById(R.id.warehouse_spinner);
+        final Spinner flag_spinner = (Spinner) textEntryView.findViewById(R.id.upload_flag_spinner);
+        final Button showdailogTwo = (Button)  textEntryView.findViewById(R.id.showdailogTwo);
+        time = (TextView)  textEntryView.findViewById(R.id.timeshow_saledelivery);
+
+        String tempperiod =DataHelper.getQueryTime(LoanBill.this,getIntent().getIntExtra("type",-1));
+        showdailogTwo.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showDialogTwo();
             }
-            cursornew.close();
-        }
-        return cars;
-    }
-    public ArrayList<LoanBean> query(String pobillcode,String current_cwarename,String query_uploadflag) {
-        ArrayList<LoanBean> list = new ArrayList<LoanBean>();
-        SharedPreferences currentTimePeriod= getSharedPreferences("query_loanbill", 0);
-        String start_temp = currentTimePeriod.getString("starttime","2018-09-01 00:00:01");
-        String end_temp = currentTimePeriod.getString("endtime", Utils.getDefaultEndTime());
-        Cursor cursor = db3.rawQuery("select pobillcode,dbilldate,dr from Loan where flag=? and pobillcode like '%" + pobillcode + "%' order by dbilldate desc", new String[]{query_uploadflag});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-                LoanBean bean = new LoanBean();
-                bean.pobillcode = cursor.getString(cursor.getColumnIndex("pobillcode"));
-                bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
-                bean.dr= cursor.getString(cursor.getColumnIndex("dr"));
-                if(queryCwarename(current_cwarename, bean.pobillcode)){
-                    if (queryTimePeriod(bean.pobillcode,start_temp,end_temp)) {
-                        list.add(bean);
-                    }
+        });
+
+        //仓库选择
+        listWarehouse = DataHelper.queryWarehouseInfo(db3);
+        listWarehouse.add("");
+        final ArrayAdapter arrayAdapter = new ArrayAdapter(
+                LoanBill.this, android.R.layout.simple_spinner_item, listWarehouse);
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(arrayAdapter);
+        spinner.setSelection(listWarehouse.size()-1);
+        spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                query_cwarename=arrayAdapter.getItem(i).toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+
+        //订单选择
+        uploadflag = new ArrayList();
+        uploadflag.add("否");
+        uploadflag.add("部分上传");
+        uploadflag.add("是");
+        uploadflag.add("全部");
+        final ArrayAdapter adapter2 = new ArrayAdapter(
+                LoanBill.this, android.R.layout.simple_spinner_item, uploadflag);
+        adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        flag_spinner.setAdapter(adapter2);
+
+        flag_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                switch (position){
+                    case 0:
+                        query_uploadflag = "N";
+                        break;
+                    case 1:
+                        query_uploadflag = "PY";
+                        break;
+                    case 2:
+                        query_uploadflag = "Y";
+                        break;
+                    case 3:
+                        query_uploadflag = "ALL";
+                        break;
+
                 }
             }
-            cursor.close();
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        AlertDialog.Builder ad1 = new AlertDialog.Builder(LoanBill.this);
+        ad1.setTitle("出入查询条件:");
+        ad1.setView(textEntryView);
+        time.setText(tempperiod);
+        ad1.setPositiveButton("查询", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int i) {
+                String temp=codeNumEditText.getText().toString();
+                exportList= query(temp,query_cwarename,query_uploadflag);
+                saleDeliveryBeanList=new ArrayList<>();
+                saleDeliveryBeanList.addAll(removeDuplicate(exportList));
+               LoanAdapter adapter = new LoanAdapter(LoanBill.this, saleDeliveryBeanList, mListener);
+                tableListView.setAdapter(adapter);
+
+
+
+            }
+        });
+        ad1.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int i) {
+
+            }
+        });
+        ad1.show();// 显示对话框
+
+    }
+   ArrayList<LoanBean> exportList;
+    List< LoanBean> saleDeliveryBeanList;
+
+    private   ArrayList<LoanBean>  removeDuplicate(ArrayList<LoanBean> list)  {
+        ArrayList<LoanBean>  beanList=new ArrayList<>();
+        beanList.addAll(list);
+        for  ( int  i  =   0 ; i  <  beanList.size()  -   1 ; i ++ )  {
+            for  ( int  j  =  beanList.size()  -   1 ; j  >  i; j -- )  {
+                if  (beanList.get(j).getPobillcode().equals(beanList.get(i).getPobillcode()))  {
+                    beanList.remove(j);
+                }
+            }
         }
+        return beanList;
+    }
+    private void exportData( List<LoanBean> exportList) {
+        Log.i("exportList",new Gson().toJson(exportList));
+        String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+        SimpleDateFormat formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
+        File file=new File(sdCardDir+"/sunmi");
+        if(!file.exists()){
+            file.mkdir();
+        }
+        Date curDate =  new Date(System.currentTimeMillis());
+        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        Toast.makeText(LoanBill.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
+        FileOutputStream outputStream=null;
+        try {
+            outputStream=new FileOutputStream(file);
+            outputStream.write(("发货单号"+"\t"+ "单据日期"+"\t"+"物料编码"+"\t"+"物料名称"+"\t"+
+                    "物料大类"+"\t"+"序列号"+"\t"+"条形码"+"\t").getBytes());
+            for (int j = 0; j <exportList.size() ; j++) {
+                if(exportList.get(j).getXlh()!=null ) {
+                    outputStream.write("\r\n".getBytes());
+                    outputStream.write((exportList.get(j).getPobillcode()+"\t"
+                            +exportList.get(j).getDbilldate()+"\t"
+                            +exportList.get(j).getMaterialcode()+"\t"
+                            +"null"+"\t"
+                            +exportList.get(j).getMaccode()+"\t"
+                            +exportList.get(j).getXlh()+"\t"
+                            +exportList.get(j).getProdcutcode()).getBytes());
+                }
+
+            }
+            outputStream.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public ArrayList< LoanBean> query(String pobillcode, String current_cwarename,String query_uploadflag) {
+        ArrayList< LoanBean> list = new ArrayList< LoanBean>();
+        Cursor cursor=null;
+        SharedPreferences currentTimePeriod;
+        String start_temp="";
+        String end_temp="";
+        currentTimePeriod= getSharedPreferences("query_otherentry", 0);
+        start_temp = currentTimePeriod.getString("starttime", iUrl.begintime);
+        end_temp = currentTimePeriod.getString("endtime", Utils.getDefaultEndTime());
+        if(query_uploadflag.equals("ALL")){
+            cursor = db3.rawQuery("select Loan.pobillcode,Loanbody.cwarecode,Loanbody.cwarename,Loan.dr, Loan.dbilldate," +
+                    "Loanbody.materialcode,Loan.dr," +
+                    "Loanbody.maccode,Loanbody.nnum, LoanScanResult.prodcutcode," +
+                    "LoanScanResult.xlh" + " from Loan left join Loanbody on Loan.pobillcode=Loanbody.pobillcode " +
+                    "left join LoanScanResult on Loanbody.pobillcode=LoanScanResult.pobillcode " +
+                    "and Loanbody.itempk=LoanScanResult.itempk where Loan.pobillcode" +
+                    " like '%" + pobillcode + "%' and Loanbody.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", null);
+        }else {
+            cursor = db3.rawQuery("select Loan.pobillcode,Loanbody.cwarecode,Loanbody.cwarename,Loan.dr, Loan.dbilldate,Loanbody.materialcode,Loan.dr," +
+                    "Loanbody.maccode,Loanbody.nnum, LoanScanResult.prodcutcode," +
+                    "LoanScanResult.xlh" + " from Loan left join Loanbody on Loan.pobillcode=Loanbody.pobillcode " +
+                    "left join LoanScanResult on Loanbody.pobillcode=LoanScanResult.pobillcode " +
+                    "and Loanbody.itempk=LoanScanResult.itempk where flag=? and Loan.pobillcode" +
+                    " like '%" + pobillcode + "%' and Loanbody.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
+
+        }
+
+
+        //判断cursor中是否存在数据
+        while (cursor.moveToNext()) {
+            LoanBean bean = new  LoanBean();
+            bean.pobillcode = cursor.getString(cursor.getColumnIndex("pobillcode"));
+            bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
+            bean.setMaterialcode(cursor.getString(cursor.getColumnIndex("materialcode")));
+            bean.setMaccode(cursor.getString(cursor.getColumnIndex("maccode")));
+            bean.setNnum(cursor.getString(cursor.getColumnIndex("nnum")));
+            bean.setProdcutcode(cursor.getString(cursor.getColumnIndex("prodcutcode")));
+            bean.setXlh(cursor.getString(cursor.getColumnIndex("xlh")));
+            bean.dr = cursor.getString(cursor.getColumnIndex("dr"));
+
+            if (DataHelper.queryTimePeriod(bean.pobillcode,start_temp,end_temp,getIntent().getIntExtra("type",-1),db3)) {
+                list.add(bean);
+            }
+
+        }
+        cursor.close();
+
         return list;
     }
 
-    private boolean queryTimePeriod(String vbillcode,String startTime,String endTime) {
-        Cursor cursor = db3.rawQuery("SELECT * FROM Loan WHERE pobillcode =? and " +
-                "dbilldate>=? and dbilldate<?",
-        new String[] {vbillcode, startTime, endTime});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            cursor.close();
-            return true;
-        }else{
-            return false;
-        }
-    }
 
-    private boolean queryCwarename(String current_cwarename,String pobillcode) {
-
-        Cursor cursor = db3.rawQuery("select pobillcode from LoanBody where pobillcode =? and cwarename like '%" + current_cwarename + "%'  ", new String[]{pobillcode});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-            }
-            cursor.close();
-            return true;
-        }
-        return false;
-    }
 
 
     public boolean isNetworkConnected(Context context) {

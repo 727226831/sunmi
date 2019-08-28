@@ -245,18 +245,6 @@ public class ProductEntryQrScanner extends AppCompatActivity {
 
     }
 
-    private int getLengthInQrRule() {
-        Cursor cursor = db5.rawQuery("select length from QrcodeRule where Matbasclasscode=?",
-                new String[]{current_maccode_qrRecv});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-                current_qrcode_rule_length = cursor.getInt(cursor.getColumnIndex("length"));
-            }
-            cursor.close();
-        }
-        return current_qrcode_rule_length;
-    }
 
     private boolean isCwarenameEmpty() {
         Cursor cursornew = db5.rawQuery("select cwarename from ProductEntry where billcode=? ",
@@ -309,13 +297,7 @@ public class ProductEntryQrScanner extends AppCompatActivity {
         db5.execSQL("update ProductEntryBody set scannum=? where billcode=? and materialcode=? and itempk=?", new String[]{scannum, current_vbillcode_qrRecv, current_materialcode_qrRecv, current_itempk_qrRecv});
     }
 
-    private boolean isEditTextEmpty() {
 
-        if (("").equals(productCodeEditText.getText().toString()) || null == productCodeEditText.getText().toString()) {
-            return true;// //有城市在数据库已存在，返回false
-        }
-        return false;
-    }
 
     private List<SaleDeliveryScanResultBean> showScannedQR() {
 

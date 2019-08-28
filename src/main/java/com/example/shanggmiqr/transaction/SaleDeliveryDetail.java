@@ -24,6 +24,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.bean.LogisticsBean;
 import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.SaleDeliveryBodyTableAdapter;
@@ -92,8 +93,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     //nnum为正 bisreturn为N 为负则为Y
 
     private ZLoadingDialog zLoadingDialog;
-    private int selectposition;
-    private Boolean isSingle=false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +104,9 @@ public class SaleDeliveryDetail extends AppCompatActivity {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-        expressCodeEditText = (EditText) findViewById(R.id.expressCode_edit_text);
+        actionBar.setTitle(getIntent().getStringExtra("title")+"明细");
+
+                expressCodeEditText = (EditText) findViewById(R.id.expressCode_edit_text);
         saleDeliveryScanButton = (Button) findViewById(R.id.scan_saleDelivery);
         uploadAll_saleDeliveryButton = (Button) findViewById(R.id.uploadall_saleDelivery);
         uploadSingleButton = (Button) findViewById(R.id.upload_saleDelivery);
@@ -166,7 +168,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 expressCode = expressCodeEditText.getText().toString();
-                isSingle=false;
+
                 if ("".equals(expressCode) || "".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)) {
                     if("".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)){
                         chooseLogisticscompany ="";
@@ -192,6 +194,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                             .show();
                 } else {
 
+
                   pushData(null);
                 }
 
@@ -201,7 +204,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 expressCode = expressCodeEditText.getText().toString();
-                isSingle=true;
+
 
                 if ("".equals(expressCode) || "".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)) {
                     if("".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)){
@@ -227,6 +230,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                             })
                             .show();
                 }else{
+
                     pushData(chosen_line_vcooporderbcode_b);
                 }
 
@@ -245,15 +249,14 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                         String s = msg.getData().getString("uploadResp");
                         Toast.makeText(SaleDeliveryDetail.this, s, Toast.LENGTH_LONG).show();
                         updateUploadFlag();
-                        if (isAllItemUpload()) {
-                            Intent intent = new Intent(SaleDeliveryDetail.this, SaleDelivery.class);
-                            startActivity(intent);
-                            finish();
-                        }
                         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
-                       adapter = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
+                        adapter = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
+
+                        if (isAllItemUpload()) {
+                            finish();
+                        }
 
                         break;
 
@@ -265,9 +268,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                         Toast.makeText(SaleDeliveryDetail.this, s2, Toast.LENGTH_LONG).show();
                         updateAllUploadFlag();
                         if (isAllItemUpload()) {
-                            Intent intent = new Intent(SaleDeliveryDetail.this, SaleDelivery.class);
-                            intent.putExtra("type",0);
-                            startActivity(intent);
+
                             finish();
                         }
                         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
@@ -297,8 +298,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                         Toast.makeText(SaleDeliveryDetail.this, "物流公司没有选择，首先选择物流公司", Toast.LENGTH_LONG).show();
                         break;
                     case 0x22:
-                        saleDeliveryScanButton.setEnabled(false);
-                        uploadSingleButton.setEnabled(false);
+
                         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
                         adapter = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
@@ -314,6 +314,12 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     private void pushData(final String itempk) {
 
         zLoadingDialog.show();
+
+//        LogisticsBean logisticsBean=new LogisticsBean();
+//        logisticsBean.setBillcode(current_sale_delivery_vbillcodeRecv);
+//        logisticsBean.setCode(expressCode);
+//        logisticsBean.setName(chooseLogisticscompany);
+//        DataHelper.insertLogistics(db4,logisticsBean);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -323,9 +329,16 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                         if (iaAlreadyUploadAll()) {
                             Toast.makeText(SaleDeliveryDetail.this, "该发货单已经全部上传", Toast.LENGTH_LONG).show();
                         } else if (isCwarenameSame()) {
-
-
-                            String uploadResp = DataHelper.uploadSaleDeliveryVBill("R08", db4,current_sale_delivery_vbillcodeRecv,itempk,
+                            String  workcode="";
+                            switch (getIntent().getIntExtra("type",-1)){
+                                case 0:
+                                    workcode="R08";
+                                    break;
+                                case 8:
+                                    workcode="R15";
+                                    break;
+                            }
+                            String uploadResp = DataHelper.uploadSaleDeliveryVBill(workcode, db4,current_sale_delivery_vbillcodeRecv,itempk,
                                     SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
                             zLoadingDialog.dismiss();
                             if (!(null == uploadResp)) {
@@ -357,9 +370,8 @@ public class SaleDeliveryDetail extends AppCompatActivity {
 
                     } catch (Exception e) {
                         e.printStackTrace();
-                        Toast.makeText(SaleDeliveryDetail.this, e.toString(), Toast.LENGTH_LONG).show();
 
-                        return;
+
                     }
                 }
             }
@@ -427,20 +439,26 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     }
 
     private boolean isAllItemUpload() {
-        Cursor cursor00 = db4.rawQuery("select vcooporderbcode_b from SaleDeliveryBody where vbillcode=? and uploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, "Y"});
-        Cursor cursor01 = db4.rawQuery("select vcooporderbcode_b from SaleDeliveryBody where vbillcode=?",
-                new String[]{current_sale_delivery_vbillcodeRecv});
-        int t1=cursor00.getCount();
-        int t2=cursor01.getCount();
-        if (t1 > 0 && t1 == t2) {
-            db4.execSQL("update SaleDelivery set flag=? where vbillcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv});
+        int count=0;
+        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
+            if(listAllBodyPostition.get(i).getUploadflag().equals("Y")){
+                count++;
+            }
+        }
+        String flag="";
+        if(count==0){
+            flag="N";
+        }else if(count!=listAllBodyPostition.size()){
+            flag="PY";
+        }else {
+            flag="Y";
+        }
+
+        db4.execSQL("update SaleDelivery set flag=? where vbillcode=?", new String[]{flag, current_sale_delivery_vbillcodeRecv});
+        if(flag.equals("Y")){
             return true;
-        } else if (t1 > 0 && t1 < t2) {
-            db4.execSQL("update SaleDelivery set flag=? where vbillcode=?", new String[]{"PY", current_sale_delivery_vbillcodeRecv});
-            return false;
-        } else {
-            return false;
+        }else {
+            return  false;
         }
     }
     SaleDeliveryBodyTableAdapter adapter;
@@ -558,6 +576,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                         itemall2.vcooporderbcode_b = cursor5.getString(cursor5.getColumnIndex("vcooporderbcode_b"));
                         itemall2.prodcutcode = cursor5.getString(cursor5.getColumnIndex("prodcutcode"));
 
+
                     }
                     cursor5.close();
                 }
@@ -593,11 +612,11 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                 if(Integer.parseInt(listAllBodyPostition.get(i).getNnum())==Integer.parseInt(listAllBodyPostition.get(i).getScannnum())){
                     db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=?",
                             new String[]{"Y", current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(i).getVcooporderbcode_b()});
-                    Log.i("update",listAllBodyPostition.get(i).getVcooporderbcode_b()+"/Y");
+
                 }else {
                     db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=? ",
                             new String[]{"PY", current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(i).getVcooporderbcode_b()});
-                    Log.i("update",listAllBodyPostition.get(i).getVcooporderbcode_b()+"/PY");
+
                 }
 
             }
@@ -682,6 +701,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
             intent.putExtra("current_customer_qr", listAllBodyPostition.get(position).getCustomer());
             intent.putExtra("current_vbillcode_qr", current_sale_delivery_vbillcodeRecv);
             intent.putExtra("type",getIntent().getIntExtra("type",-1));
+            intent.putExtra("title",getIntent().getStringExtra("title"));
             startActivity(intent);
         }
     };

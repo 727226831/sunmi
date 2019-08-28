@@ -7,4 +7,13 @@
     <color name="colorfocus">#1296db</color>
     <color name="black">#191F25</color>
     <color name="blue">#0EADFF</color>
+    <color name="color1">#E179AF</color>
+    <color name="color2">#409F52</color>
+    <color name="color3">#1A748E</color>
+    <color name="color4">#2AB49F</color>
+    <color name="color5">#96A3A3</color>
+    <color name="color6">#784B82</color>
+    <color name="color7">#46CE96</color>
+    <color name="color8">#CF5A16</color>
+    <color name="white">#F1DCD4</color>
 </resources>

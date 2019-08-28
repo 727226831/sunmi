@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.ContactsContract;
@@ -22,9 +23,11 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -32,6 +35,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.shanggmiqr.BusinessOperation;
+import com.example.shanggmiqr.Url.iUrl;
+import com.example.shanggmiqr.adapter.ProductEntryAdapter;
+import com.example.shanggmiqr.bean.ProductEntryBean;
 import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.AllocateTransferAdapter;
@@ -50,8 +56,12 @@ import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -77,6 +87,8 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
     private List<String> test;
     private List<String> uploadflag;
     private TextView lst_downLoad_ts;
+    private TextView time;
+    private Button buttonExport;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +116,8 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
         queryProductEntryButton.setOnClickListener(this);
         displayallProductEntryButton = (Button) findViewById(R.id.displayall_allocate_transfer);
         displayallProductEntryButton.setOnClickListener(this);
-
+        buttonExport=findViewById(R.id.b_export);
+        buttonExport.setOnClickListener(this);
         tableListView = (ListView) findViewById(R.id.list_allocate_transfer);
         List<AllocateTransferBean> list = queryAllocateTransfer();
         listAllPostition = list;
@@ -144,7 +157,8 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                                 chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
                             }
                         });
-                        Toast.makeText(AllocateTransfer.this, "调拨出库单下载完成", Toast.LENGTH_LONG).show();
+
+
                         break;
                     case 0x18:
                         String s = msg.getData().getString("uploadResp");
@@ -167,12 +181,12 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
         }
     }
 
+
+
     @Override
-    public void onResume()
-    {
-        super.onResume();
-        //返回之后重新下载
-        //downloadDeliveryButton.performClick();
+    protected void onStart() {
+        super.onStart();
+        allocateTransferHandler.sendEmptyMessage(0x11);
     }
 
     @Override
@@ -206,9 +220,9 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                                         dialog.dismiss();
                                         return;
                                     }
-                                    DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),AllocateTransfer.this);
+
                                     Gson gson7 = new Gson();
-                                    AllocateTransferQuery allocateTransferQuery = gson7.fromJson(allocateTransferData, AllocateTransferQuery.class);
+                                    final AllocateTransferQuery allocateTransferQuery = gson7.fromJson(allocateTransferData, AllocateTransferQuery.class);
                                     int pagetotal = Integer.parseInt(allocateTransferQuery.getPagetotal());
                                     if (pagetotal == 1) {
                                         insertDownloadDataToDB(allocateTransferQuery);
@@ -220,7 +234,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                                             @Override
                                             public void run() {
                                                 dialog.dismiss();
-                                                Toast.makeText(AllocateTransfer.this, "调拨出库单已经是最新", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(AllocateTransfer.this, allocateTransferQuery.getErrmsg(), Toast.LENGTH_LONG).show();
                                             }
                                         });
                                     } else {
@@ -238,6 +252,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
+                                            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),AllocateTransfer.this);
                                             SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestAllocateTransferTSInfo", 0);
                                             String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "2019-02-02 00:00:01");
                                             lst_downLoad_ts.setText("最后一次下载:"+begintime);
@@ -294,6 +309,9 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                         //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
                     }
                 });
+                break;
+            case R.id.b_export:
+                exportData(exportList);
                 break;
         }
     }
@@ -405,24 +423,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
         values.clear();
     }
 
-    private boolean isBillcodeExist(String billno) {
-        Cursor cursor2 = db3.rawQuery("select billno from AllocateTransfer where billno=?", new String[]{billno});
-        if (cursor2 != null && cursor2.getCount() > 0) {
-            //判断cursor中是否存在数据
-            cursor2.close();
-            return true;
-        }else {
-            return false;
-        }
-    }
 
-    private String getDefaultEndTime() {
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        return String.valueOf(year) + "-" + String.valueOf(month) + "-" + String.valueOf(day) + " " + "23:59:59";
-    }
 
     private String countScannedQRCode(String billcode, String materialcode,String itempk) {
         String count = "0";
@@ -436,144 +437,11 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
         return count;
     }
 
-    private void popupQuery() {
-        LayoutInflater layoutInflater = LayoutInflater.from(AllocateTransfer.this);
-        View textEntryView = layoutInflater.inflate(R.layout.query_outgoing_dialog, null);
-        final EditText codeNumEditText = (EditText) textEntryView.findViewById(R.id.codenum);
-        final Spinner spinner = (Spinner) textEntryView.findViewById(R.id.warehouse_spinner);
-        final Spinner flag_spinner = (Spinner) textEntryView.findViewById(R.id.upload_flag_spinner);
-        test = queryWarehouseInfo();
-        test.add("");
-        uploadflag = new ArrayList();
-        uploadflag.add("是");
-        uploadflag.add("部分上传");
-        uploadflag.add("否");
-        final ArrayAdapter adapter = new ArrayAdapter(
-                AllocateTransfer.this, android.R.layout.simple_spinner_item, test);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-        spinner.setSelection(test.size() - 1, true);
-        query_cwarename =adapter.getItem(test.size() - 1).toString();
-        spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                query_cwarename=adapter.getItem(i).toString();
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
 
-            }
-        });
-        final ArrayAdapter adapter2 = new ArrayAdapter(
-                AllocateTransfer.this, android.R.layout.simple_spinner_item, uploadflag);
-        adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        flag_spinner.setAdapter(adapter2);
-        flag_spinner.setSelection(uploadflag.size() - 1, true);
-        if ("是".equals(adapter2.getItem(uploadflag.size() - 1).toString())){
-            query_uploadflag = "Y";
-        } else if ("否".equals(adapter2.getItem(uploadflag.size() - 1).toString())){
-            query_uploadflag = "N";
-        } else {
-            query_uploadflag = "PY";
-        }
-        flag_spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-               if ("是".equals(adapter2.getItem(i).toString())){
-                   query_uploadflag = "Y";
-               } else if ("否".equals(adapter2.getItem(i).toString())){
-                   query_uploadflag = "N";
-               } else {
-                   query_uploadflag = "PY";
-               }
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
 
-            }
-        });
-        AlertDialog.Builder ad1 = new AlertDialog.Builder(AllocateTransfer.this);
-        ad1.setTitle("出入查询条件:");
-        ad1.setView(textEntryView);
-        ad1.setPositiveButton("查询", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int i) {
-                String temp=codeNumEditText.getText().toString();
-                if(query_cwarename == null){
-                    query_cwarename = adapter.getItem(test.size() - 1).toString();
-                }
-                if(query_uploadflag == null){
-                    query_uploadflag = "N";
-                }
-                ArrayList<AllocateTransferBean> bean1 = query(temp,query_cwarename,query_uploadflag);
-                listAllPostition = bean1;
-                final AllocateTransferAdapter adapter3 = new AllocateTransferAdapter(AllocateTransfer.this, bean1, mListener);
-                tableListView.setAdapter(adapter3);
-                tableListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        adapter3.select(position);
-                        AllocateTransferBean saleDelivery1Bean = (AllocateTransferBean) adapter3.getItem(position);
-                        chosen_line_vbillcode = saleDelivery1Bean.getBillno();
-                        chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
-                        //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
-                    }
-                });
 
-            }
-        });
-        ad1.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int i) {
 
-            }
-        });
-        ad1.show();// 显示对话框
-    }
-    private List<String> queryWarehouseInfo() {
-        List<String> cars = new ArrayList<>();
-        Cursor cursornew = db3.rawQuery("select name from Warehouse",
-                null);
-        if (cursornew != null && cursornew.getCount() > 0) {
-            while (cursornew.moveToNext()) {
-                String name = cursornew.getString(cursornew.getColumnIndex("name"));
-                cars.add(name);
-            }
-            cursornew.close();
-        }
-        return cars;
-    }
-    public ArrayList<AllocateTransferBean> query(String vbillcode,String current_cwarename,String query_uploadflag) {
-        ArrayList<AllocateTransferBean> list = new ArrayList<AllocateTransferBean>();
-
-        Cursor cursor = db3.rawQuery("select billno,dbilldate,dr from AllocateTransfer where flag=? and billno like '%" + vbillcode + "%' order by dbilldate desc", new String[]{query_uploadflag});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-                AllocateTransferBean bean = new AllocateTransferBean();
-                bean.billno = cursor.getString(cursor.getColumnIndex("billcode"));
-                bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
-                bean.dr= cursor.getInt(cursor.getColumnIndex("dr"));
-                if(queryCwarename(current_cwarename, bean.billno)){
-                list.add(bean);
-                }
-            }
-            cursor.close();
-        }
-        return list;
-    }
-
-    private boolean queryCwarename(String current_cwarename,String vbillcode) {
-
-        Cursor cursor = db3.rawQuery("select billcode from ProductEntry where cwarename like '%" + current_cwarename + "%'  ", new String[]{vbillcode});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-            }
-            cursor.close();
-            return true;
-        }
-        return false;
-    }
 
 
 
@@ -613,7 +481,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
     }
     public ArrayList<AllocateTransferBean> displayAllProductEntry() {
         ArrayList<AllocateTransferBean> list = new ArrayList<AllocateTransferBean>();
-        Cursor cursor = db3.rawQuery("select billno,dbilldate,dr from AllocateTransfer order by dbilldate desc", null);
+        Cursor cursor = db3.rawQuery("select billno,dbilldate,dr,flag from AllocateTransfer order by dbilldate desc", null);
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
@@ -621,6 +489,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                 bean.billno = cursor.getString(cursor.getColumnIndex("billno"));
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
+                 Log.i("item-->",bean.billno+"/"+bean.dbilldate);
                 list.add(bean);
             }
             cursor.close();
@@ -638,6 +507,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
             intent.putExtra("current_sale_delivery_vbillcode", listAllPostition.get(position).getBillno());
             intent.putExtra("current_sale_delivery_dbilldate", listAllPostition.get(position).getDbilldate());
             intent.putExtra("current_sale_delivery_orgRecv", queryOrg(listAllPostition.get(position).getBillno()));
+
             startActivity(intent);
 
         }
@@ -654,5 +524,269 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
             cursor.close();
         }
         return s;
+    }
+    private void popupQuery() {
+        List<String> listWarehouse;
+
+        LayoutInflater layoutInflater = LayoutInflater.from(AllocateTransfer.this);
+        View textEntryView = layoutInflater.inflate(R.layout.query_outgoing_dialog, null);
+        final EditText codeNumEditText = (EditText) textEntryView.findViewById(R.id.codenum);
+        final Spinner spinner = (Spinner) textEntryView.findViewById(R.id.warehouse_spinner);
+        final Spinner flag_spinner = (Spinner) textEntryView.findViewById(R.id.upload_flag_spinner);
+        final Button showdailogTwo = (Button)  textEntryView.findViewById(R.id.showdailogTwo);
+        time = (TextView)  textEntryView.findViewById(R.id.timeshow_saledelivery);
+
+        String tempperiod =DataHelper.getQueryTime(AllocateTransfer.this,getIntent().getIntExtra("type",-1));
+        showdailogTwo.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showDialogTwo();
+            }
+        });
+
+        //仓库选择
+        listWarehouse = DataHelper.queryWarehouseInfo(db3);
+        listWarehouse.add("");
+        final ArrayAdapter arrayAdapter = new ArrayAdapter(
+                AllocateTransfer.this, android.R.layout.simple_spinner_item, listWarehouse);
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(arrayAdapter);
+        spinner.setSelection(listWarehouse.size()-1);
+        spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                query_cwarename=arrayAdapter.getItem(i).toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+
+        //订单选择
+        uploadflag = new ArrayList();
+        uploadflag.add("否");
+        uploadflag.add("部分上传");
+        uploadflag.add("是");
+        uploadflag.add("全部");
+        final ArrayAdapter adapter2 = new ArrayAdapter(
+                AllocateTransfer.this, android.R.layout.simple_spinner_item, uploadflag);
+        adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        flag_spinner.setAdapter(adapter2);
+
+        flag_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                switch (position){
+                    case 0:
+                        query_uploadflag = "N";
+                        break;
+                    case 1:
+                        query_uploadflag = "PY";
+                        break;
+                    case 2:
+                        query_uploadflag = "Y";
+                        break;
+                    case 3:
+                        query_uploadflag = "ALL";
+                        break;
+
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        AlertDialog.Builder ad1 = new AlertDialog.Builder(AllocateTransfer.this);
+        ad1.setTitle("出入查询条件:");
+        ad1.setView(textEntryView);
+        time.setText(tempperiod);
+        ad1.setPositiveButton("查询", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int i) {
+                String temp=codeNumEditText.getText().toString();
+                exportList= queryexport(temp,query_cwarename,query_uploadflag);
+                 listAllPostition=new ArrayList<>();
+                 listAllPostition=removeDuplicate(exportList);
+
+                //PurchaseReturnAdapter adapter=new PurchaseReturnAdapter(ProductEntry.this,saleDeliveryBeanList,mListener);
+                AllocateTransferAdapter adapter=new AllocateTransferAdapter(AllocateTransfer.this,listAllPostition,mListener);
+                tableListView.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
+
+
+
+            }
+        });
+        ad1.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int i) {
+
+            }
+        });
+        ad1.show();// 显示对话框
+
+    }
+
+    List< AllocateTransferBean> exportList;
+
+    private    List< AllocateTransferBean>  removeDuplicate(List< AllocateTransferBean> list)  {
+        List< AllocateTransferBean>  beanList=new ArrayList<>();
+        beanList.addAll(list);
+
+        for  ( int  i  =   0 ; i  <  beanList.size()  -   1 ; i ++ )  {
+
+            for  ( int  j  =  beanList.size()  -   1 ; j  >  i; j -- )  {
+
+                if  (beanList.get(j).getBillno().equals(beanList.get(i).getBillno()))  {
+                    beanList.remove(j);
+                }
+            }
+        }
+        return beanList;
+    }
+    private ArrayList< AllocateTransferBean> queryexport(String vbillcode,String current_cwarename,String query_uploadflag) {
+        ArrayList< AllocateTransferBean> list = new ArrayList<>();
+        SharedPreferences currentTimePeriod= getSharedPreferences("query_allocatetransfer", 0);
+        String start_temp = currentTimePeriod.getString("starttime", iUrl.begintime);
+        String end_temp = currentTimePeriod.getString("endtime", Utils.getDefaultEndTime());
+        Cursor cursor=null;
+        if(query_uploadflag.equals("ALL")){
+            cursor = db3.rawQuery("select AllocateTransfer.billno, AllocateTransfer.dbilldate,AllocateTransferbody.materialcode,AllocateTransferbody.materialclasscode,AllocateTransfer.dr," +
+                    "AllocateTransferbody.maccode,AllocateTransferbody.nnum,AllocateTransferscanresult.prodcutcode,AllocateTransferBody.rwarehousecode," +
+                    "AllocateTransferscanresult.xlh" + " from AllocateTransfer inner join AllocateTransferbody on AllocateTransfer.billno=AllocateTransferbody.billno " +
+                    "left join AllocateTransferscanresult on AllocateTransferbody.billno=AllocateTransferscanresult.billno " +
+                    "and AllocateTransferbody.itempk=AllocateTransferscanresult.itempk where AllocateTransfer.billno" +
+                    " like '%" + vbillcode + "%' and AllocateTransferBody.rwarehousecode"+ " like '%" + current_cwarename + "%' order by dbilldate desc", null);
+
+        }else {
+            cursor = db3.rawQuery("select AllocateTransfer.billno, AllocateTransfer.dbilldate,AllocateTransferbody.materialcode,AllocateTransferbody.materialclasscode,AllocateTransfer.dr," +
+                    "AllocateTransferbody.maccode,AllocateTransferbody.nnum,AllocateTransferScanResult.prodcutcode,AllocateTransferBody.rwarehousecode," +
+                    "AllocateTransferScanResult.xlh" + " from AllocateTransfer inner join AllocateTransferbody on AllocateTransfer.billno=AllocateTransferbody.billno " +
+                    "left join AllocateTransferscanresult on AllocateTransferbody.billno=AllocateTransferScanResult.billno " +
+                    "and AllocateTransferbody.itempk=AllocateTransferScanResult.itempk where AllocateTransferbody.uploadflag=? and AllocateTransfer.billno" +
+                    " like '%" + vbillcode + "%' and AllocateTransferBody.rwarehousecode"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
+
+        }
+
+
+        //判断cursor中是否存在数据
+        while (cursor.moveToNext()) {
+
+            AllocateTransferBean bean = new  AllocateTransferBean();
+
+            bean.billno = cursor.getString(cursor.getColumnIndex("billno"));
+            bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
+            bean.setMaterialcode(cursor.getString(cursor.getColumnIndex("materialcode")));
+            bean.setRwarehousecode(cursor.getString(cursor.getColumnIndex("rwarehousecode")));
+            bean.setMaterialclasscode(cursor.getString(cursor.getColumnIndex("materialclasscode")));
+            bean.setMaccode(cursor.getString(cursor.getColumnIndex("maccode")));
+            bean.setNnum(cursor.getString(cursor.getColumnIndex("nnum")));
+            bean.setProdcutcode(cursor.getString(cursor.getColumnIndex("prodcutcode")));
+            bean.setXlh(cursor.getString(cursor.getColumnIndex("xlh")));
+            bean.dr= cursor.getInt(cursor.getColumnIndex("dr"));
+            if (DataHelper.queryTimePeriod(bean.billno,start_temp,end_temp,getIntent().getIntExtra("type",-1),db3)) {
+                list.add(bean);
+            }
+
+
+        }
+        cursor.close();
+
+        return list;
+    }
+
+
+    private void exportData( List<AllocateTransferBean> exportList) {
+        Log.i("exportList",new Gson().toJson(exportList));
+        String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+        SimpleDateFormat formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
+        File file=new File(sdCardDir+"/sunmi");
+        if(!file.exists()){
+            file.mkdir();
+        }
+        Date curDate =  new Date(System.currentTimeMillis());
+        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        Toast.makeText(AllocateTransfer.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
+        FileOutputStream outputStream=null;
+        try {
+            outputStream=new FileOutputStream(file);
+            outputStream.write(("发货单号"+"\t"+ "单据日期"+"\t"+"物料编码"+"\t"+"物料名称"+"\t"+
+                    "物料大类"+"\t"+"序列号"+"\t"+"条形码"+"\t").getBytes());
+            for (int j = 0; j <exportList.size() ; j++) {
+                if(exportList.get(j).getXlh()!=null ) {
+                    outputStream.write("\r\n".getBytes());
+                    outputStream.write((exportList.get(j).getBillno()+"\t"
+                            +exportList.get(j).getDbilldate()+"\t"
+                            +exportList.get(j).getMaterialcode()+"\t"
+                            +exportList.get(j).getMaterialclasscode()+"\t"
+                            +exportList.get(j).getMaccode()+"\t"
+                            +exportList.get(j).getXlh()+"\t"
+                            +exportList.get(j).getProdcutcode()).getBytes());
+                }
+
+            }
+            outputStream.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private void showDialogTwo() {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_date, null);
+        final DatePicker startTime = (DatePicker) view.findViewById(R.id.st);
+        final DatePicker endTime = (DatePicker) view.findViewById(R.id.et);
+        startTime.updateDate(startTime.getYear(), startTime.getMonth(), 01);
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        builder.setTitle("选择时间");
+        builder.setView(view);
+        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String day_startTime,month_startTime,year_startTime;
+                String day_endTime,month_endTime,year_endTime;
+                year_startTime = String.valueOf(startTime.getYear());
+                year_endTime = String.valueOf(endTime.getYear());
+                if(startTime.getDayOfMonth()<10){
+                    day_startTime = "0"+String.valueOf(startTime.getDayOfMonth());
+                }else{
+                    day_startTime = String.valueOf(startTime.getDayOfMonth());
+                }
+                if((startTime.getMonth())<10){
+                    month_startTime = "0"+String.valueOf(startTime.getMonth() + 1);
+                }else{
+                    month_startTime = String.valueOf(startTime.getMonth() + 1);
+                }
+                if(endTime.getDayOfMonth()<10){
+                    day_endTime = "0"+String.valueOf(endTime.getDayOfMonth());
+                }else{
+                    day_endTime = String.valueOf(endTime.getDayOfMonth());
+                }
+                if((endTime.getMonth())<10){
+                    month_endTime = "0"+String.valueOf(endTime.getMonth() + 1);
+                }else{
+                    month_endTime = String.valueOf(endTime.getMonth() + 1);
+                }
+                String st = year_startTime+"-" + month_startTime+"-" + day_startTime;
+                String et = year_endTime+"-" + month_endTime+"-" + day_endTime;
+                SharedPreferences currentTimePeriod= getSharedPreferences("query_allocatetransfer", 0);
+                SharedPreferences.Editor editor1 = currentTimePeriod.edit();
+                editor1.putString("current_account",st+" 至 "+et);
+                editor1.putString("starttime",st+ " "+"00:00:01");
+                editor1.putString("endtime",et+ " "+"23:59:59");
+                editor1.commit();
+                time.setText(st+" 至 "+et);
+            }
+        });
+        builder.setNegativeButton("取消", null);
+        android.app.AlertDialog dialog = builder.create();
+        dialog.show();
+        //自动弹出键盘问题解决
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        startTime.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
+        endTime.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
     }
 }

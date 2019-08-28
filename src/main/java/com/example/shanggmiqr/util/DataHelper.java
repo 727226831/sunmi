@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.example.shanggmiqr.Url.iUrl;
 import com.example.shanggmiqr.bean.CommonSendBean;
 import com.example.shanggmiqr.bean.LoginBean;
+import com.example.shanggmiqr.bean.LogisticsBean;
 import com.example.shanggmiqr.bean.OtherQueryBean;
 import com.example.shanggmiqr.bean.QrcodeRule;
 import com.example.shanggmiqr.bean.SaleDeliveryBean;
@@ -91,16 +92,7 @@ public class DataHelper {
                 bean.startpos - 1 + bean.itemlength);
         return xlh;
     }
-    public static boolean isAlreadyScanned(SQLiteDatabase db,String pobillcode,String prodcutcode,String vcooporderbcode_b) {
-        Cursor cursor = db.rawQuery("select * from OtherOutgoingScanResult where pobillcode=? and prodcutcode=? and vcooporderbcode_b=?",
-                new String[]{pobillcode, prodcutcode, vcooporderbcode_b});
-        while (cursor != null && cursor.getCount() > 0) {
-            if (cursor.getCount() > 0) {
-                return true;
-            }
-        }
-        return false;
-    }
+
     public static String getCwarehousecode(String cwarename,SQLiteDatabase db) {
         Cursor cursor = db.rawQuery("select code from Warehouse where name=?",
                 new String[]{cwarename});
@@ -177,11 +169,11 @@ public class DataHelper {
         }
         Cursor cursor = db.rawQuery("select code from Material where materialbarcode=?",
                 new String[]{scannedMaccode});
-        Log.i("valid",matrcode+"/"+scannedMaccode);
+
         //判断cursor中是否存在数据
         while (cursor.moveToNext()) {
             String code = cursor.getString(cursor.getColumnIndex("code"));
-            Log.i("valid-->",matrcode+"/"+code);
+
             if (code.equals(matrcode)) {
                 cursor.close();
                 return true;
@@ -283,6 +275,8 @@ public class DataHelper {
     }
 
     private static void insertData(OtherQueryBean.DataBean ob,SQLiteDatabase db,String otherbodyTable,String  otherTable) {
+        Boolean isY=false;
+        Boolean isPY=false;
         List<OtherQueryBean.DataBean.BodyBean> outGoingDatabodyList = ob.getBody();
         //使用 ContentValues 来对要添加的数据进行组装
         ContentValues values = new ContentValues();
@@ -300,9 +294,21 @@ public class DataHelper {
             valuesInner.put("maccode", maccode);
             valuesInner.put("nnum", nnum);
             valuesInner.put("pch", pch);
-            valuesInner.put("uploadnum", "0");
+            valuesInner.put("uploadnum",obb.getYsnum());
             valuesInner.put("scannum", scannum);
-            valuesInner.put("uploadflag", "N");
+            if(nnum!=0){
+
+                if(nnum==Integer.parseInt(obb.getYsnum())){
+                    isY=true;
+                    valuesInner.put("uploadflag", "Y");
+                } else {
+                    isPY=true;
+                    valuesInner.put("uploadflag", "PY");
+                }
+            }else {
+                valuesInner.put("uploadflag", "N");
+            }
+
             valuesInner.put("issn",obb.getIssn());
             valuesInner.put("vcooporderbcode_b", vcooporderbcode_b);
 
@@ -314,23 +320,21 @@ public class DataHelper {
         values.put("cwarename", ob.getCwarename());
         values.put("dbilldate", ob.getDbilldate());
         values.put("dr", ob.getDr());
-        values.put("flag", "N");
+        if(isY==true && isPY==false){
+            values.put("flag", "Y");
+        }else if(isPY){
+            values.put("flag", "PY");
+        }else {
+            values.put("flag", "N");
+        }
+
         // 插入第一条数据
         db.insert(otherTable, null, values);
         values.clear();
     }
 
 
-    public static boolean isPobillcodeExist(SQLiteDatabase db,String pobillcode) {
-        Cursor cursor2 = db.rawQuery("select pobillcode from OtherEntry where pobillcode=?", new String[]{pobillcode});
-        if (cursor2 != null && cursor2.getCount() > 0) {
-            //判断cursor中是否存在数据
-            cursor2.close();
-            return true;
-        }else {
-            return false;
-        }
-    }
+
 
     public static void showDialog(ZLoadingDialog dialog) {
         dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
@@ -396,10 +400,15 @@ public class DataHelper {
                 name="LatestPurchaseReturnTSInfo";
                 workCode="R39";
                 break;
+            case 8:
+                name="LatestExportTSInfo";
+                workCode="R14";
+                break;
+
 
         }
         SharedPreferences latestDBTimeInfo = context.getSharedPreferences(name, 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
+        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.getBegintime(context));
         String endtime = getDefaultEndTime();
 
         CommonSendBean userSend = new CommonSendBean(begintime, endtime, pagenum, "0");
@@ -550,6 +559,9 @@ public class DataHelper {
             case 7:
                 name="LatestPurchaseReturnTSInfo";
                 break;
+            case 8:
+                name="LatestExportTSInfo";
+                break;
 
         }
         SharedPreferences latestDBTimeInfo = context.getSharedPreferences(name, 0);
@@ -567,6 +579,7 @@ public class DataHelper {
         }
     }
     public static boolean queryTimePeriod(String code ,String startTime,String endTime,int type,SQLiteDatabase db) {
+            Log.i("type",type+"");
         Cursor cursor=null;
         switch (type){
             case 0:
@@ -581,6 +594,32 @@ public class DataHelper {
                 break;
             case 2:
                 cursor = db.rawQuery("SELECT count(pobillcode) FROM OtherOutgoing WHERE pobillcode=? and "+
+                                "dbilldate>=? and dbilldate<?",
+                        new String[] { code,startTime, endTime});
+                break;
+            case 3:
+                cursor = db.rawQuery("SELECT count(billcode) FROM ProductEntry WHERE billcode=? and "+
+                                "dbilldate>=? and dbilldate<?",
+                        new String[] { code,startTime, endTime});
+                break;
+            case 4:
+                cursor = db.rawQuery("SELECT count(pobillcode) FROM Loan WHERE pobillcode=? and "+
+                                "dbilldate>=? and dbilldate<?",
+                        new String[] { code,startTime, endTime});
+                break;
+            case 5:
+
+                cursor = db.rawQuery("SELECT count(billno) FROM AllocateTransfer WHERE billno=? and "+
+                                "dbilldate>=? and dbilldate<?",
+                        new String[] { code,startTime, endTime});
+                break;
+            case 6:
+                cursor = db.rawQuery("SELECT count(vbillcode) FROM PurchaseArrival WHERE vbillcode=? and "+
+                                "dbilldate>=? and dbilldate<?",
+                        new String[] { code,startTime, endTime});
+                break;
+            case 7:
+                cursor = db.rawQuery("SELECT count(vbillcode) FROM PurchaseReturn WHERE vbillcode=? and "+
                                 "dbilldate>=? and dbilldate<?",
                         new String[] { code,startTime, endTime});
                 break;
@@ -621,10 +660,36 @@ public class DataHelper {
             case 2:
                 name="query_otheroutgoing";
                 break;
+            case 3:
+                name="query_productentry";
+                break;
+            case 4:
+                name="query_loanbill";
+                break;
+            case 5:
+                name="query_allocatetransfer";
+                break;
+            case 6:
+                name="query_purchasearrival";
+                break;
+            case 7:
+                name="query_purchasereturn";
+                break;
         }
         SharedPreferences currentTimePeriod= context.getSharedPreferences(name, 0);
-        String tempperiod =currentTimePeriod.getString("current_account","2018-09-01 至 2018-12-17");
+        String tempperiod =currentTimePeriod.getString("current_account","2018-09-01 至 2019-08-23");
         return tempperiod;
+    }
+    public static void insertLogistics(SQLiteDatabase db, LogisticsBean logisticsBean) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("billcode",logisticsBean.getBillcode());
+        contentValues.put("name",logisticsBean.getName());
+        contentValues.put("code",logisticsBean.getCode());
+        db.insert("Logistics",null,contentValues);
+    }
+    public static LogisticsBean getLogisticsbybillcode(SQLiteDatabase db, LogisticsBean logisticsBean) {
+        LogisticsBean logisticsBean1;
+        return  logisticsBean;
     }
 
     public static String uploadSaleDeliveryVBill(String workcode, SQLiteDatabase db,String vbillcode,String itempk,Context context,String company,
@@ -653,6 +718,10 @@ public class DataHelper {
                 break;
             case 7:
                 cursor=db.rawQuery("select * from PurchaseReturnBody where vbillcode=? ",
+                        new String[]{vbillcode});
+                break;
+            case 8:
+                cursor=db.rawQuery("select * from SaleDeliveryBody where vbillcode=?  ",
                         new String[]{vbillcode});
                 break;
         }
@@ -688,6 +757,12 @@ public class DataHelper {
                         warehousecode = cursor.getString(cursor.getColumnIndex("warehouse"));
                         bean.setUploadflag(cursor.getString(cursor.getColumnIndex("uploadflag")));
 
+                        break;
+                    case 8:
+                        bean.itempk = cursor.getString(cursor.getColumnIndex("vcooporderbcode_b"));
+                        bean.materialcode = cursor.getString(cursor.getColumnIndex("matrcode"));
+                        warehousecode = getCwarehousecode(cursor.getString(cursor.getColumnIndex("cwarename")),db);
+                        bean.setUploadflag(cursor.getString(cursor.getColumnIndex("uploadflag")));
                         break;
                 }
 
@@ -809,11 +884,7 @@ public class DataHelper {
 
             se.call(namespace + "sendToWISE", envelope);
 
-            if(envelope.bodyIn.toString().equals("SoapFault - faultcode: 'soap:Server' faultstring:" +
-                    " 'JSONObject[\"num\"] not found.' faultactor: 'null' detail: org.kxml2.kdom.Node@70668e"))
-            {
-                returnMsg("接口异常");
-            }
+
 
             Object object = envelope.getResponse();
             saleDeliveryUploadDataResp = new Gson().toJson(object);
@@ -827,11 +898,7 @@ public class DataHelper {
         return saleDeliveryUploadDataResp;
     }
 
-    public static String returnMsg(String string) {
 
-        return  "{\"name\":\"anyType\",\"namespace\":\"http://www.w3.org/2001/XMLSchema\"," +
-                "\"value\":\"{\\\"errno\\\":\\\"1\\\",\\\"errmsg+"+string+"}\",\"attributes\":[]}";
-    }
 
 
 }

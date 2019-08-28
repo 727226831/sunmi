@@ -26,6 +26,56 @@ public class ProductEntryBean {
     public String dbilldate;
     public String cwarename;
     public int dr;
+    private String prodcutcode;
+
+
+    public String getFlag() {
+        return flag;
+    }
+
+    public void setFlag(String flag) {
+        this.flag = flag;
+    }
+
+    private String flag;
+
+    public String getProdcutcode() {
+        return prodcutcode;
+    }
+
+    public void setProdcutcode(String prodcutcode) {
+        this.prodcutcode = prodcutcode;
+    }
+
+    public String getXlh() {
+        return xlh;
+    }
+
+    public void setXlh(String xlh) {
+        this.xlh = xlh;
+    }
+
+    private String xlh;
+
+    public String getNnum() {
+        return nnum;
+    }
+
+    public void setNnum(String nnum) {
+        this.nnum = nnum;
+    }
+
+    private String nnum;
+
+    public String getMaccode() {
+        return maccode;
+    }
+
+    public void setMaccode(String maccode) {
+        this.maccode = maccode;
+    }
+
+    private String maccode;
 
     public boolean isSelected = false;
     public ProductEntryBean(){
@@ -39,6 +89,15 @@ public class ProductEntryBean {
         this.dr = dr;
     }
 
+    public String getMaterialcode() {
+        return materialcode;
+    }
+
+    public void setMaterialcode(String materialcode) {
+        this.materialcode = materialcode;
+    }
+
+    private String materialcode;
     public boolean isSelected() {
         return isSelected;
     }

@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -100,6 +101,10 @@ public class ProductEntryQRDetail extends AppCompatActivity {
                 }
             }
         });
+
+        if(!getIntent().getStringExtra("flag").equals("N")){
+            scanButton.setEnabled(false);
+        }
         vcooporderbcode_bText.setText("行号:  " + current_itempk_qrRecv);
        // matrnameText.setText("物料名称:" + current_matrname_qrRecv);
         matrcodeText.setText("物料编码:" + current_materialcode_qrRecv);
@@ -130,7 +135,9 @@ public class ProductEntryQRDetail extends AppCompatActivity {
     //下面的方法内容需要根据实际更新
     public ArrayList<ProductEntryQrDetailBean> QueryProductEntryBody(String current_matrcode_qrRecv) {
         ArrayList<ProductEntryQrDetailBean> list = new ArrayList<ProductEntryQrDetailBean>();
-        Cursor cursor = db5.rawQuery("select platecode,boxcode,prodcutcode,itemuploadflag from ProductEntryScanResult where billcode=? and materialcode=? and itempk=?", new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv, current_itempk_qrRecv});
+        Log.i("data-->",current_vbillcode_qrRecv+"/"+current_matrcode_qrRecv+"/"+current_itempk_qrRecv);
+        Cursor cursor = db5.rawQuery("select platecode,boxcode,prodcutcode,itemuploadflag from ProductEntryScanResult where billcode=? and materialcode=? and itempk=?",
+                new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv, current_itempk_qrRecv});
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {

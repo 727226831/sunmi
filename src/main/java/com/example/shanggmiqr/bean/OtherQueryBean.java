@@ -130,6 +130,16 @@ public class OtherQueryBean {
                 private String pch;
                 private String vcooporderbcode_b;
 
+                public String getYsnum() {
+                    return ysnum;
+                }
+
+                public void setYsnum(String ysnum) {
+                    this.ysnum = ysnum;
+                }
+
+                private String ysnum;
+
                 public String getIssn() {
                     return issn;
                 }

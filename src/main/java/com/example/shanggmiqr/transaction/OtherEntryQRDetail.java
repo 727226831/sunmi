@@ -92,6 +92,9 @@ public class OtherEntryQRDetail extends AppCompatActivity {
         numQRText = (TextView)findViewById(R.id.nnum_otherentryqr);
         pchQRText = (TextView)findViewById(R.id.scannum_otherentryqr);
         scanButton = (Button)findViewById(R.id.scan_otherentryqr) ;
+        if(!getIntent().getStringExtra("flag").equals("N")){
+            scanButton.setEnabled(false);
+        }
         scanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

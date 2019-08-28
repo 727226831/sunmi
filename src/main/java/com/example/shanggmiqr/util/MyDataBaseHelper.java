@@ -66,7 +66,7 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
             + "id integer primary key autoincrement," + "pobillcode text,"+ "vcooporderbcode_b text,"+ "cwarename text," + "materialcode text," + "platecode text,"
             + "boxcode text,"+ "xlh text," + "num text," + "itemuploadflag text,"+ "prodcutcode text)";
     public static final String SaleDelivery = "create table SaleDelivery ("
-            + "id integer primary key autoincrement," + "vtrantypecode text,"+ "dr integer,"+ "unitcode text," + "busitypecode text," + "vbillcode text,"
+            + "id integer primary key autoincrement," + "vtrantypecode text,"+ "dr integer,"+ "unitcode text," + "busitypecode text," + "vbillcode text,"+"type text,"
             + "dbilldate text," + "deptcode text,"+ "Pupsndoccode text,"+ "Transporttypecode text,"+ "billmakercode text,"+ "vmemo text,"+ "flag text,"+ "country text)";
     public static final String SaleDeliveryBody = "create table SaleDeliveryBody ("
             + "id integer primary key autoincrement," + "vbillcode text,"+ "vcooporderbcode_b text," + "matrcode text," + "matrname text,"
@@ -166,7 +166,9 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
         sqLiteDatabase.execSQL(AllocateTransferScanResult);
         sqLiteDatabase.execSQL(QrcodeRule);
         sqLiteDatabase.execSQL(QrcodeRuleBody);
-        Toast.makeText(context, "Create succeeded", Toast.LENGTH_SHORT).show();
+        sqLiteDatabase.execSQL( "create table Logistics ("
+                + "id integer primary key autoincrement," + "billcode text,"+ "name text," + "code text"+ ")");
+
     }
 
     //4.重写onUpgrade方法

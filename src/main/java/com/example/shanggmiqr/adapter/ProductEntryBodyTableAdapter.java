@@ -101,7 +101,7 @@ public class ProductEntryBodyTableAdapter extends BaseAdapter{
             viewHolder = (ViewHolder2) convertView.getTag();
         }
         saleDeliveryBodyBean = (ProductEntryBodyBean) getItem(position);
-        viewHolder.itempk.setText(goods.getItempk());
+        viewHolder.itempk.setText("");
         viewHolder.itempk.setTextSize(10);
         viewHolder.materialcode.setText(goods.getMaterialcode());
         viewHolder.materialcode.setTextSize(10);

@@ -89,7 +89,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
     private String current_bisreturn = "N";
     private ZLoadingDialog zLoadingDialog;
      PurchaseReturnBodyTableAdapter adapter;
-     private String scannum;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -195,23 +195,14 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                         String s = msg.getData().getString("uploadResp");
                         Toast.makeText(PurchaseReturnDetail.this, s, Toast.LENGTH_LONG).show();
                         updateAllUploadFlag();
-                        if (isAllItemUpload()) {
-                            Intent intent=null;
-                            switch (getIntent().getIntExtra("type",-1)){
-                                case 6:
-                                    intent = new Intent(PurchaseReturnDetail.this, PurchaseArrival.class);
-                                    break;
-                                case 7:
-                                    intent = new Intent(PurchaseReturnDetail.this, PurchaseReturn.class);
-                                    break;
-                            }
-                            intent.putExtra("type",getIntent().getIntExtra("type",-1));
-                            startActivity(intent);
-                            finish();
-                        }
                         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
                         adapter = new PurchaseReturnBodyTableAdapter(PurchaseReturnDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
+                        adapter.notifyDataSetChanged();
+                        if (isAllItemUpload()) {
+                            finish();
+                        }
+
 
 
                         break;
@@ -281,6 +272,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                                     if (respBeanValue.getErrno().equals("0")) {
                                         //19弹出erromsg
                                         msg.what = 0x11;
+                                        Log.i("0x11","is run");
                                     } else {
                                         //19弹出erromsg
                                         msg.what = 0x19;
@@ -370,68 +362,38 @@ public class PurchaseReturnDetail extends AppCompatActivity {
     }
 
     private boolean isAllItemUpload() {
-        Cursor cursor00 = db4.rawQuery("select vcooporderbcode_b from SaleDeliveryBody where vbillcode=? and uploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, "Y"});
-        Cursor cursor01 = db4.rawQuery("select vcooporderbcode_b from SaleDeliveryBody where vbillcode=?",
-                new String[]{current_sale_delivery_vbillcodeRecv});
-        int t1=cursor00.getCount();
-        int t2=cursor01.getCount();
-        if (t1 > 0 && t1 == t2) {
-            db4.execSQL("update SaleDelivery set flag=? where vbillcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv});
-            return true;
-        } else if (t1 > 0 && t1 < t2) {
-            db4.execSQL("update SaleDelivery set flag=? where vbillcode=?", new String[]{"PY", current_sale_delivery_vbillcodeRecv});
-            return false;
-        } else {
-            return false;
-        }
-    }
-
-    private boolean isCwarenameSame() {
-
-        return  true;
-    }
-
-
-
-    private void updateItemUploadFlag(List<String> listitem) {
-        for (String send : listitem) {
-            db4.execSQL("update SaleDeliveryScanResult set itemuploadflag=? where vbillcode=? and vcooporderbcode_b=? and matrcode=? and prodcutcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, itempk, chosen_line_matrcode, send});
-        }
-    }
-
-
-    private boolean iaAlreadyUploadSingle(String chosen_line_vcooporderbcode_b) {
-        Cursor cursor3 = db4.rawQuery("select vcooporderbcode_b from SaleDeliveryBody where vbillcode=? and vcooporderbcode_b=? and uploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, "Y"});
-        lisitemtall = new ArrayList<SaleDeliveryUploadFlagBean>();
-        // Cursor cursor3 = db3.rawQuery(sql3, null);
-        if (cursor3 != null && cursor3.getCount() > 0) {
-            return true;
-        } else {
-            //判断cursor中是否存在数据
-            //     while (cursor3.moveToNext()) {
-            list = new ArrayList<String>();
-            list.add(chosen_line_vcooporderbcode_b);
-            Cursor cursor4 = db4.rawQuery("select prodcutcode,itemuploadflag from SaleDeliveryScanResult where vbillcode=? and vcooporderbcode_b=? and itemuploadflag=?",
-                    new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, "N"});
-
-            if (cursor4 != null && cursor4.getCount() > 0) {
-                //判断cursor中是否存在数据
-                while (cursor4.moveToNext()) {
-
-                }
-                cursor4.close();
+        Log.i("list-->",new Gson().toJson(listAllBodyPostition));
+        int count=0;
+        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
+            if(listAllBodyPostition.get(i).getUploadflag().equals("Y")){
+                count++;
             }
-            //      }
-            cursor3.close();
-            return false;//false代表有未上传的
+        }
+        String flag="";
+        if(count==0){
+            flag="N";
+        }else if(count!=listAllBodyPostition.size()){
+            flag="PY";
+        }else {
+            flag="Y";
+        }
+        switch (getIntent().getIntExtra("type",-1)){
+            case 6:
+
+                db4.execSQL("update PurchaseArrival set flag=? where vbillcode=?", new String[]{flag, current_sale_delivery_vbillcodeRecv});
+                break;
+            case 7:
+                db4.execSQL("update PurchaseReturn set flag=? where vbillcode=?", new String[]{flag, current_sale_delivery_vbillcodeRecv});
+
+                break;
+        }
+
+        if(flag.equals("Y")){
+            return true;
+        }else {
+            return  false;
         }
     }
-
-
-
-
 
     private void updateAllUploadFlag() {
         for (int i = 0; i <listAllBodyPostition.size() ; i++) {
@@ -449,7 +411,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                                     new String[]{"Y", current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(i).getItempk()});
                             break;
                     }
-                Log.i("update-->",listAllBodyPostition.get(i).getItempk()+"/Y");
+
                 }else {
                     switch (getIntent().getIntExtra("type",-1)){
                         case 6:
@@ -461,7 +423,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                                     new String[]{"PY", current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(i).getItempk()});
                             break;
                     }
-                    Log.i("update-->",listAllBodyPostition.get(i).getItempk()+"/PY");
+
                 }
             }
         }
@@ -500,7 +462,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
         chosen_line_maccode = local_saleDeliveryBodyBean.getMaccode();
         chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
         chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
-        scannum=local_saleDeliveryBodyBean.getScannnum();
+
 
     }
 
@@ -579,10 +541,11 @@ public class PurchaseReturnDetail extends AppCompatActivity {
         public void myOnClick(int position, View v) {
             Intent intent = new Intent(PurchaseReturnDetail.this, SaleDeliveryQRDetail.class);
             intent.putExtra("type",getIntent().getIntExtra("type",-1));
+            intent.putExtra("title",getIntent().getStringExtra("title"));
             intent.putExtra("current_nnum_qr", listAllBodyPostition.get(position).getNnum());
             intent.putExtra("current_maccode_qr", queryMaccodeFromDB(current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(position).getItempk(), listAllBodyPostition.get(position).getMaterialcode()));
             intent.putExtra("current_vbillcode_qr", current_sale_delivery_vbillcodeRecv);
-
+            intent.putExtra("title",getIntent().getStringExtra("title"));
             intent.putExtra("current_vcooporderbcode_b_qr", listAllBodyPostition.get(position).getItempk());
             intent.putExtra("current_cwarename_qr", listAllBodyPostition.get(position).getWarehouse());
             intent.putExtra("current_matrname_qr", listAllBodyPostition.get(position).getMaterialname());

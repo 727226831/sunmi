@@ -107,7 +107,7 @@ public class PurchaseReturnBodyTableAdapter extends BaseAdapter{
             viewHolder = (ViewHolder2) convertView.getTag();
         }
         saleDeliveryBodyBean = (PurchaseReturnBodyBean) getItem(position);
-//        viewHolder.vcooporderbcode_b.setText(goods.getVcooporderbcode_b());
+        viewHolder.vcooporderbcode_b.setText("");
         viewHolder.vcooporderbcode_b.setTextSize(10);
         viewHolder.cwarename.setText(goods.getWarehouse());
         viewHolder.cwarename.setTextSize(10);

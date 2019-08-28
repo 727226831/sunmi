@@ -1,5 +1,6 @@
 package com.example.shanggmiqr.transaction;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -101,6 +102,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
     private String maccode;
      AllocateTransferBodyTableAdapter adapter;
      ZLoadingDialog zLoadingDialog;
+     private  Boolean isAllupdate=true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -146,6 +148,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
         //加载数据
         myadapter();
         listAllBodyPostition = QueryAllocateTransferBody(current_sale_delivery_vbillcodeRecv);
+
         adapter= new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
 
@@ -269,16 +272,17 @@ public class AllocateTransferDetail extends AppCompatActivity {
                         String s2 = msg.getData().getString("uploadResp");
                         Toast.makeText(AllocateTransferDetail.this, s2, Toast.LENGTH_LONG).show();
                         updateAllUploadFlag();
-                        if (isAllItemUpload()) {
-                            Intent intent = new Intent(AllocateTransferDetail.this, AllocateTransfer.class);
-                            intent.putExtra("type",5);
-                            startActivity(intent);
-                            finish();
-                        }
+
                         listAllBodyPostition = QueryAllocateTransferBody(current_sale_delivery_vbillcodeRecv);
+
                         adapter = new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
-                       adapter.notifyDataSetChanged();
+                        adapter.notifyDataSetChanged();
+
+                        if (isAllItemUpload()) {
+                            finish();
+                        }
+
                         break;
                     case 0x16:
                         Toast.makeText(AllocateTransferDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
@@ -402,13 +406,14 @@ public class AllocateTransferDetail extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        listAllBodyPostition = QueryAllocateTransferBody(current_sale_delivery_vbillcodeRecv);
-       adapter = new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
-        tableBodyListView.setAdapter(adapter);
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        listAllBodyPostition = QueryAllocateTransferBody(current_sale_delivery_vbillcodeRecv);
+        adapter = new AllocateTransferBodyTableAdapter(AllocateTransferDetail.this, listAllBodyPostition, mListener);
+        tableBodyListView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
     }
 
     private void myadapter() {
@@ -471,21 +476,28 @@ public class AllocateTransferDetail extends AppCompatActivity {
     }
 
     private boolean isAllItemUpload() {
-        Cursor cursor00 = db4.rawQuery("select itempk from ProductEntryBody where billcode=? and uploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, "Y"});
-        Cursor cursor01 = db4.rawQuery("select itempk from ProductEntryBody where billcode=?",
-                new String[]{current_sale_delivery_vbillcodeRecv});
-        int t1=cursor00.getCount();
-        int t2=cursor01.getCount();
-        if (t1 > 0 && t1 == t2) {
-            db4.execSQL("update ProductEntry set flag=? where billcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv});
-            return true;
-        } else if (t1 > 0 && t1 < t2) {
-            db4.execSQL("update ProductEntry set flag=? where billcode=?", new String[]{"PY", current_sale_delivery_vbillcodeRecv});
-            return false;
-        } else {
-            return false;
+        int count=0;
+        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
+            if(listAllBodyPostition.get(i).getUploadflag().equals("Y")){
+                count++;
+            }
         }
+        String flag="";
+        if(count==0){
+            flag="N";
+        }else if(count!=listAllBodyPostition.size()){
+            flag="PY";
+        }else {
+            flag="Y";
+        }
+
+        db4.execSQL("update AllocateTransfer set flag=? where billno=?", new String[]{flag, current_sale_delivery_vbillcodeRecv});
+        if(flag.equals("Y")){
+            return true;
+        }else {
+            return  false;
+        }
+
     }
 
     private boolean isCwarenameSame() {
@@ -565,22 +577,23 @@ public class AllocateTransferDetail extends AppCompatActivity {
 
 
     private void updateAllUploadFlag() {
-        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
-            Log.i("scan-->",new Gson().toJson(listAllBodyPostition.get(i)));
-            if(Integer.parseInt(listAllBodyPostition.get(i).getScannum())!=0) {
 
+        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
+
+            if(Integer.parseInt(listAllBodyPostition.get(i).getScannum())!=0) {
+                ContentValues contentValues=new ContentValues();
                 if(Integer.parseInt(listAllBodyPostition.get(i).getNnum())!=Integer.parseInt(listAllBodyPostition.get(i).getScannum())) {
-                    db4.execSQL("update AllocateTransferBody set uploadflag=? where billno=? and itempk=? ",
-                            new String[]{"PY", current_sale_delivery_vbillcodeRecv,listAllBodyPostition.get(i).getItempk()});
-                    Log.i("update-->",listAllBodyPostition.get(i).getItempk()+"/PY");
+                    contentValues.put("uploadflag","PY");
+
                 }else {
-                    db4.execSQL("update AllocateTransferBody set uploadflag=? where billno=? and itempk=? ",
-                            new String[]{"Y", current_sale_delivery_vbillcodeRecv,listAllBodyPostition.get(i).getItempk()});
-                    Log.i("update-->",listAllBodyPostition.get(i).getItempk()+"/Y");
+                    contentValues.put("uploadflag","Y");
                 }
+                Log.i("update-->",current_sale_delivery_vbillcodeRecv+"/"+listAllBodyPostition.get(i).getItempk());
+                db4.update("AllocateTransferBody",contentValues,"billno=? and itempk=? ",
+                        new String[]{current_sale_delivery_vbillcodeRecv,listAllBodyPostition.get(i).getItempk()});
                 db4.execSQL("update AllocateTransferScanResult set itemuploadflag=? where billno=? and itempk=? ",
                         new String[]{"Y", current_sale_delivery_vbillcodeRecv,  listAllBodyPostition.get(i).getItempk()});
-                Log.i("update scan-->",listAllBodyPostition.get(i).getItempk()+"/Y");
+
             }
         }
 
@@ -712,11 +725,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
         return saleDeliveryUploadDataResp;
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
 
-    }
 
     public ArrayList<AllocateTransferBodyBean> QueryAllocateTransferBody(String current_sale_delivery_vbillcodeRecv) {
         ArrayList<AllocateTransferBodyBean> list = new ArrayList<AllocateTransferBodyBean>();
@@ -726,7 +735,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
             while (cursor.moveToNext()) {
                 AllocateTransferBodyBean bean = new AllocateTransferBodyBean();
                 bean.itempk = cursor.getString(cursor.getColumnIndex("itempk"));
-                bean.address = cursor.getString(cursor.getColumnIndex("address"));
+                bean.address = "";
                 bean.materialcode = cursor.getString(cursor.getColumnIndex("materialcode"));
                 bean.materialclasscode = cursor.getString(cursor.getColumnIndex("materialclasscode"));
                 bean.nnum = cursor.getString(cursor.getColumnIndex("nnum"));

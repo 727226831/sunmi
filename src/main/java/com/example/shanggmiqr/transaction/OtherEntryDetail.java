@@ -72,6 +72,7 @@ public class OtherEntryDetail extends AppCompatActivity {
     String title="";
     OtherEntryBodyTableAdapter adapter;
     int type;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,7 +88,11 @@ public class OtherEntryDetail extends AppCompatActivity {
         }
         otherEntryScanButton = (Button) findViewById(R.id.scan_other_entry);
         uploadallOtherentryButton = (Button) findViewById(R.id.uploadall_other_entry);
-        otherEntryScanButton.setEnabled(false);
+        if(!getIntent().getStringExtra("flag").equals("N")){
+            otherEntryScanButton.setEnabled(false);
+            uploadallOtherentryButton.setEnabled(false);
+        }
+
         dialog = new ZLoadingDialog(OtherEntryDetail.this);
         helper4 = new MyDataBaseHelper(OtherEntryDetail.this, "ShangmiData", null, 1);
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
@@ -122,24 +127,13 @@ public class OtherEntryDetail extends AppCompatActivity {
         actionBar.setTitle(title);
 
         dbilldateText.setText("单据日期:" + current_dbilldateRecv);
-        listAllBodyPostition = QueryOtherEntryBody(current_pobillcodeRecv);
-        adapter = new OtherEntryBodyTableAdapter(OtherEntryDetail.this, listAllBodyPostition, mListener);
-        tableBodyListView.setAdapter(adapter);
+
 
         tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapter.select(position);
-                otherEntryScanButton.setEnabled(true);
-                uploadallOtherentryButton.setEnabled(true);
-                OtherBodyBean otherOutgoingBodyBean = (OtherBodyBean) adapter.getItem(position);
-                chosen_line_maccode = otherOutgoingBodyBean.getMaccode();
-                chosen_line_materialcode = otherOutgoingBodyBean.getMaterialcode();
-                chosen_line_nnum = otherOutgoingBodyBean.getNnum();
-                chosen_line_uploadnum = otherOutgoingBodyBean.getUploadnum();
-                chosen_line_vcooporderbcode_b = otherOutgoingBodyBean.getVcooporderbcode_b();
-                scannum=otherOutgoingBodyBean.getScannum();
 
+                select(position);
 
 
 
@@ -158,7 +152,7 @@ public class OtherEntryDetail extends AppCompatActivity {
                     intent.putExtra("current_cwarename_scanner", current_cwarenameRecv);
                     intent.putExtra("current_maccode_qrRecv", chosen_line_maccode);
                     intent.putExtra("current_matrcode_qrRecv", chosen_line_materialcode);
-                    intent.putExtra("current_nnum_qrRecv", String.valueOf(chosen_line_nnum));
+                    intent.putExtra("current_nnum_qrRecv", String.valueOf(chosen_line_uploadnum));
                     intent.putExtra("chosen_line_uploadnum_scanner", chosen_line_uploadnum);
                     intent.putExtra("current_vcooporderbcode_b_qrRecv", chosen_line_vcooporderbcode_b);
                     startActivity(intent);
@@ -172,10 +166,7 @@ public class OtherEntryDetail extends AppCompatActivity {
             public void onClick(View view) {
 
 
-                if(Integer.parseInt(chosen_line_uploadnum)!=chosen_line_nnum-Integer.parseInt(scannum)){
-                    Toast.makeText(OtherEntryDetail.this, "数量不正确", Toast.LENGTH_LONG).show();
-                    return;
-                }
+
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -252,15 +243,15 @@ public class OtherEntryDetail extends AppCompatActivity {
                     case 0x18:
                         dialog.dismiss();
                         String s = msg.getData().getString("uploadResp");
-                 //       Toast.makeText(OtherEntryDetail.this, s, Toast.LENGTH_LONG).show();
+                        Toast.makeText(OtherEntryDetail.this, s, Toast.LENGTH_LONG).show();
                         listAllBodyPostition = QueryOtherEntryBody(current_pobillcodeRecv);
                         adapter = new OtherEntryBodyTableAdapter(OtherEntryDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
-                        Intent intent = new Intent(OtherEntryDetail.this, OtherEntry.class);
-                        intent.putExtra("type",type);
-                        startActivity(intent);
-                        finish();
+                        if(checkAllupdate()){
+                            finish();
+                        }
+
 
                         break;
                     case 0x19:
@@ -291,6 +282,59 @@ public class OtherEntryDetail extends AppCompatActivity {
         };
     }
 
+    private boolean checkAllupdate() {
+
+        Boolean isY=false;
+        Boolean isPY=false;
+        String flag="";
+        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
+            if(listAllBodyPostition.get(i).getUploadflag().equals("Y")){
+                isY=true;
+            }else if(listAllBodyPostition.get(i).getUploadflag().equals("PY")){
+                isPY=true;
+            }
+        }
+        if(isY && isPY==false){
+            otherEntryScanButton.setEnabled(false);
+            uploadallOtherentryButton.setEnabled(false);
+            flag="Y";
+        }else if(isPY){
+            otherEntryScanButton.setEnabled(false);
+            uploadallOtherentryButton.setEnabled(false);
+            flag="PY";
+        }else {
+            flag="N";
+        }
+
+
+
+            switch (type) {
+                case 1:
+                    db4.execSQL("update  OtherEntry set flag=? where pobillcode=?", new String[]{flag, current_pobillcodeRecv});
+                    break;
+                case 2:
+                    db4.execSQL("update  OtherOutgoing set flag=? where pobillcode=?", new String[]{flag, current_pobillcodeRecv});
+                    break;
+            }
+
+        if(flag.equals("Y")){
+            return true;
+        }else {
+            return  false;
+        }
+    }
+
+    private void select(int position) {
+        adapter.select(position);
+        OtherBodyBean otherOutgoingBodyBean = (OtherBodyBean) adapter.getItem(position);
+        chosen_line_maccode = otherOutgoingBodyBean.getMaccode();
+        chosen_line_materialcode = otherOutgoingBodyBean.getMaterialcode();
+        chosen_line_nnum = otherOutgoingBodyBean.getNnum();
+        chosen_line_uploadnum = otherOutgoingBodyBean.getUploadnum();
+        chosen_line_vcooporderbcode_b = otherOutgoingBodyBean.getVcooporderbcode_b();
+        scannum=otherOutgoingBodyBean.getScannum();
+    }
+
     public boolean isAlreadyUpload() {
         Cursor cursor=null;
         switch (type){
@@ -314,27 +358,31 @@ public class OtherEntryDetail extends AppCompatActivity {
         for (int i = 0; i <listAllBodyPostition.size() ; i++) {
 
             if(!listAllBodyPostition.get(i).getScannum().equals("0")){
+                ContentValues contentValues=new ContentValues();
+                contentValues.put("nnum",listAllBodyPostition.get(i).getScannum());
+                if(Math.abs(Integer.parseInt(listAllBodyPostition.get(i).getUploadnum()))==Integer.parseInt(listAllBodyPostition.get(i).getScannum())) {
 
-                if(listAllBodyPostition.get(i).getNnum()==Integer.parseInt(listAllBodyPostition.get(i).getScannum())) {
-                    ContentValues contentValues=new ContentValues();
                     contentValues.put("uploadflag","Y");
-                    contentValues.put("uploadnum",listAllBodyPostition.get(i).getScannum());
-                    switch (type){
-                        case 1:
-                            db4.update("OtherEntryBody",contentValues,"pobillcode=? and vcooporderbcode_b=?",
-                                    new String[]{current_pobillcodeRecv, listAllBodyPostition.get(i).getVcooporderbcode_b()});
-                            break;
-                        case 2:
 
-                            db4.update("OtherOutgoingBody",contentValues,"pobillcode=? and vcooporderbcode_b=?",
-                                    new String[]{current_pobillcodeRecv, listAllBodyPostition.get(i).getVcooporderbcode_b()});
-                            break;
-                    }
 
-                    db4.execSQL("update SaleDeliveryScanResult set itemuploadflag=? where vbillcode=? and vcooporderbcode_b=?",
-                            new String[]{"Y", current_pobillcodeRecv, listAllBodyPostition.get(i).getVcooporderbcode_b()});
-
+                }else {
+                    contentValues.put("uploadflag","PY");
                 }
+                switch (type){
+                    case 1:
+                        db4.update("OtherEntryBody",contentValues,"pobillcode=? and vcooporderbcode_b=?",
+                                new String[]{current_pobillcodeRecv, listAllBodyPostition.get(i).getVcooporderbcode_b()});
+                        break;
+                    case 2:
+
+                        db4.update("OtherOutgoingBody",contentValues,"pobillcode=? and vcooporderbcode_b=?",
+                                new String[]{current_pobillcodeRecv, listAllBodyPostition.get(i).getVcooporderbcode_b()});
+                        break;
+                }
+
+                db4.execSQL("update SaleDeliveryScanResult set itemuploadflag=? where vbillcode=? and vcooporderbcode_b=?",
+                        new String[]{"Y", current_pobillcodeRecv, listAllBodyPostition.get(i).getVcooporderbcode_b()});
+
             }
         }
 
@@ -344,8 +392,11 @@ public class OtherEntryDetail extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        otherEntryScanButton.setEnabled(false);
-        uploadallOtherentryButton.setEnabled(false);
+        listAllBodyPostition = QueryOtherEntryBody(current_pobillcodeRecv);
+        adapter = new OtherEntryBodyTableAdapter(OtherEntryDetail.this, listAllBodyPostition, mListener);
+        tableBodyListView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+        select(0);
     }
 
     public ArrayList<OtherBodyBean> QueryOtherEntryBody(String current_pobillcodeRecv) {
@@ -380,16 +431,6 @@ public class OtherEntryDetail extends AppCompatActivity {
         return list;
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        otherEntryScanButton.setEnabled(false);
-        listAllBodyPostition = QueryOtherEntryBody(current_pobillcodeRecv);
-        adapter = new OtherEntryBodyTableAdapter(OtherEntryDetail.this, listAllBodyPostition, mListener);
-        tableBodyListView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
-
-    }
 
     private String uploadOutgingPobill(String workcode) throws IOException, XmlPullParserException {
         String WSDL_URI;
@@ -535,6 +576,7 @@ public class OtherEntryDetail extends AppCompatActivity {
             intent.putExtra("current_nnum_qr", String.valueOf(listAllBodyPostition.get(position).getNnum()));
             intent.putExtra("current_uploadnum_qr", listAllBodyPostition.get(position).getUploadnum());
             intent.putExtra("current_vcooporderbcode_b_qr", listAllBodyPostition.get(position).getVcooporderbcode_b());
+            intent.putExtra("flag",getIntent().getStringExtra("flag"));
             startActivity(intent);
         }
     };

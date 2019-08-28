@@ -11,10 +11,12 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,6 +32,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.Url.iUrl;
+import com.example.shanggmiqr.adapter.SaleDeliveryAdapter;
+import com.example.shanggmiqr.bean.SaleDeliveryBean;
 import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.PurchaseArrivalAdapter;
@@ -41,7 +46,11 @@ import com.google.gson.Gson;
 import com.zyao89.view.zloading.ZLoadingDialog;
 import com.zyao89.view.zloading.Z_TYPE;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -66,7 +75,9 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
     private List<String> uploadflag;
     private TextView lst_downLoad_ts;
     private TextView time;
-
+    private Button buttonCheck;
+    private Button buttonExport;
+    private Button buttonShowall;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,8 +89,10 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
         if (actionBar != null) {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle(getIntent().getStringExtra("title"));
         }
         lst_downLoad_ts = (TextView)findViewById(R.id.last_downLoad_ts_purchase_arrival);
+
         //显示最后一次的下载时间
         SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestPurchaseArrivalTSInfo", 0);
         String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "2018-09-01 00:00:01");
@@ -89,11 +102,16 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
         dialog = new ZLoadingDialog(PurchaseArrival.this);
         downloadDeliveryButton = (Button) findViewById(R.id.download_purchase_arrival);
         downloadDeliveryButton.setOnClickListener(this);
+
         querySaleDeliveryButton = (Button) findViewById(R.id.query_purchase_arrival);
         querySaleDeliveryButton.setOnClickListener(this);
         displayallSaleDeliveryButton = (Button) findViewById(R.id.displayall_purchase_arrival);
         //displayallSaleDeliveryButton.setVisibility(View.INVISIBLE);
         displayallSaleDeliveryButton.setOnClickListener(this);
+        buttonCheck=findViewById(R.id.query_purchase_arrival);
+        buttonCheck.setOnClickListener(this);
+        buttonExport=findViewById(R.id.b_export);
+        buttonExport.setOnClickListener(this);
 
         tableListView = (ListView) findViewById(R.id.list_purchase_arrival);
         List<PurchaseArrivalBean> list = querySaleDelivery();
@@ -132,7 +150,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
 
                             }
                         });
-                        Toast.makeText(PurchaseArrival.this, "采购到货单下载完成", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x18:
                         String s = msg.getData().getString("uploadResp");
@@ -156,11 +174,9 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
     }
 
     @Override
-    public void onResume()
-    {
-        super.onResume();
-        //返回之后重新下载
-        //downloadDeliveryButton.performClick();
+    protected void onStart() {
+        super.onStart();
+       saleDeliveryHandler.sendEmptyMessage(0x11);
     }
 
     @Override
@@ -194,9 +210,9 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                                         dialog.dismiss();
                                         return;
                                     }
-                                    DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),PurchaseArrival.this);
+
                                     Gson gson7 = new Gson();
-                                    PurchaseArrivalQuery saleDeliveryQuery = gson7.fromJson(saleDeliveryData, PurchaseArrivalQuery.class);
+                                    final PurchaseArrivalQuery saleDeliveryQuery = gson7.fromJson(saleDeliveryData, PurchaseArrivalQuery.class);
 
                                     int pagetotal = Integer.parseInt(saleDeliveryQuery.getPagetotal());
                                     if (pagetotal == 1) {
@@ -209,7 +225,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                                             @Override
                                             public void run() {
                                                 dialog.dismiss();
-                                                Toast.makeText(PurchaseArrival.this, "采购到货单已经是最新", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(PurchaseArrival.this, saleDeliveryQuery.getErrmsg(), Toast.LENGTH_LONG).show();
                                             }
                                         });
                                     } else {
@@ -228,6 +244,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
+                                            DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),PurchaseArrival.this);
                                             SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestPurchaseArrivalTSInfo", 0);
                                             String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "2018-09-01 00:00:01");
                                             lst_downLoad_ts.setText("最后一次下载:"+begintime);
@@ -259,10 +276,10 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                     }
                 }).start();
                 break;
-            case R.id.query_sale_delivery:
+            case R.id.query_purchase_arrival:
                 popupQuery();
                 break;
-            case R.id.displayall_sale_delivery:
+            case R.id.displayall_purchase_arrival:
                 List<PurchaseArrivalBean> list = displayAllSaleDelivery();
                 listAllPostition = list;
                 final PurchaseArrivalAdapter adapter = new PurchaseArrivalAdapter(PurchaseArrival.this, list, mListener);
@@ -275,6 +292,9 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
 
                     }
                 });
+                break;
+            case R.id.b_export:
+                exportData(exportList);
                 break;
         }
     }
@@ -376,22 +396,15 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
         values.clear();
     }
 
-    private boolean isVbillcodeExist(String vbillcode) {
-        Cursor cursor2 = db3.rawQuery("select vbillcode from PurchaseArrival where vbillcode=?", new String[]{vbillcode});
-        if (cursor2 != null && cursor2.getCount() > 0) {
-            //判断cursor中是否存在数据
-            cursor2.close();
-            return true;
-        }else {
-            return false;
-        }
-    }
+
 
 
 
 
 
     private void popupQuery() {
+        List<String> listWarehouse;
+
         LayoutInflater layoutInflater = LayoutInflater.from(PurchaseArrival.this);
         View textEntryView = layoutInflater.inflate(R.layout.query_outgoing_dialog, null);
         final EditText codeNumEditText = (EditText) textEntryView.findViewById(R.id.codenum);
@@ -399,30 +412,27 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
         final Spinner flag_spinner = (Spinner) textEntryView.findViewById(R.id.upload_flag_spinner);
         final Button showdailogTwo = (Button)  textEntryView.findViewById(R.id.showdailogTwo);
         time = (TextView)  textEntryView.findViewById(R.id.timeshow_saledelivery);
-        SharedPreferences currentTimePeriod= getSharedPreferences("query_purchasearrival", 0);
-        final String tempperiod =currentTimePeriod.getString("current_account","2018-09-01 至 2018-12-17");
+
+        String tempperiod =DataHelper.getQueryTime(PurchaseArrival.this,getIntent().getIntExtra("type",-1));
         showdailogTwo.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 showDialogTwo();
             }
         });
-        test = queryWarehouseInfo();
-        test.add("");
-        uploadflag = new ArrayList();
-        uploadflag.add("是");
-        uploadflag.add("部分上传");
-        uploadflag.add("否");
-        final ArrayAdapter adapter = new ArrayAdapter(
-                PurchaseArrival.this, android.R.layout.simple_spinner_item, test);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-        spinner.setSelection(test.size() - 1, true);
-        query_cwarename =adapter.getItem(test.size() - 1).toString();
+
+        //仓库选择
+        listWarehouse = DataHelper.queryWarehouseInfo(db3);
+        listWarehouse.add("");
+        final ArrayAdapter arrayAdapter = new ArrayAdapter(
+                PurchaseArrival.this, android.R.layout.simple_spinner_item, listWarehouse);
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(arrayAdapter);
+        spinner.setSelection(listWarehouse.size()-1);
         spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                query_cwarename=adapter.getItem(i).toString();
+                query_cwarename=arrayAdapter.getItem(i).toString();
             }
 
             @Override
@@ -430,34 +440,45 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
 
             }
         });
+
+
+        //订单选择
+        uploadflag = new ArrayList();
+        uploadflag.add("否");
+        uploadflag.add("部分上传");
+        uploadflag.add("是");
+        uploadflag.add("全部");
         final ArrayAdapter adapter2 = new ArrayAdapter(
                 PurchaseArrival.this, android.R.layout.simple_spinner_item, uploadflag);
         adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         flag_spinner.setAdapter(adapter2);
-        flag_spinner.setSelection(uploadflag.size() - 1, true);
-        if ("是".equals(adapter2.getItem(uploadflag.size() - 1).toString())){
-            query_uploadflag = "Y";
-        } else if ("否".equals(adapter2.getItem(uploadflag.size() - 1).toString())){
-            query_uploadflag = "N";
-        } else {
-            query_uploadflag = "PY";
-        }
-        flag_spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
+
+        flag_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-               if ("是".equals(adapter2.getItem(i).toString())){
-                   query_uploadflag = "Y";
-               } else if ("否".equals(adapter2.getItem(i).toString())){
-                   query_uploadflag = "N";
-               } else {
-                   query_uploadflag = "PY";
-               }
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                switch (position){
+                    case 0:
+                        query_uploadflag = "N";
+                        break;
+                    case 1:
+                        query_uploadflag = "PY";
+                        break;
+                    case 2:
+                        query_uploadflag = "Y";
+                        break;
+                    case 3:
+                        query_uploadflag = "ALL";
+                        break;
+
+                }
             }
+
             @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
+            public void onNothingSelected(AdapterView<?> parent) {
 
             }
         });
+
         AlertDialog.Builder ad1 = new AlertDialog.Builder(PurchaseArrival.this);
         ad1.setTitle("出入查询条件:");
         ad1.setView(textEntryView);
@@ -465,24 +486,13 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
         ad1.setPositiveButton("查询", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int i) {
                 String temp=codeNumEditText.getText().toString();
-                if(query_cwarename == null){
-                    query_cwarename = adapter.getItem(test.size() - 1).toString();
-                }
-                if(query_uploadflag == null){
-                    query_uploadflag = "N";
-                }
-                ArrayList<PurchaseArrivalBean> bean1 = query(temp,query_cwarename,query_uploadflag);
-                listAllPostition = bean1;
-                final PurchaseArrivalAdapter adapter3 = new PurchaseArrivalAdapter(PurchaseArrival.this, bean1, mListener);
-                tableListView.setAdapter(adapter3);
-                tableListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        adapter3.select(position);
-                        PurchaseArrivalBean saleDelivery1Bean = (PurchaseArrivalBean) adapter3.getItem(position);
+                exportList= queryexport(temp,query_cwarename,query_uploadflag);
+                listAllPostition=new ArrayList<>();
+                listAllPostition=removeDuplicate(exportList);
+               PurchaseArrivalAdapter adapter = new PurchaseArrivalAdapter(PurchaseArrival.this, listAllPostition, mListener);
+                tableListView.setAdapter(adapter);
 
-                    }
-                });
+
 
             }
         });
@@ -492,8 +502,76 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
             }
         });
         ad1.show();// 显示对话框
-        time.setText(tempperiod);
+
     }
+
+    List<PurchaseArrivalBean> exportList;
+    private    List<PurchaseArrivalBean>  removeDuplicate(List<PurchaseArrivalBean> list)  {
+        List<PurchaseArrivalBean>  beanList=new ArrayList<>();
+        beanList.addAll(list);
+
+        for  ( int  i  =   0 ; i  <  beanList.size()  -   1 ; i ++ )  {
+
+            for  ( int  j  =  beanList.size()  -   1 ; j  >  i; j -- )  {
+
+                if  (beanList.get(j).getVbillcode().equals(beanList.get(i).getVbillcode()))  {
+                    beanList.remove(j);
+                }
+            }
+        }
+        return beanList;
+    }
+    private ArrayList<PurchaseArrivalBean> queryexport(String vbillcode,String current_cwarename,String query_uploadflag) {
+        ArrayList<PurchaseArrivalBean> list = new ArrayList<>();
+        SharedPreferences currentTimePeriod= getSharedPreferences("query_purchasearrival", 0);
+        String start_temp = currentTimePeriod.getString("starttime", iUrl.begintime);
+        String end_temp = currentTimePeriod.getString("endtime", Utils.getDefaultEndTime());
+        Cursor cursor=null;
+        if(query_uploadflag.equals("ALL")){
+            cursor = db3.rawQuery("select PurchaseArrival.vbillcode, PurchaseArrival.dbilldate,PurchaseArrivalbody.materialcode,PurchaseArrival.dr," +
+                    "PurchaseArrivalbody.materialname,PurchaseArrivalbody.maccode,PurchaseArrivalbody.nnum,saledeliveryscanresult.prodcutcode," +
+                    "saledeliveryscanresult.xlh" + " from PurchaseArrival inner join PurchaseArrivalbody on PurchaseArrival.vbillcode=PurchaseArrivalbody.vbillcode " +
+                    "left join saledeliveryscanresult on PurchaseArrivalbody.vbillcode=saledeliveryscanresult.vbillcode " +
+                    "and PurchaseArrivalbody.itempk=saledeliveryscanresult.vcooporderbcode_b where PurchaseArrival.vbillcode" +
+                    " like '%" + vbillcode + "%' and PurchaseArrivalbody.warehouse"+ " like '%" + current_cwarename + "%' order by dbilldate desc", null);
+
+        }else {
+            cursor = db3.rawQuery("select PurchaseArrival.vbillcode, PurchaseArrival.dbilldate,PurchaseArrivalbody.materialcode,PurchaseArrival.dr," +
+                    "PurchaseArrivalbody.materialname,PurchaseArrivalbody.maccode,PurchaseArrivalbody.nnum,saledeliveryscanresult.prodcutcode," +
+                    "saledeliveryscanresult.xlh" + " from PurchaseArrival inner join PurchaseArrivalbody on PurchaseArrival.vbillcode=PurchaseArrivalbody.vbillcode " +
+                    "left join saledeliveryscanresult on PurchaseArrivalbody.vbillcode=saledeliveryscanresult.vbillcode " +
+                    "and PurchaseArrivalbody.itempk=saledeliveryscanresult.vcooporderbcode_b where PurchaseArrivalbody.uploadflag=? and PurchaseArrival.vbillcode" +
+                    " like '%" + vbillcode + "%' and PurchaseArrivalbody.warehouse"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
+
+        }
+
+
+        //判断cursor中是否存在数据
+        while (cursor.moveToNext()) {
+
+            PurchaseArrivalBean bean = new PurchaseArrivalBean();
+
+            bean.vbillcode = cursor.getString(cursor.getColumnIndex("vbillcode"));
+            bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
+            bean.setMaterialcode(cursor.getString(cursor.getColumnIndex("materialcode")));
+            bean.setMaterialname(cursor.getString(cursor.getColumnIndex("materialname")));
+            bean.setMaccode(cursor.getString(cursor.getColumnIndex("maccode")));
+            bean.setNnum(cursor.getString(cursor.getColumnIndex("nnum")));
+            bean.setProdcutcode(cursor.getString(cursor.getColumnIndex("prodcutcode")));
+            bean.setXlh(cursor.getString(cursor.getColumnIndex("xlh")));
+            bean.dr= cursor.getInt(cursor.getColumnIndex("dr"));
+
+
+            if (DataHelper.queryTimePeriod(bean.vbillcode,start_temp,end_temp,getIntent().getIntExtra("type",-1),db3)) {
+                list.add(bean);
+            }
+
+        }
+        cursor.close();
+
+        return list;
+    }
+
     private void showDialogTwo() {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_date, null);
         final DatePicker startTime = (DatePicker) view.findViewById(R.id.st);
@@ -548,68 +626,10 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
         startTime.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
         endTime.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
     }
-    private List<String> queryWarehouseInfo() {
-        List<String> cars = new ArrayList<>();
-        Cursor cursornew = db3.rawQuery("select name from Warehouse",
-                null);
-        if (cursornew != null && cursornew.getCount() > 0) {
-            while (cursornew.moveToNext()) {
-                String name = cursornew.getString(cursornew.getColumnIndex("name"));
-                cars.add(name);
-            }
-            cursornew.close();
-        }
-        return cars;
-    }
-    public ArrayList<PurchaseArrivalBean> query(String vbillcode,String current_cwarename,String query_uploadflag) {
-        ArrayList<PurchaseArrivalBean> list = new ArrayList<PurchaseArrivalBean>();
-        SharedPreferences currentTimePeriod= getSharedPreferences("query_purchasearrival", 0);
-        String start_temp = currentTimePeriod.getString("starttime","2018-09-01 00:00:01");
-        String end_temp = currentTimePeriod.getString("endtime", Utils.getDefaultEndTime());
-        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr from PurchaseArrival where flag=? and vbillcode like '%" + vbillcode + "%' order by dbilldate desc", new String[]{query_uploadflag});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-                PurchaseArrivalBean bean = new PurchaseArrivalBean();
-                bean.vbillcode = cursor.getString(cursor.getColumnIndex("vbillcode"));
-                bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
-                bean.dr= cursor.getInt(cursor.getColumnIndex("dr"));
-                if(queryCwarename(current_cwarename, bean.vbillcode)){
-                    if (queryTimePeriod(bean.vbillcode,start_temp,end_temp)) {
-                        list.add(bean);
-                    }
-                }
-            }
-            cursor.close();
-        }
-        return list;
-    }
 
-    private boolean queryTimePeriod(String vbillcode,String startTime,String endTime) {
-        Cursor cursor = db3.rawQuery("SELECT * FROM PurchaseArrival WHERE vbillcode =? and " +
-                "dbilldate>=? and dbilldate<?",
-        new String[] {vbillcode, startTime, endTime});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            cursor.close();
-            return true;
-        }else{
-            return false;
-        }
-    }
 
-    private boolean queryCwarename(String current_cwarename,String vbillcode) {
 
-        Cursor cursor = db3.rawQuery("select vbillcode from PurchaseArrivalBody where vbillcode =? and warehouse like '%" + current_cwarename + "%'  ", new String[]{vbillcode});
-        if (cursor != null && cursor.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor.moveToNext()) {
-            }
-            cursor.close();
-            return true;
-        }
-        return false;
-    }
+
 
 
 
@@ -629,7 +649,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
         ArrayList<PurchaseArrivalBean> list = new ArrayList<PurchaseArrivalBean>();
         List<String> list_update = new ArrayList<String>();
 
-        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr from PurchaseArrival where flag=? order by dbilldate desc", new String[]{"N"});
+        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr,flag from PurchaseArrival where flag=? order by dbilldate desc", new String[]{"N"});
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
@@ -637,6 +657,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                 bean.vbillcode = cursor.getString(cursor.getColumnIndex("vbillcode"));
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
+                bean.setFlag(cursor.getString(cursor.getColumnIndex("flag")));
                 list.add(bean);
 
             }
@@ -648,7 +669,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
     }
     public ArrayList<PurchaseArrivalBean> displayAllSaleDelivery() {
         ArrayList<PurchaseArrivalBean> list = new ArrayList<PurchaseArrivalBean>();
-        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr from PurchaseArrival order by dbilldate desc", null);
+        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr,flag from PurchaseArrival order by dbilldate desc", null);
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
@@ -656,11 +677,48 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                 bean.vbillcode = cursor.getString(cursor.getColumnIndex("vbillcode"));
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
+                bean.setFlag(cursor.getString(cursor.getColumnIndex("flag")));
+
                 list.add(bean);
             }
             cursor.close();
         }
         return list;
+    }
+    private void exportData( List<PurchaseArrivalBean> exportList) {
+        Log.i("exportList",new Gson().toJson(exportList));
+        String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+        SimpleDateFormat formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
+        File file=new File(sdCardDir+"/sunmi");
+        if(!file.exists()){
+            file.mkdir();
+        }
+        Date curDate =  new Date(System.currentTimeMillis());
+        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        Toast.makeText(PurchaseArrival.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
+        FileOutputStream outputStream=null;
+        try {
+            outputStream=new FileOutputStream(file);
+            outputStream.write(("发货单号"+"\t"+ "单据日期"+"\t"+"物料编码"+"\t"+"物料名称"+"\t"+
+                    "物料大类"+"\t"+"序列号"+"\t"+"条形码"+"\t").getBytes());
+            for (int j = 0; j <exportList.size() ; j++) {
+                if(exportList.get(j).getXlh()!=null ) {
+                    outputStream.write("\r\n".getBytes());
+                    outputStream.write((exportList.get(j).getVbillcode()+"\t"
+                            +exportList.get(j).getDbilldate()+"\t"
+                            +exportList.get(j).getMaterialcode()+"\t"
+                            +exportList.get(j).getMaterialname()+"\t"
+                            +exportList.get(j).getMaccode()+"\t"
+                            +exportList.get(j).getXlh()+"\t"
+                            +exportList.get(j).getProdcutcode()).getBytes());
+                }
+
+            }
+            outputStream.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

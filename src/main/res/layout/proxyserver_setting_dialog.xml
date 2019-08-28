@@ -40,5 +40,22 @@
         android:layout_marginTop="10dip"
         android:layout_marginLeft="20dip"
         android:layout_marginRight="20dip"/>
+    <TextView
+        android:id="@+id/tv_begintime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="数据开始时间"
+        android:layout_marginTop="20dip"
+        android:layout_marginLeft="20dip"
+        android:layout_marginRight="20dip"/>
+
+    <EditText
+        android:inputType="number"
+        android:id="@+id/et_begintime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dip"
+        android:layout_marginLeft="20dip"
+        android:layout_marginRight="20dip"/>
 
 </LinearLayout>
