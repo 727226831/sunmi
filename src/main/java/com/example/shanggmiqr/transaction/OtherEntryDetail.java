@@ -248,9 +248,9 @@ public class OtherEntryDetail extends AppCompatActivity {
                         adapter = new OtherEntryBodyTableAdapter(OtherEntryDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
-                        if(checkAllupdate()){
+                        checkAllupdate();
                             finish();
-                        }
+
 
 
                         break;
@@ -294,16 +294,17 @@ public class OtherEntryDetail extends AppCompatActivity {
                 isPY=true;
             }
         }
+
         if(isY && isPY==false){
-            otherEntryScanButton.setEnabled(false);
-            uploadallOtherentryButton.setEnabled(false);
             flag="Y";
-        }else if(isPY){
             otherEntryScanButton.setEnabled(false);
             uploadallOtherentryButton.setEnabled(false);
-            flag="PY";
-        }else {
+        }else if(isPY==false && isY==false){
             flag="N";
+        }else {
+            flag="PY";
+            otherEntryScanButton.setEnabled(false);
+            uploadallOtherentryButton.setEnabled(false);
         }
 
 
@@ -531,7 +532,6 @@ public class OtherEntryDetail extends AppCompatActivity {
                 public void run() {
                     dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
                             .setLoadingColor(Color.BLUE)//颜色
-                            .setHintText("等待服务器返回数据...")
                             .setCancelable(false)
                             .setCanceledOnTouchOutside(false)
                             .setHintTextSize(16) // 设置字体大小 dp

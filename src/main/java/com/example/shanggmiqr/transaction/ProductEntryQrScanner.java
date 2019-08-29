@@ -49,7 +49,6 @@ public class ProductEntryQrScanner extends AppCompatActivity {
 
     private String current_vbillcode_qrRecv;
 
-    private int current_qrcode_rule_length = 13;
 
 
     private EditText plateCodeEditText;

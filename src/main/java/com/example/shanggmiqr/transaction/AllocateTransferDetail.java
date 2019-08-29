@@ -279,9 +279,9 @@ public class AllocateTransferDetail extends AppCompatActivity {
                         tableBodyListView.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
 
-                        if (isAllItemUpload()) {
-                            finish();
-                        }
+                       isAllItemUpload();
+                       finish();
+
 
                         break;
                     case 0x16:
@@ -334,7 +334,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
 
                             String uploadResp = uploadSaleDeliveryVBill("R43", list);
                             if (!(null == uploadResp)) {
-                                if (!(null == lisitemtall)) {
+
                                     Gson gson = new Gson();
                                     SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
                                     Gson gson2 = new Gson();
@@ -362,7 +362,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                                     }
                                     msg.setData(bundle);
                                     allocateTransferDetailHandler.sendMessage(msg);
-                                }
+
                             } else {
                                 Message msg = new Message();
                                 msg.what = 0x18;
@@ -476,19 +476,22 @@ public class AllocateTransferDetail extends AppCompatActivity {
     }
 
     private boolean isAllItemUpload() {
-        int count=0;
+        Boolean isY=false;
+        Boolean isPY=false;
+        String flag="";
         for (int i = 0; i <listAllBodyPostition.size() ; i++) {
             if(listAllBodyPostition.get(i).getUploadflag().equals("Y")){
-                count++;
+                isY=true;
+            }else if(listAllBodyPostition.get(i).getUploadflag().equals("PY")){
+                isPY=true;
             }
         }
-        String flag="";
-        if(count==0){
-            flag="N";
-        }else if(count!=listAllBodyPostition.size()){
-            flag="PY";
-        }else {
+        if(isY && isPY==false){
             flag="Y";
+        }else if(isPY==false && isY==false){
+            flag="N";
+        }else {
+            flag="PY";
         }
 
         db4.execSQL("update AllocateTransfer set flag=? where billno=?", new String[]{flag, current_sale_delivery_vbillcodeRecv});

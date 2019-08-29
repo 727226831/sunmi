@@ -118,12 +118,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         displayallSaleDeliveryButton.setOnClickListener(this);
 
         tableListView = (ListView) findViewById(R.id.list_sale_delivery);
-        saleDeliveryBeanList = querySaleDelivery();
-        Log.i("saleDeliveryBeanList-->",saleDeliveryBeanList.size()+"");
 
-
-       adapter = new SaleDeliveryAdapter(SaleDelivery.this, saleDeliveryBeanList, mListener);
-        tableListView.setAdapter(adapter);
         tableListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -168,12 +163,15 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         }
     }
 
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-        //返回之后重新下载
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        saleDeliveryBeanList = querySaleDelivery();
+        adapter = new SaleDeliveryAdapter(SaleDelivery.this,saleDeliveryBeanList, mListener);
+        tableListView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -672,7 +670,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                      "saledeliverybody.matrname,saledeliverybody.maccode,saledeliverybody.nnum, saledeliveryscanresult.prodcutcode," +
                      "saledeliveryscanresult.xlh" + " from saledelivery inner join saledeliverybody on saledelivery.vbillcode=saledeliverybody.vbillcode " +
                      "left join saledeliveryscanresult on saledeliverybody.vbillcode=saledeliveryscanresult.vbillcode " +
-                     "and saledeliverybody.vcooporderbcode_b=saledeliveryscanresult.vcooporderbcode_b where saledeliverybody.uploadflag=? and saledelivery.vbillcode" +
+                     "and saledeliverybody.vcooporderbcode_b=saledeliveryscanresult.vcooporderbcode_b where saledelivery.flag=? and saledelivery.vbillcode" +
                      " like '%" + vbillcode + "%' and saledeliverybody.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
 
          }
@@ -713,7 +711,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         ArrayList<SaleDeliveryBean> list = new ArrayList<SaleDeliveryBean>();
 
 
-        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr from SaleDelivery where flag=? and type=? order by dbilldate desc",
+        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr,flag from SaleDelivery where flag=? and type=? order by dbilldate desc",
                 new String[]{"N",getIntent().getIntExtra("type",-1)+""});
 
 
@@ -732,7 +730,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     }
     public ArrayList<SaleDeliveryBean> displayAllSaleDelivery() {
         ArrayList<SaleDeliveryBean> list = new ArrayList<SaleDeliveryBean>();
-        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr from SaleDelivery order by dbilldate desc", null);
+        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr,flag from SaleDelivery order by dbilldate desc", null);
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
@@ -741,6 +739,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
                 list.add(bean);
+
             }
             cursor.close();
         }

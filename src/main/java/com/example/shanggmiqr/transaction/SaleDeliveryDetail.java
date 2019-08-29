@@ -24,7 +24,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.shanggmiqr.bean.LogisticsBean;
 import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.SaleDeliveryBodyTableAdapter;
@@ -115,7 +114,6 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         zLoadingDialog= new ZLoadingDialog(SaleDeliveryDetail.this);
         zLoadingDialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
                 .setLoadingColor(Color.BLUE)//颜色
-                .setHintText("正在连接...")
                 .setCancelable(false)
                 .setCanceledOnTouchOutside(false)
                 .setHintTextSize(16) // 设置字体大小 dp
@@ -242,41 +240,13 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                 super.handleMessage(msg);
                 switch (msg.what) {
 
-                    case 0x11:
-                       zLoadingDialog.dismiss();
-                        expressCodeEditText.setText("");
-                        spinner.setSelection(logisticscompanies.size() - 1, true);
-                        String s = msg.getData().getString("uploadResp");
-                        Toast.makeText(SaleDeliveryDetail.this, s, Toast.LENGTH_LONG).show();
-                        updateUploadFlag();
-                        listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
-                        adapter = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
-                        tableBodyListView.setAdapter(adapter);
-                        adapter.notifyDataSetChanged();
-
-                        if (isAllItemUpload()) {
-                            finish();
-                        }
-
-                        break;
-
                     case 0x15:
                         zLoadingDialog.dismiss();
-                        expressCodeEditText.setText("");
-                        spinner.setSelection(logisticscompanies.size() - 1, true);
-                        String s2 = msg.getData().getString("uploadResp");
-                        Toast.makeText(SaleDeliveryDetail.this, s2, Toast.LENGTH_LONG).show();
+                        Toast.makeText(SaleDeliveryDetail.this,msg.getData().getString("uploadResp"), Toast.LENGTH_LONG).show();
                         updateAllUploadFlag();
-                        if (isAllItemUpload()) {
-
-                            finish();
-                        }
                         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
-
-                        adapter= new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
-                        tableBodyListView.setAdapter(adapter);
-                        adapter.notifyDataSetChanged();
-
+                        setAllItemUpload();
+                        finish();
                         break;
 
 
@@ -315,11 +285,6 @@ public class SaleDeliveryDetail extends AppCompatActivity {
 
         zLoadingDialog.show();
 
-//        LogisticsBean logisticsBean=new LogisticsBean();
-//        logisticsBean.setBillcode(current_sale_delivery_vbillcodeRecv);
-//        logisticsBean.setCode(expressCode);
-//        logisticsBean.setName(chooseLogisticscompany);
-//        DataHelper.insertLogistics(db4,logisticsBean);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -341,16 +306,16 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                             String uploadResp = DataHelper.uploadSaleDeliveryVBill(workcode, db4,current_sale_delivery_vbillcodeRecv,itempk,
                                     SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
                             zLoadingDialog.dismiss();
-                            if (!(null == uploadResp)) {
+                            if (null != uploadResp) {
 
                                     SalesRespBean respBean = new Gson().fromJson(uploadResp, SalesRespBean.class);
                                     SalesRespBeanValue respBeanValue =new Gson().fromJson(respBean.getValue(), SalesRespBeanValue.class);
+
                                     Bundle bundle = new Bundle();
                                     bundle.putString("uploadResp", respBeanValue.getErrmsg());
                                     Message msg = new Message();
                                     if (respBeanValue.getErrno().equals("0")) {
                                         //19弹出erromsg
-
                                         msg.what = 0x15;
                                     } else {
                                         //19弹出erromsg
@@ -438,28 +403,28 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         return cars;
     }
 
-    private boolean isAllItemUpload() {
-        int count=0;
+    private void setAllItemUpload() {
+        Boolean isY=false;
+        Boolean isPY=false;
+        String flag="";
         for (int i = 0; i <listAllBodyPostition.size() ; i++) {
             if(listAllBodyPostition.get(i).getUploadflag().equals("Y")){
-                count++;
+                isY=true;
+            }else if(listAllBodyPostition.get(i).getUploadflag().equals("PY")){
+                isPY=true;
             }
         }
-        String flag="";
-        if(count==0){
-            flag="N";
-        }else if(count!=listAllBodyPostition.size()){
-            flag="PY";
-        }else {
+        if(isY && isPY==false){
             flag="Y";
+        }else if(isPY==false && isY==false){
+            flag="N";
+        }else {
+            flag="PY";
         }
 
+        Log.i("flag-->",flag);
         db4.execSQL("update SaleDelivery set flag=? where vbillcode=?", new String[]{flag, current_sale_delivery_vbillcodeRecv});
-        if(flag.equals("Y")){
-            return true;
-        }else {
-            return  false;
-        }
+
     }
     SaleDeliveryBodyTableAdapter adapter;
     @Override
@@ -587,24 +552,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         return false;
     }
 
-    private void updateUploadFlag() {
-        Cursor cursor31 = db4.rawQuery("select prodcutcode,itemuploadflag from SaleDeliveryScanResult where vbillcode=? and vcooporderbcode_b=? and itemuploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, "Y"});
-        Cursor cursor32 = db4.rawQuery("select nnum from SaleDeliveryBody where vbillcode=? and vcooporderbcode_b=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b});
-        if (cursor31 != null && cursor31.getCount() > 0 && cursor32 != null && cursor32.getCount() > 0) {
-            while (cursor32.moveToNext()) {
-                String nnum = cursor32.getString(cursor32.getColumnIndex("nnum"));
-                if (cursor31.getCount() == Math.abs(Integer.parseInt(nnum))) {
-                    db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=? ", new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b});
-                } else if (cursor31.getCount() < Math.abs(Integer.parseInt(nnum))) {
-                    db4.execSQL("update SaleDeliveryBody set uploadflag=? where vbillcode=? and vcooporderbcode_b=? ", new String[]{"PY", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b});
-                }
-                cursor31.close();
-                cursor32.close();
-            }
-        }
-    }
+
 
     private void updateAllUploadFlag() {
         for (int i = 0; i <listAllBodyPostition.size() ; i++) {
@@ -631,13 +579,6 @@ public class SaleDeliveryDetail extends AppCompatActivity {
 
 
 
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-
-        saleDeliveryDetailHandler.sendEmptyMessage(0x22);
-
-    }
 
 
     public ArrayList<SaleDeliveryBodyBean> QuerySaleDeliveryBody(String current_sale_delivery_vbillcodeRecv) {
@@ -660,11 +601,10 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                 bean.Customer = cursor.getString(cursor.getColumnIndex("customer"));
                 bean.uploadflag = cursor.getString(cursor.getColumnIndex("uploadflag"));
                 list.add(bean);
-                Log.i("select-->",bean.getVcooporderbcode_b()+"/"+bean.uploadflag);
+
             }
             cursor.close();
 
-        Log.i("querySaleDeliveryBody",new Gson().toJson(listAllBodyPostition));
         return list;
     }
 

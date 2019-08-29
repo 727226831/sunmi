@@ -204,7 +204,6 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
                                         public void run() {
                                             dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
                                                     .setLoadingColor(Color.BLUE)//颜色
-                                                    .setHintText("Loading...")
                                                     .setCancelable(false)
                                                     .setCanceledOnTouchOutside(false)
                                                     .setHintTextSize(16) // 设置字体大小 dp

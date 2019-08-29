@@ -57,11 +57,10 @@ public class Utils {
         return false;
     }
     public static String getDefaultEndTime() {
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH)+1;
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        return String.valueOf(year)+"-"+String.valueOf(month)+"-"+String.valueOf(day)+" "+"23:59:59";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");// HH:mm:ss
+//获取当前时间
+        Date date = new Date(System.currentTimeMillis());
+        return simpleDateFormat.format(date)+" "+"23:59:59";
     }
     public static String getCurrentDate() {
         Calendar calendar = Calendar.getInstance();

@@ -75,7 +75,6 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
     String name="";
     String title="";
     OtherEntryTableAdapter adapter;
-    Boolean isExport=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,24 +84,18 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
          type=getIntent().getIntExtra("type",-1);
         lst_downLoad_ts = (TextView)findViewById(R.id.last_downLoad_ts_otherentry);
         //显示最后一次的下载时间
-       TextView textViewPobillcode=findViewById(R.id.text_id_otherentry);
-       TextView textViewCwarename=findViewById(R.id.text_goods_name_otherentry);
-       TextView textViewCwarecode=findViewById(R.id.text_codeBar_otherentry);
+
         downloadOtherEntryButton = (Button) findViewById(R.id.download_other_entry);
         title=getIntent().getStringExtra("title");
         switch (type){
             case 1:
                 name="LatestOtherEntryTSInfo";
-                textViewPobillcode.setText("入库单号");
-                textViewCwarename.setText("入库仓库名称");
-                textViewCwarecode.setText("入库仓库编号");
+
                 downloadOtherEntryButton.setText("下载其他入库单");
                 break;
             case 2:
                 name="LatestOtherOutgoingTSInfo";
-                textViewPobillcode.setText("出库单号");
-                textViewCwarename.setText("出库仓库名称");
-                textViewCwarecode.setText("出库仓库编号");
+
                 downloadOtherEntryButton.setText("下载其他出库单");
                 break;
         }

@@ -41,47 +41,26 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
     //出库扫描
 
     private String current_itempk_qrRecv;
-    private String current_scannum_qrRecv;
-    private String current_materialcode_qrRecv;
-    private String current_cwarehousecode_qrRecv;
-    private String current_uploadflag_qrRecv;
 
-    private String current_rwarehousecode_qrRecv;
-    private String current_address_qrRecv;
-    private String current_materialclasscode_qrRecv;
+    private String current_materialcode_qrRecv;
 
 
     private int current_nnum_qrRecv;
     private String current_vbillcode_qrRecv;
 
-    private int current_maccode_rule_itemlength;
-    private int current_maccode_rule_startpos;
-    private int current_xlh_rule_itemlength;
-    private int current_xlh_rule_startpos;
-    private int current_qrcode_rule_length = 13;
-    private String current_maccode_substring;
-    private String current_xlh_substring;
-    private String current_material_code;
 
-    private EditText plateCodeEditText;
-    private String plateCodeEditTextContent;
     private EditText boxCodeEditText;
 
     private EditText productCodeEditText;
-    private String productCodeEditTextContent;
+
     private Button scanCheckButton;
     private SQLiteDatabase db5;
     private MyDataBaseHelper helper5;
     private ListView tableBodyListView;
     private int count;//用于合格条码计数
-    private OutgoingScanResultBean outgoingScanResultBean;
     private Handler mHandler = null;
-    private boolean isSuccess = false;
-    private List<String> cars;
-    private String temp_code;
+
     private TextView scannnumText;
-    //用true代表托盘码箱码非空且不需要更新只需要更新产品码的状态，false代表第一次进入此页面或者箱码托盘码有更新
-    private boolean scanStatus = true;
     private String maccode;
 
     @Override
@@ -95,7 +74,7 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
         }
         helper5 = new MyDataBaseHelper(AllocateTransferQrScanner.this, "ShangmiData", null, 1);
         scanCheckButton = (Button) findViewById(R.id.allocatetransfer_ok_scanner);
-        plateCodeEditText = (EditText) findViewById(R.id.allocatetransfer_platecode_scanner);
+
         boxCodeEditText = (EditText) findViewById(R.id.allocatetransfer_boxcode_scanner);
         productCodeEditText = (EditText) findViewById(R.id.allocatetransfer_productcode_scanner);
         scannnumText = (TextView) findViewById(R.id.allocatetransfer_scannednum_text);
@@ -104,13 +83,8 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
         if (intent != null) {
             current_itempk_qrRecv = intent.getStringExtra("current_itempk_qrRecv");
             current_nnum_qrRecv =  Integer.parseInt(intent.getStringExtra("current_nnum_qrRecv"));
-            current_scannum_qrRecv = intent.getStringExtra("current_scannum_qrRecv");
             current_materialcode_qrRecv = intent.getStringExtra("current_materialcode_qrRecv");
-            current_cwarehousecode_qrRecv = intent.getStringExtra("current_cwarehousecode_qrRecv");
-            current_rwarehousecode_qrRecv = intent.getStringExtra("current_rwarehousecode_qrRecv");
-            current_address_qrRecv = intent.getStringExtra("current_address_qrRecv");
-            current_materialclasscode_qrRecv = intent.getStringExtra("current_materialclasscode_qrRecv");
-            current_uploadflag_qrRecv = intent.getStringExtra("current_uploadflag_qrRecv");
+
             current_vbillcode_qrRecv = intent.getStringExtra("current_vbillcode_qrRecv");
             maccode=intent.getStringExtra("maccode");
         }
@@ -183,8 +157,7 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
                         Toast.makeText(AllocateTransferQrScanner.this, "用户数据下载成功", Toast.LENGTH_LONG).show();
                         break;
                     case 0x13:
-                        //将数据库的数据显示出来
-                        isSuccess = true;
+
                        boxCodeEditText.setText("");
                         //boxCodeEditText.setText("");
                         //plateCodeEditText.setText("");

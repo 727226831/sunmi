@@ -339,13 +339,11 @@ public class DataHelper {
     public static void showDialog(ZLoadingDialog dialog) {
         dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
                 .setLoadingColor(Color.BLUE)//颜色
-                .setHintText("Loading...")
                 .setCancelable(false)
                 .setCanceledOnTouchOutside(false)
                 .setHintTextSize(16) // 设置字体大小 dp
                 .setHintTextColor(Color.GRAY)  // 设置字体颜色
                 .setDurationTime(0.5) // 设置动画时间百分比 - 0.5倍
-                //     .setDialogBackgroundColor(Color.parseColor("#CC111111")) // 设置背景色，默认白色
                 .show();
     }
 
@@ -579,7 +577,7 @@ public class DataHelper {
         }
     }
     public static boolean queryTimePeriod(String code ,String startTime,String endTime,int type,SQLiteDatabase db) {
-            Log.i("type",type+"");
+
         Cursor cursor=null;
         switch (type){
             case 0:

@@ -74,8 +74,8 @@ public class OtherEntryTableQrDetailAdapter extends BaseAdapter{
 
         viewHolder.platecode.setText(goods.getPlatecode());
         viewHolder.platecode.setTextSize(12);
-//        viewHolder.boxcode.setText(goods.getBoxcode());
-//        viewHolder.boxcode.setTextSize(12);
+        viewHolder.boxcode.setText("");
+        viewHolder.boxcode.setTextSize(12);
         viewHolder.prodcutcode.setText(goods.getProdcutcode());
         viewHolder.prodcutcode.setTextSize(12);
         viewHolder.uploagflag.setText(goods.getItemuploadflag());

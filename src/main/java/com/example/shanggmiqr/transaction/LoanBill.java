@@ -70,7 +70,7 @@ import java.util.List;
  */
 
 public class LoanBill extends AppCompatActivity implements OnClickListener {
-    private String saleDelivDataResp;
+
     private Button downloadDeliveryButton;
     private Button querySaleDeliveryButton;
     private Button displayallSaleDeliveryButton;
@@ -79,17 +79,15 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
     private Handler saleDeliveryHandler = null;
     private ListView tableListView;
     private List<LoanBean> listAllPostition;
-    private String chosen_line_vbillcode;
-    private String chosen_line_dbilldate;
-    private String saleDeliveryUploadDataResp;
+
     private ZLoadingDialog dialog;
     private String query_cwarename;
     private String query_uploadflag;
-    private List<String> test;
+
     private List<String> uploadflag;
     private TextView lst_downLoad_ts;
     private TextView time;
-
+    LoanAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,17 +117,12 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
         displayallSaleDeliveryButton.setOnClickListener(this);
 
         tableListView = (ListView) findViewById(R.id.list_loan);
-        List<LoanBean> list = querySaleDelivery();
-        listAllPostition = list;
-        final LoanAdapter adapter1 = new LoanAdapter(LoanBill.this, list, mListener);
-        tableListView.setAdapter(adapter1);
+
         tableListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapter1.select(position);
-                LoanBean saleDelivery1Bean = (LoanBean) adapter1.getItem(position);
-                chosen_line_vbillcode = saleDelivery1Bean.getPobillcode();
-                chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
+                adapter.select(position);
+
 
             }
         });
@@ -152,10 +145,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                             @Override
                             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                                 adapter.select(position);
-                                LoanBean saleDelivery1Bean = (LoanBean) adapter.getItem(position);
-                                chosen_line_vbillcode = saleDelivery1Bean.getPobillcode();
-                                chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
-                                //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
+
                             }
                         });
                         Toast.makeText(LoanBill.this, "借出单下载完成", Toast.LENGTH_LONG).show();
@@ -183,7 +173,15 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
         buttonExport.setOnClickListener(this);
     }
 
-
+    @Override
+    protected void onStart() {
+        super.onStart();
+        List<LoanBean> list = querySaleDelivery();
+        listAllPostition = list;
+        adapter = new LoanAdapter(LoanBill.this, list, mListener);
+        tableListView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+    }
 
     @Override
     public void onClick(View view) {
@@ -200,7 +198,6 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                                         public void run() {
                                             dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
                                                     .setLoadingColor(Color.BLUE)//颜色
-                                                    .setHintText("Loading...")
                                                     .setCancelable(false)
                                                     .setCanceledOnTouchOutside(false)
                                                     .setHintTextSize(16) // 设置字体大小 dp
@@ -295,10 +292,6 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         adapter.select(position);
-                        LoanBean saleDelivery1Bean = listAllPostition.get(position);
-                        chosen_line_vbillcode = saleDelivery1Bean.getPobillcode();
-                        chosen_line_dbilldate = saleDelivery1Bean.getDbilldate();
-                        //  Toast.makeText(OtherOutgoingDetail.this,chosen_line_maccode,Toast.LENGTH_LONG).show();
                     }
                 });
                 break;
@@ -568,9 +561,9 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
             public void onClick(DialogInterface dialog, int i) {
                 String temp=codeNumEditText.getText().toString();
                 exportList= query(temp,query_cwarename,query_uploadflag);
-                saleDeliveryBeanList=new ArrayList<>();
-                saleDeliveryBeanList.addAll(removeDuplicate(exportList));
-               LoanAdapter adapter = new LoanAdapter(LoanBill.this, saleDeliveryBeanList, mListener);
+               listAllPostition=new ArrayList<>();
+               listAllPostition=removeDuplicate(exportList);
+               LoanAdapter adapter = new LoanAdapter(LoanBill.this, listAllPostition, mListener);
                 tableListView.setAdapter(adapter);
 
 
@@ -586,7 +579,6 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
 
     }
    ArrayList<LoanBean> exportList;
-    List< LoanBean> saleDeliveryBeanList;
 
     private   ArrayList<LoanBean>  removeDuplicate(ArrayList<LoanBean> list)  {
         ArrayList<LoanBean>  beanList=new ArrayList<>();
@@ -636,6 +628,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
         }
     }
     public ArrayList< LoanBean> query(String pobillcode, String current_cwarename,String query_uploadflag) {
+        Log.i("flag-->",query_uploadflag);
         ArrayList< LoanBean> list = new ArrayList< LoanBean>();
         Cursor cursor=null;
         SharedPreferences currentTimePeriod;
@@ -657,7 +650,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                     "Loanbody.maccode,Loanbody.nnum, LoanScanResult.prodcutcode," +
                     "LoanScanResult.xlh" + " from Loan left join Loanbody on Loan.pobillcode=Loanbody.pobillcode " +
                     "left join LoanScanResult on Loanbody.pobillcode=LoanScanResult.pobillcode " +
-                    "and Loanbody.itempk=LoanScanResult.itempk where flag=? and Loan.pobillcode" +
+                    "and Loanbody.itempk=LoanScanResult.itempk where Loan.flag=? and Loan.pobillcode" +
                     " like '%" + pobillcode + "%' and Loanbody.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
 
         }

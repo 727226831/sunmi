@@ -1,5 +1,6 @@
 package com.example.shanggmiqr.transaction;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -119,13 +120,21 @@ public class LoanDetail extends AppCompatActivity {
         saleDeliveryScanButton.setEnabled(false);
         uploadSingleButton.setEnabled(false);
         dialog = new ZLoadingDialog(LoanDetail.this);
+        dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
+                .setLoadingColor(Color.BLUE)//颜色
+                .setCancelable(false)
+                .setCanceledOnTouchOutside(false)
+                .setHintTextSize(16) // 设置字体大小 dp
+                .setHintTextColor(Color.GRAY)  // 设置字体颜色
+                .setDurationTime(0.5); // 设置动画时间百分比 - 0.5倍
+
         helper4 = new MyDataBaseHelper(LoanDetail.this, "ShangmiData", null, 1);
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错，因为里面有直接加的toast。。。
         db4 = helper4.getWritableDatabase();//获取到了 SQLiteDatabase 对象
         tableBodyListView = (ListView) findViewById(R.id.list_body_loanDetail_detail);
         Intent _intent = getIntent();
-        Log.i("detail-->",getIntent().getIntExtra("type",-1)+"");
+
         //从Intent当中根据key取得value
         if (_intent != null) {
             current_sale_delivery_vbillcodeRecv = _intent.getStringExtra("current_sale_delivery_vbillcode");
@@ -198,7 +207,7 @@ public class LoanDetail extends AppCompatActivity {
                                                                 if (respBeanValue.getErrno().equals("0")) {
                                                                     //19弹出erromsg
                                                                     updateAllItemUploadFlag(lisitemtall);
-                                                                    msg.what = 0x15;
+                                                                    msg.what = 0x11;
                                                                 } else {
                                                                     //19弹出erromsg
                                                                     msg.what = 0x19;
@@ -276,7 +285,7 @@ public class LoanDetail extends AppCompatActivity {
                                                 if (respBeanValue.getErrno().equals("0")) {
                                                     //19弹出erromsg
                                                     updateAllItemUploadFlag(lisitemtall);
-                                                    msg.what = 0x15;
+                                                    msg.what = 0x11;
                                                 } else {
                                                     //19弹出erromsg
                                                     msg.what = 0x19;
@@ -349,7 +358,7 @@ public class LoanDetail extends AppCompatActivity {
                                                     } else {
                                                         String uploadResp = uploadSaleDeliveryVBill("R38", list);
                                                         if (!(null == uploadResp)) {
-                                                            if (!(null == listitem)) {
+
                                                                 Gson gson = new Gson();
                                                                 SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
                                                                 Gson gson2 = new Gson();
@@ -367,7 +376,7 @@ public class LoanDetail extends AppCompatActivity {
                                                                 }
                                                                 msg.setData(bundle);
                                                                 saleDeliveryDetailHandler.sendMessage(msg);
-                                                            }
+
                                                         } else {
                                                             Message msg = new Message();
                                                             msg.what = 0x18;
@@ -482,6 +491,7 @@ public class LoanDetail extends AppCompatActivity {
                         Toast.makeText(LoanDetail.this, "请检查网络连接", Toast.LENGTH_LONG).show();
                         break;
                     case 0x11:
+
                         dialog.dismiss();
                         expressCodeEditText.setText("");
                         spinner.setSelection(logisticscompanies.size() - 1, true);
@@ -492,12 +502,9 @@ public class LoanDetail extends AppCompatActivity {
                         adapter= new LoanBodyTableAdapter(LoanDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
-                        if (isAllItemUpload()) {
+
+                        isAllItemUpload();
                             finish();
-                        }
-
-
-
                         break;
                     case 0x12:
                         Toast.makeText(LoanDetail.this, "该发货单已经全部上传", Toast.LENGTH_LONG).show();
@@ -508,22 +515,7 @@ public class LoanDetail extends AppCompatActivity {
                     case 0x14:
                         Toast.makeText(LoanDetail.this, "请先扫码再进行发货上传操作", Toast.LENGTH_LONG).show();
                         break;
-                    case 0x15:
-                        dialog.dismiss();
-                        expressCodeEditText.setText("");
-                        spinner.setSelection(logisticscompanies.size() - 1, true);
-                        String s2 = msg.getData().getString("uploadResp");
-                        Toast.makeText(LoanDetail.this, s2, Toast.LENGTH_LONG).show();
-                        updateAllUploadFlag();
-                        if (isAllItemUpload()) {
-                            finish();
-                        }
-                        listAllBodyPostition = QueryLoanBody(current_sale_delivery_vbillcodeRecv);
-                       adapter = new LoanBodyTableAdapter(LoanDetail.this, listAllBodyPostition, mListener);
-                        tableBodyListView.setAdapter(adapter);
-                        adapter.notifyDataSetChanged();
 
-                        break;
                     case 0x16:
                         Toast.makeText(LoanDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
                         break;
@@ -569,7 +561,6 @@ public class LoanDetail extends AppCompatActivity {
                 saleDeliveryScanButton.setEnabled(true);
                 uploadSingleButton.setEnabled(true);
                 LoanBodyBean local_saleDeliveryBodyBean = (LoanBodyBean) adapter.getItem(position);
-
                 chosen_line_vcooporderbcode_b = local_saleDeliveryBodyBean.getItempk();
                 chosen_line_cwarename = local_saleDeliveryBodyBean.getCwarename();
                 chosen_line_matrcode = local_saleDeliveryBodyBean.getMaterialcode();
@@ -578,6 +569,8 @@ public class LoanDetail extends AppCompatActivity {
                 chosen_line_nnum = local_saleDeliveryBodyBean.getNnum();
                 chosen_line_scannnum = local_saleDeliveryBodyBean.getScannum();
                 chosen_line_uploadflag = local_saleDeliveryBodyBean.getUploadflag();
+
+
 
 
 
@@ -646,19 +639,22 @@ public class LoanDetail extends AppCompatActivity {
     }
 
     private boolean isAllItemUpload() {
-        int count=0;
+        Boolean isY=false;
+        Boolean isPY=false;
+        String flag="";
         for (int i = 0; i <listAllBodyPostition.size() ; i++) {
             if(listAllBodyPostition.get(i).getUploadflag().equals("Y")){
-                count++;
+                isY=true;
+            }else if(listAllBodyPostition.get(i).getUploadflag().equals("PY")){
+                isPY=true;
             }
         }
-        String flag="";
-        if(count==0){
-            flag="N";
-        }else if(count!=listAllBodyPostition.size()){
-            flag="PY";
-        }else {
+        if(isY && isPY==false){
             flag="Y";
+        }else if(isPY==false && isY==false){
+            flag="N";
+        }else {
+            flag="PY";
         }
 
         db4.execSQL("update Loan set flag=? where pobillcode=?", new String[]{flag, current_sale_delivery_vbillcodeRecv});
@@ -794,16 +790,27 @@ public class LoanDetail extends AppCompatActivity {
     }
 
     private void updateUploadFlag() {
+        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
 
-        if(Integer.parseInt(chosen_line_nnum)==Integer.parseInt(chosen_line_scannnum)){
-            db4.execSQL("update LoanBody set uploadflag=? where pobillcode=? and itempk=? and materialcode=?",
-                    new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, chosen_line_matrcode});
-        }else {
-            db4.execSQL("update LoanBody set uploadflag=? where pobillcode=? and itempk=? and materialcode=?",
-                    new String[]{"PY", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, chosen_line_matrcode});
+            if(Integer.parseInt(listAllBodyPostition.get(i).getScannum())!=0) {
+                String uploadflag="";
+                if(Integer.parseInt(listAllBodyPostition.get(i).getNnum())!=Integer.parseInt(listAllBodyPostition.get(i).getScannum())) {
+
+                    uploadflag="PY";
+
+                }else {
+                    uploadflag="Y";
+
+                }
+                Log.i("update-->",current_sale_delivery_vbillcodeRecv+"/"+listAllBodyPostition.get(i).getItempk());
+                db4.execSQL("update LoanBody set uploadflag=? where pobillcode=? and itempk=? ",
+                        new String[]{uploadflag, current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(i).getItempk()});
+                db4.execSQL("update LoanScanResult set itemuploadflag=? where pobillcode=? and itempk=? ",
+                        new String[]{"Y", current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(i).getItempk()});
+
+            }
         }
-        db4.execSQL("update LoanScanResult set itemuploadflag=? where pobillcode=? and itempk=? ",
-                new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b});
+
 
 
     }
@@ -954,16 +961,8 @@ public class LoanDetail extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
-                            .setLoadingColor(Color.BLUE)//颜色
-                            .setHintText("等待服务器返回数据...")
-                            .setCancelable(false)
-                            .setCanceledOnTouchOutside(false)
-                            .setHintTextSize(16) // 设置字体大小 dp
-                            .setHintTextColor(Color.GRAY)  // 设置字体颜色
-                            .setDurationTime(0.5) // 设置动画时间百分比 - 0.5倍
-                            //     .setDialogBackgroundColor(Color.parseColor("#CC111111")) // 设置背景色，默认白色
-                            .show();
+
+                    dialog.show();
                 }
             });
             se.call(namespace + "sendToWISE", envelope);

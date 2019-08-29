@@ -158,7 +158,6 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
         zLoadingDialog= new ZLoadingDialog(SaleDeliveryQrScanner.this);
         zLoadingDialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
                 .setLoadingColor(Color.BLUE)//颜色
-                .setHintText("正在连接...")
                 .setCancelable(false)
                 .setCanceledOnTouchOutside(false)
                 .setHintTextSize(16) // 设置字体大小 dp
@@ -230,7 +229,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                             getData();
                         }else {
                             boxCodeEditTextContent= Arrays.asList(boxCodeEditText.getText().toString().split("\\s"));
-                            if(boxCodeEditTextContent.size()>Math.abs(current_nnum_qrRecv)){
+                            if(boxCodeEditTextContent.size()>Math.abs(current_nnum_qrRecv)-countSum()){
                                 Toast.makeText(SaleDeliveryQrScanner.this, "不能大于指定数量", Toast.LENGTH_LONG).show();
                                 return;
                             }
@@ -258,7 +257,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
             if(editTextSN.getText().toString().isEmpty()){
                 return;
             }
-            if(Integer.parseInt(editTextSN.getText().toString())>Math.abs(current_nnum_qrRecv)){
+            if(Integer.parseInt(editTextSN.getText().toString())>Math.abs(current_nnum_qrRecv)-countSum()){
                 Toast.makeText(SaleDeliveryQrScanner.this, "不能大于指定数量", Toast.LENGTH_LONG).show();
                 return;
             }
@@ -561,8 +560,8 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
             List<SaleDeliveryScanResultBean> listDel = showScannedQR();
             if (!isAlreadyUpload(listDel.get(position).getProdcutcode())) {
                 db5.execSQL("delete from SaleDeliveryScanResult where vbillcode=? and prodcutcode=?" +
-                        " and vcooporderbcode_b=?", new Object[]{current_vbillcode_qrRecv, listDel.get(position).getProdcutcode(),
-                        current_vcooporderbcode_b_qrRecv});
+                        " and vcooporderbcode_b=? and itemuploadflag=?", new Object[]{current_vbillcode_qrRecv, listDel.get(position).getProdcutcode(),
+                        current_vcooporderbcode_b_qrRecv,"N"});
                 count = countSum();
 
                 DataHelper.updateScannum(db5,count,current_vbillcode_qrRecv, current_vcooporderbcode_b_qrRecv,getIntent().getIntExtra("type",-1));

@@ -199,12 +199,8 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                         adapter = new PurchaseReturnBodyTableAdapter(PurchaseReturnDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
-                        if (isAllItemUpload()) {
+                        isAllItemUpload();
                             finish();
-                        }
-
-
-
                         break;
                     case 0x12:
                         Toast.makeText(PurchaseReturnDetail.this, "该发货单已经全部上传", Toast.LENGTH_LONG).show();
@@ -362,20 +358,22 @@ public class PurchaseReturnDetail extends AppCompatActivity {
     }
 
     private boolean isAllItemUpload() {
-        Log.i("list-->",new Gson().toJson(listAllBodyPostition));
-        int count=0;
+        Boolean isY=false;
+        Boolean isPY=false;
+        String flag="";
         for (int i = 0; i <listAllBodyPostition.size() ; i++) {
             if(listAllBodyPostition.get(i).getUploadflag().equals("Y")){
-                count++;
+                isY=true;
+            }else if(listAllBodyPostition.get(i).getUploadflag().equals("PY")){
+                isPY=true;
             }
         }
-        String flag="";
-        if(count==0){
-            flag="N";
-        }else if(count!=listAllBodyPostition.size()){
-            flag="PY";
-        }else {
+        if(isY && isPY==false){
             flag="Y";
+        }else if(isPY==false && isY==false){
+            flag="N";
+        }else {
+            flag="PY";
         }
         switch (getIntent().getIntExtra("type",-1)){
             case 6:

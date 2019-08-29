@@ -191,7 +191,6 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
                                         public void run() {
                                             dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
                                                     .setLoadingColor(Color.BLUE)//颜色
-                                                    .setHintText("Loading...")
                                                     .setCancelable(false)
                                                     .setCanceledOnTouchOutside(false)
                                                     .setHintTextSize(16) // 设置字体大小 dp
@@ -669,7 +668,7 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
                     "ProductEntrybody.maccode,ProductEntrybody.nnum,ProductEntryScanResult.prodcutcode,ProductEntry.cwarename," +
                     "ProductEntryScanResult.xlh" + " from ProductEntry inner join ProductEntrybody on ProductEntry.billcode=ProductEntrybody.billcode " +
                     "left join ProductEntryscanresult on ProductEntrybody.billcode=ProductEntryScanResult.billcode " +
-                    "and ProductEntrybody.itempk=ProductEntryScanResult.itempk where ProductEntrybody.uploadflag=? and ProductEntry.billcode" +
+                    "and ProductEntrybody.itempk=ProductEntryScanResult.itempk where ProductEntry.flag=? and ProductEntry.billcode" +
                     " like '%" + vbillcode + "%' and ProductEntry.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
 
         }
@@ -752,12 +751,11 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
                 intent.putExtra("current_sale_delivery_vbillcode",saleDeliveryBeanList.get(position).getBillcode());
                 intent.putExtra("current_sale_delivery_dbilldate", saleDeliveryBeanList.get(position).getDbilldate());
                 intent.putExtra("flag",saleDeliveryBeanList.get(position).getFlag());
-                Log.i("item-->",new Gson().toJson(saleDeliveryBeanList.get(position)));
+
             }else {
                 intent.putExtra("current_sale_delivery_vbillcode", listAllPostition.get(position).getBillcode());
                 intent.putExtra("current_sale_delivery_dbilldate", listAllPostition.get(position).getDbilldate());
                 intent.putExtra("flag",listAllPostition.get(position).getFlag());
-                Log.i("item-->",new Gson().toJson(listAllPostition.get(position)));
             }
 
             startActivity(intent);

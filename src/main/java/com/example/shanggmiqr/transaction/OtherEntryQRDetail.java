@@ -105,7 +105,7 @@ public class OtherEntryQRDetail extends AppCompatActivity {
                     intent.putExtra("current_cwarename_scanner", current_cwarename_qrRecv);
                     intent.putExtra("current_maccode_qrRecv",current_maccode_qrRecv);
                     intent.putExtra("current_matrcode_qrRecv",current_materialcode_qrRecv);
-                    intent.putExtra("current_nnum_qrRecv",String.valueOf(current_nnum_qrRecv));
+                    intent.putExtra("current_nnum_qrRecv",String.valueOf(current_uploadnum_qrRecv));
                     intent.putExtra("chosen_line_uploadnum_scanner",current_uploadnum_qrRecv);
                     intent.putExtra("current_vcooporderbcode_b_qrRecv", current_vcooporderbcode_b_qrRecv);
                     startActivity(intent);

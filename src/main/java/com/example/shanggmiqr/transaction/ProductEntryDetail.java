@@ -234,24 +234,6 @@ public class ProductEntryDetail extends AppCompatActivity {
                     case 0x10:
                         Toast.makeText(ProductEntryDetail.this, "请检查网络连接", Toast.LENGTH_LONG).show();
                         break;
-                    case 0x11:
-                        dialog.dismiss();
-                        String s = msg.getData().getString("uploadResp");
-                        Toast.makeText(ProductEntryDetail.this, s, Toast.LENGTH_LONG).show();
-                        updateUploadFlag();
-                        listAllBodyPostition = QueryProductEntryBody(current_sale_delivery_vbillcodeRecv);
-                        adapter = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
-                        tableBodyListView.setAdapter(adapter);
-                        adapter.notifyDataSetChanged();
-
-                        if (isAllItemUpload()) {
-
-                            finish();
-                        }
-
-
-
-                        break;
                     case 0x12:
                         Toast.makeText(ProductEntryDetail.this, "该发货单已经全部上传", Toast.LENGTH_LONG).show();
                         break;
@@ -270,11 +252,8 @@ public class ProductEntryDetail extends AppCompatActivity {
                         adapter = new ProductEntryBodyTableAdapter(ProductEntryDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
-                        if (isAllItemUpload()) {
-
+                        isAllItemUpload();
                             finish();
-                        }
-
 
                         break;
                     case 0x16:
@@ -353,16 +332,17 @@ public class ProductEntryDetail extends AppCompatActivity {
                 isPY=true;
             }
         }
+
         if(isY && isPY==false){
-            saleDeliveryScanButton.setEnabled(false);
-            uploadAll_saleDeliveryButton.setEnabled(false);
             flag="Y";
-        }else if(isPY){
             saleDeliveryScanButton.setEnabled(false);
             uploadAll_saleDeliveryButton.setEnabled(false);
-            flag="PY";
-        }else {
+        }else if(isPY==false && isY==false){
             flag="N";
+        }else {
+            flag="PY";
+            saleDeliveryScanButton.setEnabled(false);
+            uploadAll_saleDeliveryButton.setEnabled(false);
         }
 
         db4.execSQL("update ProductEntry set flag=? where billcode=?",
@@ -439,24 +419,7 @@ public class ProductEntryDetail extends AppCompatActivity {
         return false;
     }
 
-    private void updateUploadFlag() {
-        Cursor cursor31 = db4.rawQuery("select prodcutcode,itemuploadflag from ProductEntryScanResult where billcode=? and itempk=? and itemuploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_itempk, "Y"});
-        Cursor cursor32 = db4.rawQuery("select nnum from ProductEntryBody where billcode=? and itempk=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_itempk});
-        if (cursor31 != null && cursor31.getCount() > 0 && cursor32 != null && cursor32.getCount() > 0) {
-            while (cursor32.moveToNext()) {
-                String nnum = cursor32.getString(cursor32.getColumnIndex("nnum"));
-                if (cursor31.getCount() == Math.abs(Integer.parseInt(nnum))) {
-                    db4.execSQL("update ProductEntryBody set uploadflag=? where billcode=? and itempk=? and materialcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_itempk, chosen_line_materialcode});
-                } else if (cursor31.getCount() < Math.abs(Integer.parseInt(nnum))) {
-                    db4.execSQL("update ProductEntryBody set uploadflag=? where billcode=? and itempk=? and materialcode=?", new String[]{"PY", current_sale_delivery_vbillcodeRecv, chosen_line_itempk, chosen_line_materialcode});
-                }
-                cursor31.close();
-                cursor32.close();
-            }
-        }
-    }
+
 
     private void updateAllUploadFlag() {
 
@@ -594,7 +557,6 @@ public class ProductEntryDetail extends AppCompatActivity {
                 public void run() {
                     dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
                             .setLoadingColor(Color.BLUE)//颜色
-                            .setHintText("等待服务器返回数据...")
                             .setCancelable(false)
                             .setCanceledOnTouchOutside(false)
                             .setHintTextSize(16) // 设置字体大小 dp

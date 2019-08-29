@@ -204,13 +204,11 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                                         public void run() {
                                             dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
                                                     .setLoadingColor(Color.BLUE)//颜色
-                                                    .setHintText("Loading...")
                                                     .setCancelable(false)
                                                     .setCanceledOnTouchOutside(false)
                                                     .setHintTextSize(16) // 设置字体大小 dp
                                                     .setHintTextColor(Color.GRAY)  // 设置字体颜色
                                                     .setDurationTime(0.5) // 设置动画时间百分比 - 0.5倍
-                                                    //     .setDialogBackgroundColor(Color.parseColor("#CC111111")) // 设置背景色，默认白色
                                                     .show();
                                         }
                                     });
