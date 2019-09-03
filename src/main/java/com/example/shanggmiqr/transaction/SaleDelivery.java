@@ -102,7 +102,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         lst_downLoad_ts = (TextView)findViewById(R.id.last_downLoad_ts);
         //显示最后一次的下载时间
         latestDBTimeInfo = getSharedPreferences("LatestSaleDeliveryTSInfo", 0);
-        begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
+        begintime = latestDBTimeInfo.getString("latest_download_ts_begintime","");
         lst_downLoad_ts.setText("最后一次下载:"+begintime);
 
         db3 = helper3.getWritableDatabase();//获取到了 SQLiteDatabase 对象
@@ -283,12 +283,12 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         Log.i("exportList",new Gson().toJson(exportList));
         String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
         SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
-        File file=new File(sdCardDir+"/sunmi");
+        File file=new File(sdCardDir+"/sunmi/export");
         if(!file.exists()){
             file.mkdir();
         }
         Date curDate =  new Date(System.currentTimeMillis());
-        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        file=new File(sdCardDir+"/sunmi/export",formatter.format(curDate)+".txt");
         Toast.makeText(SaleDelivery.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
         FileOutputStream outputStream=null;
         try {
@@ -332,22 +332,11 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
         List<SaleDeliveryQuery.DataBean> saleDeliveryBeanList = saleDeliveryQuery.getData();
 
-
-        String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-        SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("日志yyyy年MM月dd日HH时mm分ss秒");
-        File file=new File(sdCardDir+"/sunmi");
-        if(!file.exists()){
-            file.mkdir();
-        }
-        Date curDate =  new Date(System.currentTimeMillis());
-        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
-        FileOutputStream outputStream=null;
         try {
-            outputStream=new FileOutputStream(file);
+
             for (SaleDeliveryQuery.DataBean ob : saleDeliveryBeanList) {
 
-                outputStream.write("\r\n".getBytes());
-                outputStream.write((ob.getVbillcode()+"/"+ob.getDr()).getBytes());
+
                 //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
                 switch (ob.getDr()){
                     case 0:
@@ -371,7 +360,6 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
             }
 
-            outputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -711,8 +699,8 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         ArrayList<SaleDeliveryBean> list = new ArrayList<SaleDeliveryBean>();
 
 
-        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr,flag from SaleDelivery where flag=? and type=? order by dbilldate desc",
-                new String[]{"N",getIntent().getIntExtra("type",-1)+""});
+        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr,flag from SaleDelivery where  type=? order by dbilldate desc",
+                new String[]{getIntent().getIntExtra("type",-1)+""});
 
 
             while (cursor.moveToNext()) {
@@ -720,7 +708,9 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 bean.vbillcode = cursor.getString(cursor.getColumnIndex("vbillcode"));
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
-                list.add(bean);
+                if(!cursor.getString(cursor.getColumnIndex("flag")).equals("Y")) {
+                    list.add(bean);
+                }
 
             }
 

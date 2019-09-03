@@ -261,7 +261,7 @@ public class OtherEntryDetail extends AppCompatActivity {
                         break;
                     case 0x20:
                         dialog.dismiss();
-                        Toast.makeText(OtherEntryDetail.this, "接口异常", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x21:
                         Toast.makeText(OtherEntryDetail.this, "请扫描后再进行提交", Toast.LENGTH_LONG).show();
@@ -524,7 +524,7 @@ public class OtherEntryDetail extends AppCompatActivity {
         envelope.bodyOut = request;
         envelope.dotNet = false;
 
-            HttpTransportSE se = new HttpTransportSE(WSDL_URI,120000);
+        HttpTransportSE se = new HttpTransportSE(WSDL_URI, 300000);
             //  se.call(null, envelope);//调用 version1.2
             //version1.1 需要如下soapaction
             runOnUiThread(new Runnable() {

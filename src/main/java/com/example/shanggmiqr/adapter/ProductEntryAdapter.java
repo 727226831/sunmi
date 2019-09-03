@@ -97,13 +97,13 @@ public class ProductEntryAdapter extends BaseAdapter{
         productEntryBean = (ProductEntryBean) getItem(position);
 
         viewHolder.billcode.setText(goods.getBillcode());
-        viewHolder.billcode.setTextSize(10);
+
         viewHolder.dbilldate.setText(goods.getDbilldate());
-        viewHolder.dbilldate.setTextSize(10);
+
         viewHolder.cwarename.setText(goods.getCwarename());
-        viewHolder.cwarename.setTextSize(10);
+
         viewHolder.dr.setText(String.valueOf(goods.getDr()));
-        viewHolder.dr.setTextSize(10);
+
 
         //给Button添加单击事件  添加Button之后ListView将失去焦点  需要的直接把Button的焦点去掉
      //   viewHolder.viewBtn.setBackgroundColor(Color.parseColor("#B4B3B3"));

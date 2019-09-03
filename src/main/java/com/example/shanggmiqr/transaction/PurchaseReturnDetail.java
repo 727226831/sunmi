@@ -108,7 +108,6 @@ public class PurchaseReturnDetail extends AppCompatActivity {
         zLoadingDialog = new ZLoadingDialog(PurchaseReturnDetail.this);
         zLoadingDialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
                 .setLoadingColor(Color.BLUE)//颜色
-                .setHintText("提交中...")
                 .setCancelable(false)
                 .setCanceledOnTouchOutside(false)
                 .setHintTextSize(16) // 设置字体大小 dp
@@ -222,7 +221,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                         break;
                     case 0x18:
                         zLoadingDialog.dismiss();
-                        Toast.makeText(PurchaseReturnDetail.this, "接口异常", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x19:
                         zLoadingDialog.dismiss();
@@ -252,7 +251,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
                 if (Utils.isNetworkConnected(PurchaseReturnDetail.this)) {
                     try {
 
-                            String uploadResp = DataHelper.uploadSaleDeliveryVBill("R41",db4, current_sale_delivery_vbillcodeRecv,itempk,
+                            String uploadResp = DataHelper.uploadSaleDeliveryVBill("R41",db4, current_sale_delivery_vbillcodeRecv,
                                     PurchaseReturnDetail.this,"",expressCode,getIntent().getIntExtra("type",-1));
                             if (!(null == uploadResp)) {
 
@@ -360,21 +359,29 @@ public class PurchaseReturnDetail extends AppCompatActivity {
     private boolean isAllItemUpload() {
         Boolean isY=false;
         Boolean isPY=false;
+        Boolean isN=false;
+
+
         String flag="";
         for (int i = 0; i <listAllBodyPostition.size() ; i++) {
             if(listAllBodyPostition.get(i).getUploadflag().equals("Y")){
                 isY=true;
             }else if(listAllBodyPostition.get(i).getUploadflag().equals("PY")){
                 isPY=true;
+            }else if(listAllBodyPostition.get(i).getUploadflag().equals("N")){
+                isN=true;
             }
         }
-        if(isY && isPY==false){
-            flag="Y";
-        }else if(isPY==false && isY==false){
-            flag="N";
+        if(isPY || isY){
+            if(isN==false && isY){
+                flag="Y";
+            }else {
+                flag="PY";
+            }
         }else {
-            flag="PY";
+            flag="N";
         }
+
         switch (getIntent().getIntExtra("type",-1)){
             case 6:
 
@@ -396,7 +403,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
     private void updateAllUploadFlag() {
         for (int i = 0; i <listAllBodyPostition.size() ; i++) {
             Log.i("data-->",new Gson().toJson(listAllBodyPostition));
-            if(listAllBodyPostition.get(i).getScannnum()!=null){
+            if(Integer.parseInt(listAllBodyPostition.get(i).getScannnum())!=0){
                 if(Math.abs(Integer.parseInt(listAllBodyPostition.get(i).getNnum()))==Integer.parseInt(listAllBodyPostition.get(i).getScannnum())){
 
                     switch (getIntent().getIntExtra("type",-1)){

@@ -266,7 +266,7 @@ public class ProductEntryDetail extends AppCompatActivity {
                         break;
                     case 0x18:
                         dialog.dismiss();
-                        Toast.makeText(ProductEntryDetail.this, "接口异常", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x19:
                         dialog.dismiss();
@@ -324,26 +324,29 @@ public class ProductEntryDetail extends AppCompatActivity {
     private boolean isAllItemUpload() {
         Boolean isY=false;
         Boolean isPY=false;
+        Boolean isN=false;
+
+
         String flag="";
         for (int i = 0; i <listAllBodyPostition.size() ; i++) {
             if(listAllBodyPostition.get(i).getUploadflag().equals("Y")){
                 isY=true;
             }else if(listAllBodyPostition.get(i).getUploadflag().equals("PY")){
                 isPY=true;
+            }else if(listAllBodyPostition.get(i).getUploadflag().equals("N")){
+                isN=true;
             }
         }
-
-        if(isY && isPY==false){
-            flag="Y";
-            saleDeliveryScanButton.setEnabled(false);
-            uploadAll_saleDeliveryButton.setEnabled(false);
-        }else if(isPY==false && isY==false){
-            flag="N";
+        if(isPY || isY){
+            if(isN==false && isY){
+                flag="Y";
+            }else {
+                flag="PY";
+            }
         }else {
-            flag="PY";
-            saleDeliveryScanButton.setEnabled(false);
-            uploadAll_saleDeliveryButton.setEnabled(false);
+            flag="N";
         }
+
 
         db4.execSQL("update ProductEntry set flag=? where billcode=?",
                 new String[]{flag, current_sale_delivery_vbillcodeRecv});
@@ -432,30 +435,23 @@ public class ProductEntryDetail extends AppCompatActivity {
             int scannum=Integer.parseInt(listAllBodyPostition.get(i).getScannum());
 
             if(scannum!=0 ){
-
+                String uplodaflag="";
                 if(scannum==(ysnum-nnum)){
-                    updateData("Y",listAllBodyPostition.get(i));
+                   uplodaflag="Y";
                 }else {
-                    updateData("PY",listAllBodyPostition.get(i));
+                    uplodaflag="PY";
                 }
+                ContentValues contentValues=new ContentValues();
+                contentValues.put("uploadflag",uplodaflag);
+               contentValues.put("nnum", listAllBodyPostition.get(i).getScannum());
+                db4.update("ProductEntryBody",contentValues,"billcode=? and itempk=?",
+                        new String[]{current_sale_delivery_vbillcodeRecv, listAllBodyPostition.get(i).getItempk()});
+
             }
         }
     }
 
-    private void updateData(String uplodaflag,ProductEntryBodyBean productEntryBodyBean) {
-        if(productEntryBodyBean.getUploadflag().equals("Y")){
-            return;
-        }
-        ContentValues contentValues=new ContentValues();
-        contentValues.put("uploadflag",uplodaflag);
-        if(uplodaflag.equals("Y")) {
-            contentValues.put("nnum", productEntryBodyBean.getYsnum());
-        }
-        contentValues.put("ysnum",productEntryBodyBean.getYsnum());
-        contentValues.put("scannum",productEntryBodyBean.getScannum());
-        db4.update("ProductEntryBody",contentValues,"billcode=? and itempk=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, productEntryBodyBean.getItempk()});
-    }
+
 
     private String uploadSaleDeliveryVBill(String workcode, List<String> list) throws IOException, XmlPullParserException {
         String WSDL_URI;
@@ -569,7 +565,7 @@ public class ProductEntryDetail extends AppCompatActivity {
 
         }
 
-        HttpTransportSE se = new HttpTransportSE(WSDL_URI, 60000);
+        HttpTransportSE se = new HttpTransportSE(WSDL_URI, 300000);
         se.call(namespace + "sendToWISE", envelope);
         // 获取返回的数据
         // SoapObject object = (SoapObject) envelope.bodyIn;

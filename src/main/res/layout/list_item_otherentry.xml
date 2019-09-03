@@ -11,13 +11,13 @@
         android:id="@+id/radiobutton_upload_otherentry"
         android:layout_width="0dip"
         android:layout_height="wrap_content"
-        android:layout_weight="0.5"
+        android:layout_weight="0.3"
         android:gravity="center"
         android:paddingBottom="10dip"
         android:paddingTop="10dip"
         android:textColor="#000000"
         android:visibility="invisible"
-        android:textSize="10dp"
+        android:textSize="5dp"
         android:focusable="false"/>
     <View
         android:layout_width="1.5dip"
@@ -28,19 +28,21 @@
         android:layout_width="0dip"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:gravity="center"
-        android:paddingBottom="10dip"
-        android:paddingTop="10dip"
         android:textColor="#000000"
-        android:textSize="12dp"
-        android:text="入库单号" />
+        android:textSize="10dp"
+        android:gravity="center"
+        android:text="单据号"
+        android:focusable="false"
+        style="?android:attr/borderlessButtonStyle"/>
     
-    <View 
+    <View
+        android:visibility="gone"
         android:layout_width="1.5dip"
         android:layout_height="fill_parent"
         android:background="#B4B3B3"/>
 
     <TextView
+        android:visibility="gone"
         android:id="@+id/text_goods_name_otherentry"
         android:layout_width="0dip"
         android:layout_height="wrap_content"
@@ -52,12 +54,14 @@
         android:gravity="center"
         android:text="入库仓库名字" />
     
-     <View 
+     <View
+         android:visibility="gone"
         android:layout_width="1.5dip"
         android:layout_height="fill_parent"
         android:background="#B4B3B3"/>
 
      <TextView
+         android:visibility="gone"
         android:id="@+id/text_codeBar_otherentry"
         android:layout_width="0dip"
         android:layout_height="wrap_content"
@@ -73,33 +77,34 @@
         android:layout_height="fill_parent"
         android:background="#B4B3B3"/>
 
-    <TextView
-        android:id="@+id/text_dr_otherentry"
-        android:layout_width="0dip"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.5"
-        android:paddingBottom="10dip"
-        android:textColor="#000000"
-        android:paddingTop="10dip"
-        android:textSize="12dp"
-        android:gravity="center"
-        android:text="dr标志" />
-    <View
-        android:layout_width="1.5dip"
-        android:layout_height="fill_parent"
-        android:background="#B4B3B3"/>
 
     <TextView
         android:id="@+id/text_dbilldate_otherentry"
         android:layout_width="0dip"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:paddingBottom="10dip"
         android:textColor="#000000"
-        android:paddingTop="10dip"
-        android:textSize="12dp"
+        android:textSize="10dp"
         android:gravity="center"
-        android:text="单据日期" />
+        android:text="单据日期"
+        android:focusable="false"
+        style="?android:attr/borderlessButtonStyle" />
+    <View
+        android:layout_width="1.5dip"
+        android:layout_height="fill_parent"
+        android:background="#B4B3B3"/>
+    <TextView
+        android:id="@+id/text_dr_otherentry"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.6"
+        android:textColor="#000000"
+        android:textSize="10dp"
+        android:gravity="center"
+        android:text="dr"
+        android:focusable="false"
+        style="?android:attr/borderlessButtonStyle"  />
+
      
      <View 
         android:layout_width="1.5dip"
@@ -109,9 +114,9 @@
         android:id="@+id/text_detail_otherentry"
         android:layout_width="0dip"
         android:layout_height="wrap_content"
-        android:layout_weight="0.8"
+        android:layout_weight="0.6"
         android:textColor="#000000"
-        android:textSize="12dp"
+        android:textSize="10dp"
         android:gravity="center"
         android:text="详细信息"
         android:focusable="false"

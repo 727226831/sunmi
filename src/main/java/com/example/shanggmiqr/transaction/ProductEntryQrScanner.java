@@ -205,6 +205,7 @@ public class ProductEntryQrScanner extends AppCompatActivity {
     private List<String> boxCodeEditTextContent;
     private void getData() {
         boxCodeEditTextContent= Arrays.asList(boxCodeEditText.getText().toString().split("\\s"));
+        DataHelper.setLog(ProductEntryQrScanner.this,boxCodeEditTextContent.toString());
         for (int i = 0; i <boxCodeEditTextContent.size() ; i++) {
 
             String productcode=boxCodeEditTextContent.get(i);

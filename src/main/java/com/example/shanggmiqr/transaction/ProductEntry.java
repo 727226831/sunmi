@@ -103,7 +103,7 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
         lst_downLoad_ts = (TextView)findViewById(R.id.last_downLoad_ts_product_entry);
         //显示最后一次的下载时间
         SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestProductEntryTSInfo", 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "2018-09-01 00:00:01");
+        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "");
         lst_downLoad_ts.setText("最后一次下载:"+begintime);
 
         db3 = helper3.getWritableDatabase();//获取到了 SQLiteDatabase 对象
@@ -707,16 +707,17 @@ public class ProductEntry extends AppCompatActivity implements OnClickListener {
         Log.i("exportList",new Gson().toJson(exportList));
         String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
         SimpleDateFormat formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
-        File file=new File(sdCardDir+"/sunmi");
+        File file=new File(sdCardDir+"/sunmi/export");
         if(!file.exists()){
             file.mkdir();
         }
         Date curDate =  new Date(System.currentTimeMillis());
-        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        file=new File(sdCardDir+"/sunmi/export",formatter.format(curDate)+".txt");
         Toast.makeText(ProductEntry.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
         FileOutputStream outputStream=null;
         try {
             outputStream=new FileOutputStream(file);
+
             outputStream.write(("发货单号"+"\t"+ "单据日期"+"\t"+"物料编码"+"\t"+"物料名称"+"\t"+
                     "物料大类"+"\t"+"序列号"+"\t"+"条形码"+"\t").getBytes());
             for (int j = 0; j <exportList.size() ; j++) {

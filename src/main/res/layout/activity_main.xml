@@ -30,6 +30,8 @@
 
             <EditText
 
+                android:maxLength="300"
+                android:singleLine="true"
                 android:id="@+id/accountEdittext"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -37,7 +39,7 @@
                 android:layout_marginLeft="20dip"
                 android:layout_toRightOf="@id/account"
                 android:background="@null"
-                android:hint="请输入用户名"
+                android:hint="长度300"
                 android:textSize="15sp" />
         </RelativeLayout>
 
@@ -61,9 +63,11 @@
                 android:textSize="17sp" />
 
             <EditText
+
+                android:maxLength="30"
+                android:singleLine="true"
                 android:digits="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 android:inputType="textPassword"
-
                 android:id="@+id/pwdEdittext"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -71,7 +75,7 @@
                 android:layout_marginLeft="32dip"
                 android:layout_toRightOf="@id/pwd"
                 android:background="@null"
-                android:hint="密码只能有0-9 A-Z a-z"
+                android:hint="密码只能有0-9 A-Z a-z,长度30"
                 android:textSize="15sp" />
         </RelativeLayout>
     </RelativeLayout>

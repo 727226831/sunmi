@@ -106,7 +106,7 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
             actionBar.setTitle(getIntent().getStringExtra("title"));
         }
         SharedPreferences latestDBTimeInfo = getSharedPreferences(name, 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
+        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "");
         lst_downLoad_ts.setText("最后一次下载:"+begintime);
 
         helper3 = new MyDataBaseHelper(OtherEntry.this, "ShangmiData", null, 1);
@@ -482,12 +482,12 @@ public class OtherEntry extends AppCompatActivity implements OnClickListener {
         String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
 
         SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
-        File file=new File(sdCardDir+"/sunmi");
+        File file=new File(sdCardDir+"/sunmi/export");
         if(!file.exists()){
             file.mkdir();
         }
         Date curDate =  new Date(System.currentTimeMillis());
-        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        file=new File(sdCardDir+"/sunmi/export",formatter.format(curDate)+".txt");
         Toast.makeText(OtherEntry.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
         FileOutputStream outputStream=null;
         try {

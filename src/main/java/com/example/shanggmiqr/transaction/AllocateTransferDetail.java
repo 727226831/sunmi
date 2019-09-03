@@ -294,7 +294,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
                         break;
                     case 0x18:
                         zLoadingDialog.dismiss();
-                        Toast.makeText(AllocateTransferDetail.this, "接口异常", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x19:
                         zLoadingDialog.dismiss();
@@ -478,21 +478,29 @@ public class AllocateTransferDetail extends AppCompatActivity {
     private boolean isAllItemUpload() {
         Boolean isY=false;
         Boolean isPY=false;
+        Boolean isN=false;
+
+
         String flag="";
         for (int i = 0; i <listAllBodyPostition.size() ; i++) {
             if(listAllBodyPostition.get(i).getUploadflag().equals("Y")){
                 isY=true;
             }else if(listAllBodyPostition.get(i).getUploadflag().equals("PY")){
                 isPY=true;
+            }else if(listAllBodyPostition.get(i).getUploadflag().equals("N")){
+                isN=true;
             }
         }
-        if(isY && isPY==false){
-            flag="Y";
-        }else if(isPY==false && isY==false){
-            flag="N";
+        if(isPY || isY){
+            if(isN==false && isY){
+                flag="Y";
+            }else {
+                flag="PY";
+            }
         }else {
-            flag="PY";
+            flag="N";
         }
+
 
         db4.execSQL("update AllocateTransfer set flag=? where billno=?", new String[]{flag, current_sale_delivery_vbillcodeRecv});
         if(flag.equals("Y")){
@@ -717,7 +725,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
 
         // 获取返回的结果
         // saleDeliveryUploadDataResp = object.getProperty(0).toString();
-        HttpTransportSE se = new HttpTransportSE(WSDL_URI, 60000);
+        HttpTransportSE se = new HttpTransportSE(WSDL_URI, 300000);
         se.call(namespace + "sendToWISE", envelope);
 
         // 获取返回的数据

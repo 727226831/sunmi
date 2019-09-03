@@ -58,7 +58,7 @@ import java.util.List;
  */
 
 public class PurchaseArrival extends AppCompatActivity implements OnClickListener {
-    private String saleDelivDataResp;
+
     private Button downloadDeliveryButton;
     private Button querySaleDeliveryButton;
     private Button displayallSaleDeliveryButton;
@@ -77,7 +77,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
     private TextView time;
     private Button buttonCheck;
     private Button buttonExport;
-    private Button buttonShowall;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,7 +95,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
 
         //显示最后一次的下载时间
         SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestPurchaseArrivalTSInfo", 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "2018-09-01 00:00:01");
+        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "");
         lst_downLoad_ts.setText("最后一次下载:"+begintime);
 
         db3 = helper3.getWritableDatabase();//获取到了 SQLiteDatabase 对象
@@ -146,7 +146,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                             @Override
                             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                                 adapter.select(position);
-                                PurchaseArrivalBean saleDelivery1Bean = (PurchaseArrivalBean) adapter.getItem(position);
+
 
                             }
                         });
@@ -318,7 +318,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
     }
 
     private void insertDownloadDataToDB(PurchaseArrivalQuery saleDeliveryQuery) {
-
+        Log.i("data1-->",new Gson().toJson(saleDeliveryQuery));
         List<PurchaseArrivalQuery.DataBean> saleDeliveryBeanList = saleDeliveryQuery.getData();
         for (PurchaseArrivalQuery.DataBean ob : saleDeliveryBeanList) {
 
@@ -349,6 +349,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
     }
 
     private void insertDb(PurchaseArrivalQuery.DataBean ob) {
+        Log.i("data2",new Gson().toJson(ob));
         String headpk = ob.getHeadpk();
         String dbilldate = ob.getDbilldate();
         String dr = ob.getDr();
@@ -375,7 +376,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
             valuesInner.put("materialname", materialname);
             valuesInner.put("maccode", maccode);
             valuesInner.put("nnum", nnum);
-            //       valuesInner.put("scannum", scannum);
+            valuesInner.put("scannum", "0");
             valuesInner.put("warehouse", warehouse);
             //N代表尚未上传
             valuesInner.put("uploadflag", "N");
@@ -648,7 +649,7 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
         ArrayList<PurchaseArrivalBean> list = new ArrayList<PurchaseArrivalBean>();
         List<String> list_update = new ArrayList<String>();
 
-        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr,flag from PurchaseArrival where flag=? order by dbilldate desc", new String[]{"N"});
+        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr,flag from PurchaseArrival order by dbilldate desc", null);
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
@@ -657,7 +658,10 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
                 bean.setFlag(cursor.getString(cursor.getColumnIndex("flag")));
-                list.add(bean);
+                Log.i("query",new Gson().toJson(bean));
+                if(!cursor.getString(cursor.getColumnIndex("flag")).equals("Y")) {
+                    list.add(bean);
+                }
 
             }
 
@@ -688,12 +692,12 @@ public class PurchaseArrival extends AppCompatActivity implements OnClickListene
         Log.i("exportList",new Gson().toJson(exportList));
         String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
         SimpleDateFormat formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
-        File file=new File(sdCardDir+"/sunmi");
+        File file=new File(sdCardDir+"/sunmi/export");
         if(!file.exists()){
             file.mkdir();
         }
         Date curDate =  new Date(System.currentTimeMillis());
-        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        file=new File(sdCardDir+"/sunmi/export",formatter.format(curDate)+".txt");
         Toast.makeText(PurchaseArrival.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
         FileOutputStream outputStream=null;
         try {

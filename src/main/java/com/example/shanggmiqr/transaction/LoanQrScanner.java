@@ -186,7 +186,7 @@ public class LoanQrScanner extends AppCompatActivity {
 
     private void getData() {
         boxCodeEditTextContent= Arrays.asList(boxCodeEditText.getText().toString().split("\\s"));
-        qrcode_xm_Text.setText("二维箱码："+boxCodeEditTextContent.size());
+        DataHelper.setLog(LoanQrScanner.this,boxCodeEditTextContent.toString());
         for (int i = 0; i <boxCodeEditTextContent.size() ; i++) {
 
             String productcode=boxCodeEditTextContent.get(i);

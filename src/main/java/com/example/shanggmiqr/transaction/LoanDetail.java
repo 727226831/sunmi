@@ -196,7 +196,7 @@ public class LoanDetail extends AppCompatActivity {
                                                     } else if (isCwarenameSame()) {
                                                         String uploadResp = uploadSaleDeliveryVBill("R38", list);
                                                         if (!(null == uploadResp)) {
-                                                            if (!(null == lisitemtall)) {
+
                                                                 Gson gson = new Gson();
                                                                 SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
                                                                 Gson gson2 = new Gson();
@@ -206,7 +206,7 @@ public class LoanDetail extends AppCompatActivity {
                                                                 Message msg = new Message();
                                                                 if (respBeanValue.getErrno().equals("0")) {
                                                                     //19弹出erromsg
-                                                                    updateAllItemUploadFlag(lisitemtall);
+
                                                                     msg.what = 0x11;
                                                                 } else {
                                                                     //19弹出erromsg
@@ -214,7 +214,7 @@ public class LoanDetail extends AppCompatActivity {
                                                                 }
                                                                 msg.setData(bundle);
                                                                 saleDeliveryDetailHandler.sendMessage(msg);
-                                                            }
+
                                                         } else {
                                                             Message msg = new Message();
                                                             msg.what = 0x18;
@@ -274,7 +274,7 @@ public class LoanDetail extends AppCompatActivity {
                                     } else if (isCwarenameSame()) {
                                         String uploadResp = uploadSaleDeliveryVBill("R38", list);
                                         if (!(null == uploadResp)) {
-                                            if (!(null == lisitemtall)) {
+
                                                 Gson gson = new Gson();
                                                 SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
                                                 Gson gson2 = new Gson();
@@ -284,7 +284,7 @@ public class LoanDetail extends AppCompatActivity {
                                                 Message msg = new Message();
                                                 if (respBeanValue.getErrno().equals("0")) {
                                                     //19弹出erromsg
-                                                    updateAllItemUploadFlag(lisitemtall);
+
                                                     msg.what = 0x11;
                                                 } else {
                                                     //19弹出erromsg
@@ -292,7 +292,7 @@ public class LoanDetail extends AppCompatActivity {
                                                 }
                                                 msg.setData(bundle);
                                                 saleDeliveryDetailHandler.sendMessage(msg);
-                                            }
+
                                         } else {
                                             Message msg = new Message();
                                             msg.what = 0x18;
@@ -330,158 +330,7 @@ public class LoanDetail extends AppCompatActivity {
 
             }
         });
-        uploadSingleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                expressCode = expressCodeEditText.getText().toString();
-                if ("".equals(expressCode) || "".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)) {
-                    if("".equals(chooseLogisticscompany) || "请选择物流公司".equals(chooseLogisticscompany)){
-                        chooseLogisticscompany ="";
-                    }
-                    AlertDialog.Builder build = new AlertDialog.Builder(LoanDetail.this);
-                    build.setTitle("温馨提示")
-                            .setMessage("运单号或者物流公司为空，确定要继续吗？")
-                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // TODO Auto-generated method stub
-                                    new Thread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (Utils.isNetworkConnected(LoanDetail.this)) {
-                                                try {
-                                                    //Y代表已经上传过
-                                                    if (iaAlreadyUploadSingle(chosen_line_vcooporderbcode_b)) {
-                                                        Message msg = new Message();
-                                                        msg.what = 0x13;
-                                                        saleDeliveryDetailHandler.sendMessage(msg);
-                                                    } else {
-                                                        String uploadResp = uploadSaleDeliveryVBill("R38", list);
-                                                        if (!(null == uploadResp)) {
 
-                                                                Gson gson = new Gson();
-                                                                SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                                                Gson gson2 = new Gson();
-                                                                SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                                                Bundle bundle = new Bundle();
-                                                                bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                                                Message msg = new Message();
-                                                                if (respBeanValue.getErrno().equals("0")) {
-                                                                    //19弹出erromsg
-                                                                    updateItemUploadFlag(listitem);
-                                                                    msg.what = 0x11;
-                                                                } else {
-                                                                    //19弹出erromsg
-                                                                    msg.what = 0x19;
-                                                                }
-                                                                msg.setData(bundle);
-                                                                saleDeliveryDetailHandler.sendMessage(msg);
-
-                                                        } else {
-                                                            Message msg = new Message();
-                                                            msg.what = 0x18;
-                                                            saleDeliveryDetailHandler.sendMessage(msg);
-                                                        }
-                                                    }
-
-                                                } catch (IOException e) {
-                                                    // e.printStackTrace();
-                                                    Bundle bundle = new Bundle();
-                                                    bundle.putString("Exception111", e.toString());
-                                                    Message msg = new Message();
-                                                    msg.what = 0x17;
-                                                    msg.setData(bundle);
-                                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                                    return;
-                                                } catch (XmlPullParserException e) {
-                                                    // e.printStackTrace();
-                                                    Bundle bundle = new Bundle();
-                                                    bundle.putString("Exception111", e.toString());
-                                                    Message msg = new Message();
-                                                    msg.what = 0x17;
-                                                    msg.setData(bundle);
-                                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                                    return;
-                                                }
-                                            }
-                                        }
-                                    }).start();
-                                }
-                            })
-                            .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    return;
-                                }
-                            })
-                            .show();
-                }else{
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (Utils.isNetworkConnected(LoanDetail.this)) {
-                                try {
-                                    //Y代表已经上传过
-                                    if (iaAlreadyUploadSingle(chosen_line_vcooporderbcode_b)) {
-                                        Message msg = new Message();
-                                        msg.what = 0x13;
-                                        saleDeliveryDetailHandler.sendMessage(msg);
-                                    } else {
-                                        String uploadResp = uploadSaleDeliveryVBill("R38", list);
-                                        if (!(null == uploadResp)) {
-                                            if (!(null == listitem)) {
-                                                Gson gson = new Gson();
-                                                SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                                Gson gson2 = new Gson();
-                                                SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                                Bundle bundle = new Bundle();
-                                                bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                                Message msg = new Message();
-                                                if (respBeanValue.getErrno().equals("0")) {
-                                                    //19弹出erromsg
-                                                    updateItemUploadFlag(listitem);
-                                                    msg.what = 0x11;
-                                                } else {
-                                                    //19弹出erromsg
-                                                    msg.what = 0x19;
-                                                }
-                                                msg.setData(bundle);
-                                                saleDeliveryDetailHandler.sendMessage(msg);
-                                            }
-                                        } else {
-                                            Message msg = new Message();
-                                            msg.what = 0x18;
-                                            saleDeliveryDetailHandler.sendMessage(msg);
-                                        }
-                                    }
-
-                                } catch (IOException e) {
-                                    // e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                    return;
-                                } catch (XmlPullParserException e) {
-                                    // e.printStackTrace();
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("Exception111", e.toString());
-                                    Message msg = new Message();
-                                    msg.what = 0x17;
-                                    msg.setData(bundle);
-                                    saleDeliveryDetailHandler.sendMessage(msg);
-                                    return;
-                                }
-                            }
-                        }
-                    }).start();
-                }
-
-            }
-        });
         saleDeliveryDetailHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -498,6 +347,7 @@ public class LoanDetail extends AppCompatActivity {
                         String s = msg.getData().getString("uploadResp");
                         Toast.makeText(LoanDetail.this, s, Toast.LENGTH_LONG).show();
                         updateUploadFlag();
+
                         listAllBodyPostition = QueryLoanBody(current_sale_delivery_vbillcodeRecv);
                         adapter= new LoanBodyTableAdapter(LoanDetail.this, listAllBodyPostition, mListener);
                         tableBodyListView.setAdapter(adapter);
@@ -526,7 +376,7 @@ public class LoanDetail extends AppCompatActivity {
                         break;
                     case 0x18:
                         dialog.dismiss();
-                        Toast.makeText(LoanDetail.this, "接口异常", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x19:
                         dialog.dismiss();
@@ -641,20 +491,27 @@ public class LoanDetail extends AppCompatActivity {
     private boolean isAllItemUpload() {
         Boolean isY=false;
         Boolean isPY=false;
+        Boolean isN=false;
+
+
         String flag="";
         for (int i = 0; i <listAllBodyPostition.size() ; i++) {
             if(listAllBodyPostition.get(i).getUploadflag().equals("Y")){
-                isY=true;
+               isY=true;
             }else if(listAllBodyPostition.get(i).getUploadflag().equals("PY")){
                 isPY=true;
+            }else if(listAllBodyPostition.get(i).getUploadflag().equals("N")){
+               isN=true;
             }
         }
-        if(isY && isPY==false){
-            flag="Y";
-        }else if(isPY==false && isY==false){
-            flag="N";
+        if(isPY || isY){
+            if(isN==false && isY){
+                flag="Y";
+            }else {
+                flag="PY";
+            }
         }else {
-            flag="PY";
+            flag="N";
         }
 
         db4.execSQL("update Loan set flag=? where pobillcode=?", new String[]{flag, current_sale_delivery_vbillcodeRecv});
@@ -696,12 +553,10 @@ public class LoanDetail extends AppCompatActivity {
     }
 
     //扫描上传的prodcutcode更新状态
-    private void updateAllItemUploadFlag(List<SaleDeliveryUploadFlagBean> saleDeliveryUploadFlagBean) {
-        for (SaleDeliveryUploadFlagBean sdu : saleDeliveryUploadFlagBean) {
-            String curr_vbillcode = sdu.getVbillcode();
-            String curr_Vcooporderbcode_b = sdu.getVcooporderbcode_b();
-            String curr_Prodcutcode = sdu.getProdcutcode();
-            db4.execSQL("update LoanScanResult set itemuploadflag=? where pobillcode=? and itempk=? and prodcutcode=?", new String[]{"Y", curr_vbillcode, curr_Vcooporderbcode_b, curr_Prodcutcode});
+    private void updateAllItemUploadFlag() {
+
+        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
+
         }
     }
 
@@ -724,6 +579,7 @@ public class LoanDetail extends AppCompatActivity {
                 //判断cursor中是否存在数据
                 while (cursor4.moveToNext()) {
                     listitem.add(cursor4.getString(cursor4.getColumnIndex("prodcutcode")));
+
                 }
                 cursor4.close();
             }
@@ -734,59 +590,12 @@ public class LoanDetail extends AppCompatActivity {
     }
 
     private boolean iaAlreadyUploadAll() {
-        Cursor cursor = db4.rawQuery("select pobillcode from Loan where pobillcode=? and flag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, "Y"});
-        if (cursor != null && cursor.getCount() > 0) {
-            return true;
-        }
-        lisitemtall = new ArrayList<SaleDeliveryUploadFlagBean>();
-        Cursor cursor3 = db4.rawQuery("select pobillcode,itempk from LoanBody where pobillcode=? and uploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, "N"});
-        Cursor cursorpy = db4.rawQuery("select pobillcode,itempk from LoanBody where pobillcode=? and uploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, "PY"});
-        list = new ArrayList<String>();
-        if (cursor3 != null && cursor3.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor3.moveToNext()) {
-                list.add(cursor3.getString(cursor3.getColumnIndex("itempk")));
-                Cursor cursor4 = db4.rawQuery("select pobillcode,itempk,prodcutcode,itemuploadflag from LoanScanResult where pobillcode=? and itempk=? and itemuploadflag=?",
-                        new String[]{current_sale_delivery_vbillcodeRecv, cursor3.getString(cursor3.getColumnIndex("itempk")), "N"});
-                if (cursor4 != null && cursor4.getCount() > 0) {
-                    //判断cursor中是否存在数据
-                    while (cursor4.moveToNext()) {
-                        SaleDeliveryUploadFlagBean itemall = new SaleDeliveryUploadFlagBean();
-                        itemall.vbillcode = cursor4.getString(cursor4.getColumnIndex("pobillcode"));
-                        itemall.vcooporderbcode_b = cursor4.getString(cursor4.getColumnIndex("itempk"));
-                        itemall.prodcutcode = cursor4.getString(cursor4.getColumnIndex("prodcutcode"));
-                        lisitemtall.add(itemall);
-                    }
-                    cursor4.close();
-                }
+        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
+            if(!listAllBodyPostition.get(i).getUploadflag().equals("Y")){
+                return false;
             }
-            cursor3.close();
         }
-        if (cursorpy != null && cursorpy.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursorpy.moveToNext()) {
-                list.add(cursorpy.getString(cursorpy.getColumnIndex("itempk")));
-                Cursor cursor5 = db4.rawQuery("select pobillcode,itempk,prodcutcode,itemuploadflag from LoanScanResult where pobillcode=? and itempk=? and itemuploadflag=?",
-                        new String[]{current_sale_delivery_vbillcodeRecv, cursorpy.getString(cursorpy.getColumnIndex("itempk")), "N"});
-                if (cursor5 != null && cursor5.getCount() > 0) {
-                    //判断cursor中是否存在数据
-                    while (cursor5.moveToNext()) {
-                        SaleDeliveryUploadFlagBean itemall2 = new SaleDeliveryUploadFlagBean();
-                        itemall2.vbillcode = cursor5.getString(cursor5.getColumnIndex("pobillcode"));
-                        itemall2.vcooporderbcode_b = cursor5.getString(cursor5.getColumnIndex("itempk"));
-                        itemall2.prodcutcode = cursor5.getString(cursor5.getColumnIndex("prodcutcode"));
-                        lisitemtall.add(itemall2);
-                    }
-                    cursor5.close();
-                }
-            }
-            cursorpy.close();
-        }
-
-        return false;
+        return true;
     }
 
     private void updateUploadFlag() {
@@ -815,33 +624,7 @@ public class LoanDetail extends AppCompatActivity {
 
     }
 
-    private void updateAllUploadFlag() {
-        Cursor cursor31 = db4.rawQuery("select itempk from LoanScanResult where pobillcode=?",
-                new String[]{current_sale_delivery_vbillcodeRecv});
-        if (cursor31 != null && cursor31.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor31.moveToNext()) {
-                Cursor cursor3 = db4.rawQuery("select prodcutcode,itemuploadflag from LoanScanResult where pobillcode=? and itempk=? and itemuploadflag=?",
-                        new String[]{current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("itempk")), "Y"});
-                Cursor cursor32 = db4.rawQuery("select nnum,materialcode from LoanBody where pobillcode=? and itempk=?",
-                        new String[]{current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("itempk"))});
-                if (cursor3 != null && cursor3.getCount() > 0 && cursor32 != null && cursor32.getCount() > 0) {
-                    while (cursor32.moveToNext()) {
-                        String nnum = cursor32.getString(cursor32.getColumnIndex("nnum"));
-                        String matrcode = cursor32.getString(cursor32.getColumnIndex("materialcode"));
-                        if (cursor3.getCount() == Math.abs(Integer.parseInt(nnum))) {
-                            db4.execSQL("update LoanBody set uploadflag=? where pobillcode=? and itempk=? and materialcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("itempk")), matrcode});
-                        } else if (cursor3.getCount() < Math.abs(Integer.parseInt(nnum))) {
-                            db4.execSQL("update LoanBody set uploadflag=? where pobillcode=? and itempk=? and materialcode=?", new String[]{"PY", current_sale_delivery_vbillcodeRecv, cursor31.getString(cursor31.getColumnIndex("itempk")), matrcode});
-                        }
-                        cursor3.close();
-                        cursor32.close();
-                    }
-                }
-            }
-            cursor31.close();
-        }
-    }
+
 
     private String uploadSaleDeliveryVBill(String workcode, List<String> list) throws IOException, XmlPullParserException {
         String WSDL_URI;
@@ -867,6 +650,7 @@ public class LoanDetail extends AppCompatActivity {
             while (cursor2.moveToNext()) {
                 SaleDeliverySendBean.BodyBean bean = new SaleDeliverySendBean.BodyBean();
                 bean.itempk = cursor2.getString(cursor2.getColumnIndex("itempk"));
+                Log.i("itempk-->",bean.itempk);
                 bean.materialcode = cursor2.getString(cursor2.getColumnIndex("materialcode"));
                 bean.setCwarecode(DataHelper.getCwarehousecode(cursor2.getString(cursor2.getColumnIndex("cwarename")),db4));
                 bean.setUploadflag(cursor2.getString(cursor2.getColumnIndex("uploadflag")));
@@ -879,7 +663,7 @@ public class LoanDetail extends AppCompatActivity {
                 bean.pch = "";
                 int scanNum = 0;
                 ArrayList<SaleDeliverySendBean.BodyBean.SnBean> snlist = new ArrayList<SaleDeliverySendBean.BodyBean.SnBean>();
-                if (list.contains(bean.getItempk())) {
+
                     Cursor cursor3 = db4.rawQuery("select platecode,boxcode,prodcutcode,xlh from LoanScanResult where  pobillcode=? and materialcode=? and itempk=? and itemuploadflag=?",
                             new String[]{current_sale_delivery_vbillcodeRecv, bean.materialcode, bean.getItempk(), "N"});
                     if (cursor3 != null && cursor3.getCount() > 0) {
@@ -902,7 +686,7 @@ public class LoanDetail extends AppCompatActivity {
                     bean.nnum = String.valueOf(scanNum);
                     bodylist.add(bean);
                 }
-            }
+
             cursor2.close();
         }
         if (bodylist.size()==0){
@@ -955,7 +739,7 @@ public class LoanDetail extends AppCompatActivity {
         String saleDeliveryUploadDataResp = null;
         if (upload_num == 0) {
         } else {
-            HttpTransportSE se = new HttpTransportSE(WSDL_URI, 60000);
+            HttpTransportSE se = new HttpTransportSE(WSDL_URI, 300000);
             //  se.call(null, envelope);//调用 version1.2
             //version1.1 需要如下soapaction
             runOnUiThread(new Runnable() {

@@ -105,7 +105,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
         lst_downLoad_ts = (TextView)findViewById(R.id.last_downLoad_ts_purchase_return);
         //显示最后一次的下载时间
         SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestPurchaseReturnTSInfo", 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "2018-09-01 00:00:01");
+        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "");
         lst_downLoad_ts.setText("最后一次下载:"+begintime);
 
         db3 = helper3.getWritableDatabase();//获取到了 SQLiteDatabase 对象
@@ -378,6 +378,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
             valuesInner.put("vbillcode", vbillcode);
             valuesInner.put("maccode", maccode);
             valuesInner.put("nnum", nnum);
+            valuesInner.put("scannum", "0");
             valuesInner.put("itempk", itempk);
             valuesInner.put("materialcode", materialcode);
             valuesInner.put("materialname", materialname);
@@ -634,12 +635,12 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
         Log.i("exportList",new Gson().toJson(exportList));
         String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
         SimpleDateFormat formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
-        File file=new File(sdCardDir+"/sunmi");
+        File file=new File(sdCardDir+"/sunmi/export");
         if(!file.exists()){
             file.mkdir();
         }
         Date curDate =  new Date(System.currentTimeMillis());
-        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        file=new File(sdCardDir+"/sunmi/export",formatter.format(curDate)+".txt");
         Toast.makeText(PurchaseReturn.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
         FileOutputStream outputStream=null;
         try {
@@ -688,7 +689,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
         List<String> list_update = new ArrayList<String>();
        // String sql2 = "select " + "vbillcode" + "," + "dbilldate" + "," + "dr" + " from " + "SaleDelivery";//注意：这里有单引号
       //  Cursor cursor = db3.rawQuery(sql2, null);
-        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr from PurchaseReturn where flag=? order by dbilldate desc", new String[]{"N"});
+        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr,flag from PurchaseReturn  order by dbilldate desc", null);
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
@@ -696,7 +697,9 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
                 bean.vbillcode = cursor.getString(cursor.getColumnIndex("vbillcode"));
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
-                list.add(bean);
+                if(!cursor.getString(cursor.getColumnIndex("flag")).equals("Y")) {
+                    list.add(bean);
+                }
             }
 
             cursor.close();

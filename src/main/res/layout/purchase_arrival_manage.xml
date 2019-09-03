@@ -58,7 +58,7 @@
         android:background="#A7A5A5"/>
 
     <include
-        layout="@layout/list_item_purchase_arrival"
+        layout="@layout/list_item_allocate_transfer"
         android:id="@+id/table_title"/>
 
     <View

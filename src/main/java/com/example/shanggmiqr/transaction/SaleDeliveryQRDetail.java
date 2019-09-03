@@ -228,16 +228,7 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
         ArrayList<SaleDeliveryQrDetailBean> list = new ArrayList<SaleDeliveryQrDetailBean>();
         Cursor cursor=null;
 
-//        switch (getIntent().getIntExtra("type",-1)){
-//            case 7:
-//                cursor = db5.rawQuery("select prodcutcode,itemuploadflag from PurchaseReturnScanResult where vbillcode=? and materialcode=? " +
-//                        "and itempk=?", new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv,
-//                        current_vcooporderbcode_b_qrRecv});
-//                break;
-//                default:
-//
-//                    break;
-//        }
+
         cursor = db5.rawQuery("select prodcutcode,itemuploadflag from SaleDeliveryScanResult where vbillcode=? and matrcode=? " +
                 "and vcooporderbcode_b=?", new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv,
                 current_vcooporderbcode_b_qrRecv});
@@ -269,7 +260,24 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
     }
 
     private void insertCountOfScannedQRCode(String scannum) {
-        db5.execSQL("update SaleDeliveryBody set scannum=? where vbillcode=? and matrcode=? and vcooporderbcode_b=?", new String[]{scannum, current_vbillcode_qrRecv, current_matrcode_qrRecv,current_vcooporderbcode_b_qrRecv});
+
+        switch (getIntent().getIntExtra("type",-1)){
+            case 0:
+                db5.execSQL("update SaleDeliveryBody set scannum=? where vbillcode=? and matrcode=? and vcooporderbcode_b=?",
+                        new String[]{scannum, current_vbillcode_qrRecv, current_matrcode_qrRecv,current_vcooporderbcode_b_qrRecv});
+                break;
+            case 6:
+                db5.execSQL("update PurchaseArrivalBody set scannum=? where vbillcode=? and itempk=?",
+                        new String[]{scannum, current_vbillcode_qrRecv, current_vcooporderbcode_b_qrRecv});
+                break;
+            case 7:
+                db5.execSQL("update PurchaseReturnBody set scannum=? where vbillcode=? and itempk=?",
+                        new String[]{scannum, current_vbillcode_qrRecv,current_vcooporderbcode_b_qrRecv});
+                break;
+            default:
+
+                break;
+        }
     }
 
     @Override

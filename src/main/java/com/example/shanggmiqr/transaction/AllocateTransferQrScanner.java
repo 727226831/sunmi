@@ -196,7 +196,7 @@ public class AllocateTransferQrScanner extends AppCompatActivity {
     private void getData() {
         boxCodeEditTextContent= Arrays.asList(boxCodeEditText.getText().toString().split("\\s"));
 
-
+        DataHelper.setLog(AllocateTransferQrScanner.this,boxCodeEditTextContent.toString());
 
         for (int i = 0; i <boxCodeEditTextContent.size() ; i++) {
 

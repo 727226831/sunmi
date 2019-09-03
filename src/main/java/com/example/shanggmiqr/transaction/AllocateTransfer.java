@@ -105,7 +105,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
         lst_downLoad_ts = (TextView)findViewById(R.id.last_downLoad_ts_allocate_transfer);
         //显示最后一次的下载时间
         SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestAllocateTransferTSInfo", 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "2019-02-02 00:00:01");
+        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "");
         lst_downLoad_ts.setText("最后一次下载:"+begintime);
 
         db3 = helper3.getWritableDatabase();//获取到了 SQLiteDatabase 对象
@@ -281,11 +281,7 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                         }
                     }
                 }).start();
-                try {
 
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
                 break;
             case R.id.query_allocate_transfer:
                 popupQuery();
@@ -458,9 +454,8 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
     public ArrayList<AllocateTransferBean> queryAllocateTransfer() {
         ArrayList<AllocateTransferBean> list = new ArrayList<AllocateTransferBean>();
         List<String> list_update = new ArrayList<String>();
-       // String sql2 = "select " + "vbillcode" + "," + "dbilldate" + "," + "dr" + " from " + "SaleDelivery";//注意：这里有单引号
-      //  Cursor cursor = db3.rawQuery(sql2, null);
-        Cursor cursor = db3.rawQuery("select billno,dbilldate,dr from AllocateTransfer where flag=? order by dbilldate desc", new String[]{"N"});
+
+        Cursor cursor = db3.rawQuery("select billno,dbilldate,dr,flag from AllocateTransfer  order by dbilldate desc", null);
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
@@ -468,7 +463,10 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
                 bean.billno = cursor.getString(cursor.getColumnIndex("billno"));
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getInt(cursor.getColumnIndex("dr"));
-                list.add(bean);
+                if(!cursor.getString(cursor.getColumnIndex("flag")).equals("Y")) {
+                    list.add(bean);
+                }
+
 
             }
 
@@ -702,12 +700,12 @@ public class AllocateTransfer extends AppCompatActivity implements OnClickListen
         Log.i("exportList",new Gson().toJson(exportList));
         String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
         SimpleDateFormat formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
-        File file=new File(sdCardDir+"/sunmi");
+        File file=new File(sdCardDir+"/sunmi/export");
         if(!file.exists()){
             file.mkdir();
         }
         Date curDate =  new Date(System.currentTimeMillis());
-        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        file=new File(sdCardDir+"/sunmi/export",formatter.format(curDate)+".txt");
         Toast.makeText(AllocateTransfer.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
         FileOutputStream outputStream=null;
         try {

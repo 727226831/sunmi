@@ -50,7 +50,6 @@
         android:layout_marginRight="20dip"/>
 
     <EditText
-        android:inputType="number"
         android:id="@+id/et_begintime"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

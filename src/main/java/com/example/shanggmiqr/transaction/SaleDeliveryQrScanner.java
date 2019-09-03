@@ -14,6 +14,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -60,6 +61,8 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
     private EditText plateCodeEditText;
     private EditText boxCodeEditText;
     private List<String> boxCodeEditTextContent;
+    private List<String> stringListAllscan;
+
 
 
     private Button scanCheckButton;
@@ -272,8 +275,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
     private void getData() {
         boxCodeEditTextContent= Arrays.asList(boxCodeEditText.getText().toString().split("\\s"));
-
-
+        DataHelper.setLog(SaleDeliveryQrScanner.this,boxCodeEditTextContent.toString());
         qrcode_xm_Text.setText("二维箱码："+boxCodeEditTextContent.size());
         for (int i = 0; i <boxCodeEditTextContent.size() ; i++) {
 
@@ -286,7 +288,8 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
             }
 
-            if (isAlreadyScanned(productcode)) {
+
+            if(stringListAllscan.contains(productcode)){
                 Toast.makeText(SaleDeliveryQrScanner.this, "此产品码已经扫描过", Toast.LENGTH_LONG).show();
                 return;
             }
@@ -452,7 +455,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
     private List<SaleDeliveryScanResultBean> showScannedQR() {
         ArrayList<SaleDeliveryScanResultBean> list = new ArrayList<SaleDeliveryScanResultBean>();
-
+         stringListAllscan=new ArrayList<>();
         Cursor cursor = db5.rawQuery("select matrcode,platecode,boxcode,prodcutcode,num,itemuploadflag from SaleDeliveryScanResult where vbillcode=? and matrcode=? and vcooporderbcode_b=?", new String[]{current_vbillcode_qrRecv, current_matrcode_qrRecv, current_vcooporderbcode_b_qrRecv});
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
@@ -465,6 +468,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
                 bean.prodcutcode = cursor.getString(cursor.getColumnIndex("prodcutcode"));
                 bean.num = cursor.getString(cursor.getColumnIndex("num"));
                 bean.itemuploadflag = cursor.getString(cursor.getColumnIndex("itemuploadflag"));
+                stringListAllscan.add(bean.prodcutcode);
                 list.add(bean);
             }
         }

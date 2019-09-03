@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
+import android.support.constraint.solver.GoalRow;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -178,7 +179,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                 @Override
                                 public void onClick(final DialogInterface dialog, int which) {
                                     dialog.dismiss();
-                                    pushData(null);
+                                    pushData();
 
                                 }
                             })
@@ -193,7 +194,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                 } else {
 
 
-                  pushData(null);
+                  pushData();
                 }
 
             }
@@ -216,7 +217,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                 public void onClick(final DialogInterface dialog, int which) {
 
                                     dialog.dismiss();
-                                  pushData(chosen_line_vcooporderbcode_b);
+                                  pushData();
                                 }
                             })
                             .setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -229,7 +230,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                             .show();
                 }else{
 
-                    pushData(chosen_line_vcooporderbcode_b);
+                    pushData();
                 }
 
             }
@@ -252,7 +253,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
 
                     case 0x18:
                         zLoadingDialog.dismiss();
-                        Toast.makeText(SaleDeliveryDetail.this, "接口异常", Toast.LENGTH_LONG).show();
+
                         break;
                     case 0x19:
                         zLoadingDialog.dismiss();
@@ -274,6 +275,9 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                         tableBodyListView.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
                         break;
+                    case 0x23:
+                        Toast.makeText(SaleDeliveryDetail.this, "该发货单已经全部上传", Toast.LENGTH_LONG).show();
+                        break;
                     default:
                         break;
                 }
@@ -281,7 +285,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         };
     }
 
-    private void pushData(final String itempk) {
+    private void pushData() {
 
         zLoadingDialog.show();
 
@@ -292,7 +296,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                     try {
                         //Y代表已经上传过
                         if (iaAlreadyUploadAll()) {
-                            Toast.makeText(SaleDeliveryDetail.this, "该发货单已经全部上传", Toast.LENGTH_LONG).show();
+                           saleDeliveryDetailHandler.sendEmptyMessage(0x23);
                         } else if (isCwarenameSame()) {
                             String  workcode="";
                             switch (getIntent().getIntExtra("type",-1)){
@@ -303,7 +307,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                     workcode="R15";
                                     break;
                             }
-                            String uploadResp = DataHelper.uploadSaleDeliveryVBill(workcode, db4,current_sale_delivery_vbillcodeRecv,itempk,
+                            String uploadResp = DataHelper.uploadSaleDeliveryVBill(workcode, db4,current_sale_delivery_vbillcodeRecv,
                                     SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
                             zLoadingDialog.dismiss();
                             if (null != uploadResp) {
@@ -406,23 +410,31 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     private void setAllItemUpload() {
         Boolean isY=false;
         Boolean isPY=false;
+        Boolean isN=false;
+
+
         String flag="";
         for (int i = 0; i <listAllBodyPostition.size() ; i++) {
             if(listAllBodyPostition.get(i).getUploadflag().equals("Y")){
                 isY=true;
             }else if(listAllBodyPostition.get(i).getUploadflag().equals("PY")){
                 isPY=true;
+            }else if(listAllBodyPostition.get(i).getUploadflag().equals("N")){
+                isN=true;
             }
         }
-        if(isY && isPY==false){
-            flag="Y";
-        }else if(isPY==false && isY==false){
-            flag="N";
+        if(isPY || isY){
+            if(isN==false && isY){
+                flag="Y";
+            }else {
+                flag="PY";
+            }
         }else {
-            flag="PY";
+            flag="N";
         }
 
-        Log.i("flag-->",flag);
+
+        Log.i("flag-->",flag+"/"+new Gson().toJson(listAllBodyPostition));
         db4.execSQL("update SaleDelivery set flag=? where vbillcode=?", new String[]{flag, current_sale_delivery_vbillcodeRecv});
 
     }

@@ -103,7 +103,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
         lst_downLoad_ts = (TextView)findViewById(R.id.last_downLoad_ts_loan);
         //显示最后一次的下载时间
         SharedPreferences latestDBTimeInfo = getSharedPreferences("LatestLoanTSInfo", 0);
-        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "2018-09-01 00:00:01");
+        String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", "");
         lst_downLoad_ts.setText("最后一次下载:"+begintime);
 
         db3 = helper3.getWritableDatabase();//获取到了 SQLiteDatabase 对象
@@ -596,12 +596,12 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
         Log.i("exportList",new Gson().toJson(exportList));
         String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
         SimpleDateFormat formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
-        File file=new File(sdCardDir+"/sunmi");
+        File file=new File(sdCardDir+"/sunmi/export");
         if(!file.exists()){
             file.mkdir();
         }
         Date curDate =  new Date(System.currentTimeMillis());
-        file=new File(sdCardDir+"/sunmi",formatter.format(curDate)+".txt");
+        file=new File(sdCardDir+"/sunmi/export",formatter.format(curDate)+".txt");
         Toast.makeText(LoanBill.this,"导出数据位置："+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
         FileOutputStream outputStream=null;
         try {
@@ -634,7 +634,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
         SharedPreferences currentTimePeriod;
         String start_temp="";
         String end_temp="";
-        currentTimePeriod= getSharedPreferences("query_otherentry", 0);
+        currentTimePeriod= getSharedPreferences("query_loanbill", 0);
         start_temp = currentTimePeriod.getString("starttime", iUrl.begintime);
         end_temp = currentTimePeriod.getString("endtime", Utils.getDefaultEndTime());
         if(query_uploadflag.equals("ALL")){
@@ -696,7 +696,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
     public ArrayList<LoanBean> querySaleDelivery() {
         ArrayList<LoanBean> list = new ArrayList<LoanBean>();
 
-        Cursor cursor = db3.rawQuery("select pobillcode,dbilldate,dr from Loan where flag=? order by dbilldate desc", new String[]{"N"});
+        Cursor cursor = db3.rawQuery("select pobillcode,dbilldate,dr,flag from Loan  order by dbilldate desc",null);
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
@@ -704,7 +704,9 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                 bean.pobillcode = cursor.getString(cursor.getColumnIndex("pobillcode"));
                 bean.dbilldate = cursor.getString(cursor.getColumnIndex("dbilldate"));
                 bean.dr = cursor.getString(cursor.getColumnIndex("dr"));
-                list.add(bean);
+                if(!cursor.getString(cursor.getColumnIndex("flag")).equals("Y")) {
+                    list.add(bean);
+                }
 
             }
 
@@ -715,7 +717,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
     }
     public ArrayList<LoanBean> displayAllSaleDelivery() {
         ArrayList<LoanBean> list = new ArrayList<LoanBean>();
-        Cursor cursor = db3.rawQuery("select pobillcode,dbilldate,dr from Loan order by dbilldate desc", null);
+        Cursor cursor = db3.rawQuery("select pobillcode,dbilldate,dr,flag from Loan order by dbilldate desc", null);
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {

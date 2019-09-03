@@ -93,7 +93,15 @@ public class MainActivity extends AppCompatActivity {
 
 
       //测试服
-
+        dialog = new ZLoadingDialog(MainActivity.this);
+        dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
+                .setLoadingColor(Color.BLUE)//颜色
+                .setCancelable(false)
+                .setCanceledOnTouchOutside(false)
+                .setHintTextSize(16) // 设置字体大小 dp
+                .setHintTextColor(Color.GRAY)  // 设置字体颜色
+                .setDurationTime(0.5) ;// 设置动画时间百分比 - 0.5倍
+                //     .setDialogBackgroundColor(Color.parseColor("#CC111111")) // 设置背景色，默认白色
 
          updateConfig = getSharedPreferences("configInfo", 0);
          editor = updateConfig.edit();
@@ -119,15 +127,10 @@ public class MainActivity extends AppCompatActivity {
         //创建或打开一个现有的数据库（数据库存在直接打开，否则创建一个新数据库）
         //创建数据库操作必须放在主线程，否则会报错
         db = helper.getWritableDatabase();//获取到了 SQLiteDatabase 对象
-//        if (isUserDBEmpty()) {
-//            mlogInButton.setEnabled(false);
-//        } else {
-//            mlogInButton.setEnabled(true);
-//        }
         mlogInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                dialog.show();
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -138,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 menuBean=new Gson().fromJson(login(),MenuBean.class);
 
-
+                               dialog.dismiss();
                                if(menuBean.getIssuccess().equals("Y")){
                                    SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
                                    SharedPreferences.Editor editor1 = currentAccount.edit();
@@ -215,18 +218,8 @@ public class MainActivity extends AppCompatActivity {
         mdownloadUserInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dialog = new ZLoadingDialog(MainActivity.this);
-                dialog.setLoadingBuilder(Z_TYPE.CHART_RECT)//设置类型
-                        .setLoadingColor(Color.BLUE)//颜色
-                        .setHintText("数据信息下载中...")
-                        .setCancelable(false)
-                        .setCanceledOnTouchOutside(false)
-                        .setHintTextSize(16) // 设置字体大小 dp
-                        .setHintTextColor(Color.GRAY)  // 设置字体颜色
-                        .setDurationTime(0.5) // 设置动画时间百分比 - 0.5倍
-                        //     .setDialogBackgroundColor(Color.parseColor("#CC111111")) // 设置背景色，默认白色
-                        .show();
 
+                dialog.show();
                 new Thread(new Runnable() {
                     @Override
                     public void run() {

@@ -2,37 +2,26 @@ package com.example.shanggmiqr.util;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Bundle;
 import android.os.Environment;
-import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.example.shanggmiqr.Url.iUrl;
 import com.example.shanggmiqr.bean.CommonSendBean;
-import com.example.shanggmiqr.bean.LoginBean;
 import com.example.shanggmiqr.bean.LogisticsBean;
 import com.example.shanggmiqr.bean.OtherQueryBean;
 import com.example.shanggmiqr.bean.QrcodeRule;
-import com.example.shanggmiqr.bean.SaleDeliveryBean;
-import com.example.shanggmiqr.bean.SaleDeliveryQuery;
 import com.example.shanggmiqr.bean.SaleDeliverySendBean;
-import com.example.shanggmiqr.transaction.SaleDelivery;
-import com.example.shanggmiqr.transaction.SaleDeliveryDetail;
-import com.example.shanggmiqr.transaction.SaleDeliveryQrScanner;
 import com.google.gson.Gson;
 import com.zyao89.view.zloading.ZLoadingDialog;
 import com.zyao89.view.zloading.Z_TYPE;
 
-import org.ksoap2.SoapFault;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
@@ -41,10 +30,8 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -421,41 +408,22 @@ public class DataHelper {
 
         envelope.bodyOut = request;
         envelope.dotNet = false;
-
+        Log.i("url-->",WSDL_URI);
         HttpTransportSE se = new HttpTransportSE(WSDL_URI);
         //version1.1 需要如下soapaction
         se.call(namespace + "sendToWISE", envelope);
         // 获取返回的数据
         Log.i("response-->",envelope.bodyIn.toString());
+
         SoapObject object = (SoapObject) envelope.bodyIn;
 
         // 获取返回的结果
        String otherOutgoingDataResp = object.getProperty(0).toString();
-       dataRecord(workCode+"-"+pagenum+"-",request.toString()+"\r\n"+otherOutgoingDataResp);
+       saveData(workCode+"-"+pagenum+"-",request.toString()+"\r\n"+otherOutgoingDataResp);
         return otherOutgoingDataResp;
     }
 
-    private static void dataRecord(String title,String string) {
-        String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-        SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("日志yyyy年MM月dd日HH时mm分ss秒");
-        File file=new File(sdCardDir+"/sunmi");
-        if(!file.exists()){
-            file.mkdir();
-        }
-        Date curDate =  new Date(System.currentTimeMillis());
-        file=new File(sdCardDir+"/sunmi",title+formatter.format(curDate)+".txt");
-        FileOutputStream outputStream=null;
-        try {
-            outputStream=new FileOutputStream(file);
-            outputStream.write("\r\n".getBytes());
-            outputStream.write(string.getBytes());
 
-
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
 
     public static String getUser(Context context) {
@@ -579,6 +547,7 @@ public class DataHelper {
     public static boolean queryTimePeriod(String code ,String startTime,String endTime,int type,SQLiteDatabase db) {
 
         Cursor cursor=null;
+
         switch (type){
             case 0:
                 cursor = db.rawQuery("SELECT count(vbillcode) FROM SaleDelivery WHERE vbillcode=? and "+
@@ -690,7 +659,7 @@ public class DataHelper {
         return  logisticsBean;
     }
 
-    public static String uploadSaleDeliveryVBill(String workcode, SQLiteDatabase db,String vbillcode,String itempk,Context context,String company,
+    public static String uploadSaleDeliveryVBill(String workcode, SQLiteDatabase db,String vbillcode,Context context,String company,
     String expresscode,int type) {
         String WSDL_URI = BaseConfig.getNcUrl();//wsdl 的uri
         String namespace = "http://schemas.xmlsoap.org/soap/envelope/";//namespace
@@ -861,6 +830,11 @@ public class DataHelper {
 
 
             Gson gson = new Gson();
+
+            if(otherOutgoingSend.getBody().isEmpty()){
+                return " {\"name\":\"anyType\",\"namespace\":\"http://www.w3.org/2001/XMLSchema\"," +
+                        "\"value\":\"{\\\"errno\\\":\\\"1\\\",\\\"errmsg\\\":\\\"扫描数量为0不能提交\\\"}\",\"attributes\":[]}";
+            }
             String userSendBean = gson.toJson(otherOutgoingSend);
 
             request.addProperty("string", workcode);
@@ -874,19 +848,16 @@ public class DataHelper {
         envelope.bodyOut = request;
         envelope.dotNet = false;
         String saleDeliveryUploadDataResp = null;
-
-            HttpTransportSE se = new HttpTransportSE(WSDL_URI, 60000);
+        Log.i("uri-->",WSDL_URI);
+            HttpTransportSE se = new HttpTransportSE(WSDL_URI, 300000);
             //  se.call(null, envelope);//调用 version1.2
             //version1.1 需要如下soapaction
         try {
 
             se.call(namespace + "sendToWISE", envelope);
-
-
-
             Object object = envelope.getResponse();
             saleDeliveryUploadDataResp = new Gson().toJson(object);
-            Log.i("response-->",envelope.bodyIn.toString());
+            Log.i("response-->",saleDeliveryUploadDataResp);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (XmlPullParserException e) {
@@ -894,6 +865,55 @@ public class DataHelper {
         }
 
         return saleDeliveryUploadDataResp;
+    }
+    public static void   setLog(Context context,String log){
+        String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+
+        File file=new File(sdCardDir+"/sunmi");
+        if(!file.exists()){
+            file.mkdir();
+        }
+        SimpleDateFormat formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
+        Date curDate =  new Date(System.currentTimeMillis());
+
+        file=new File(sdCardDir+"/sunmi/log","ScanLog.txt");
+        try {
+            FileOutputStream out=new FileOutputStream(file,true);
+
+                StringBuffer sb=new StringBuffer();
+                sb.append("\r\n");
+                sb.append(formatter.format(curDate));
+               sb.append("\r\n");
+                sb.append(log);
+               sb.append("\r\n");
+                out.write(sb.toString().getBytes("utf-8"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private static void saveData(String title, String string) {
+        String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+        SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
+        File file=new File(sdCardDir+"/sunmi/log");
+        if(!file.exists()){
+            file.mkdir();
+        }
+        Date curDate =  new Date(System.currentTimeMillis());
+        file=new File(sdCardDir+"/sunmi/log","datalog.txt");
+        FileOutputStream outputStream=null;
+        try {
+            outputStream=new FileOutputStream(file,true);
+            outputStream.write("\r\n".getBytes());
+            outputStream.write(formatter.format(curDate).getBytes());
+            outputStream.write("\r\n".getBytes());
+            outputStream.write(string.getBytes());
+
+
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
