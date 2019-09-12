@@ -435,19 +435,7 @@ public class SaleDeliveryQrScanner extends AppCompatActivity {
 
 
 
-    private boolean isAlreadyScanned(String s) {
-        Cursor cursor = db5.rawQuery("select num from SaleDeliveryScanResult where vbillcode=? and prodcutcode=? and vcooporderbcode_b=?",
-                new String[]{current_vbillcode_qrRecv, s, current_vcooporderbcode_b_qrRecv});
-        while (cursor != null && cursor.getCount() > 0) {
 
-            if (cursor.getCount() > 0) {
-                cursor.close();
-                return true;
-            }// //有城市在数据库已存在，返回true
-        }
-        cursor.close();
-        return false;
-    }
 
 
 

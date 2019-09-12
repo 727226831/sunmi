@@ -159,6 +159,9 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                         String exception = msg.getData().getString("Exception");
                         Toast.makeText(LoanBill.this, "借出单下载异常，错误："+exception, Toast.LENGTH_LONG).show();
                         break;
+                    case 0x20:
+                      // time.setText(st+" 至 "+et);
+                        break;
                     default:
                         break;
                 }
@@ -284,17 +287,13 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                 popupQuery();
                 break;
             case R.id.displayall_loan:
-                List<LoanBean> list = displayAllSaleDelivery();
-                listAllPostition = list;
-                final LoanAdapter adapter = new LoanAdapter(LoanBill.this, list, mListener);
+                listAllPostition=new ArrayList<>();
+                listAllPostition = displayAllSaleDelivery();
+                LoanAdapter adapter = new LoanAdapter(LoanBill.this, listAllPostition, mListener);
                 tableListView.setAdapter(adapter);
-                tableListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        adapter.select(position);
-                    }
-                });
+                adapter.notifyDataSetChanged();
                 break;
+
             case R.id.b_export:
                 exportData(exportList);
                 break;
@@ -461,7 +460,7 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
                 SharedPreferences currentTimePeriod= getSharedPreferences("query_loanbill", 0);
                 SharedPreferences.Editor editor1 = currentTimePeriod.edit();
                 editor1.putString("current_account",st+" 至 "+et);
-                editor1.putString("starttime",st+ " "+"00:00:01");
+                editor1.putString("starttime",st+ " "+"00:00:00");
                 editor1.putString("endtime",et+ " "+"23:59:59");
                 editor1.commit();
                 time.setText(st+" 至 "+et);

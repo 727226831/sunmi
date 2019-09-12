@@ -108,8 +108,8 @@ public class DataHelper {
         int count=0;
         switch (type){
             case 0:
-                cursor = db.rawQuery("select count(prodcutcode) from SaleDeliveryScanResult where vbillcode=? and matrcode=? and vcooporderbcode_b=? ",
-                        new String[]{code, materialcode,vcooporderbcode_b});
+                cursor = db.rawQuery("select count(prodcutcode) from SaleDeliveryScanResult where vbillcode=?  and vcooporderbcode_b=? ",
+                        new String[]{code, vcooporderbcode_b});
                 break;
             case 1:
                 cursor = db.rawQuery("select count(prodcutcode) from OtherEntryScanResult  where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
@@ -118,6 +118,10 @@ public class DataHelper {
             case 2:
                 cursor = db.rawQuery("select  count(prodcutcode) from OtherOutgoingScanResult where pobillcode=? and materialcode=? and vcooporderbcode_b=?",
                         new String[]{code,materialcode, vcooporderbcode_b});
+                break;
+            case 8:
+                cursor = db.rawQuery("select count(prodcutcode) from SaleDeliveryScanResult where vbillcode=?  and vcooporderbcode_b=? ",
+                        new String[]{code,vcooporderbcode_b});
                 break;
 
         }
@@ -154,10 +158,12 @@ public class DataHelper {
             return false;
 
         }
+
         Cursor cursor = db.rawQuery("select code from Material where materialbarcode=?",
                 new String[]{scannedMaccode});
 
         //判断cursor中是否存在数据
+
         while (cursor.moveToNext()) {
             String code = cursor.getString(cursor.getColumnIndex("code"));
 
@@ -201,6 +207,13 @@ public class DataHelper {
                 db.update("PurchaseReturnBody",contentValues,"vbillcode=? and itempk=?",
                         new String[]{ vbillcode,itempk});
                 break;
+            case 8:
+                db.update("SaleDeliveryBody",contentValues,"vbillcode=? and vcooporderbcode_b=?",
+                        new String[]{ vbillcode,itempk});
+
+                break;
+
+
 
         }
 
@@ -335,6 +348,9 @@ public class DataHelper {
     }
 
     public  static String downloadDatabase(String pagenum, Context context,int type) throws Exception {
+        Date curDate =  new Date(System.currentTimeMillis());
+        SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
+        saveData("请求时间"+formatter.format(curDate));
         String WSDL_URI;
         String namespace;
         String WSDL_URI_current = BaseConfig.getNcUrl();//wsdl 的uri
@@ -395,7 +411,6 @@ public class DataHelper {
         SharedPreferences latestDBTimeInfo = context.getSharedPreferences(name, 0);
         String begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.getBegintime(context));
         String endtime = getDefaultEndTime();
-
         CommonSendBean userSend = new CommonSendBean(begintime, endtime, pagenum, "0");
         userSend.setAppuser(getUser(context));
         Gson gson = new Gson();
@@ -413,13 +428,15 @@ public class DataHelper {
         //version1.1 需要如下soapaction
         se.call(namespace + "sendToWISE", envelope);
         // 获取返回的数据
-        Log.i("response-->",envelope.bodyIn.toString());
+
 
         SoapObject object = (SoapObject) envelope.bodyIn;
 
         // 获取返回的结果
        String otherOutgoingDataResp = object.getProperty(0).toString();
-       saveData(workCode+"-"+pagenum+"-",request.toString()+"\r\n"+otherOutgoingDataResp);
+        Log.i("response-->",otherOutgoingDataResp);
+        saveData("返回时间"+formatter.format(curDate));
+       saveData(request.toString()+"\r\n"+otherOutgoingDataResp);
         return otherOutgoingDataResp;
     }
 
@@ -732,7 +749,7 @@ public class DataHelper {
                         bean.setUploadflag(cursor.getString(cursor.getColumnIndex("uploadflag")));
                         break;
                 }
-
+                bean.setCwarecode(warehousecode);
                 bean.setScannum(cursor.getString(cursor.getColumnIndex("scannum")));
                 if(bean.getWarehouse()==null){
                     bean.setWarehouse("");
@@ -749,8 +766,8 @@ public class DataHelper {
 
                 ArrayList<SaleDeliverySendBean.BodyBean.SnBean> snlist = new ArrayList<SaleDeliverySendBean.BodyBean.SnBean>();
 
-                    Cursor cursor3 = db.rawQuery("select prodcutcode,xlh from SaleDeliveryScanResult where  vbillcode=? and matrcode=? and vcooporderbcode_b=? and itemuploadflag=?",
-                            new String[]{vbillcode, bean.materialcode, bean.itempk, "N"});
+                    Cursor cursor3 = db.rawQuery("select prodcutcode,xlh from SaleDeliveryScanResult where  vbillcode=?  and vcooporderbcode_b=? and itemuploadflag=?",
+                            new String[]{vbillcode, bean.itempk, "N"});
 
                         //判断cursor中是否存在数据
                         while (cursor3.moveToNext()) {
@@ -835,6 +852,17 @@ public class DataHelper {
                 return " {\"name\":\"anyType\",\"namespace\":\"http://www.w3.org/2001/XMLSchema\"," +
                         "\"value\":\"{\\\"errno\\\":\\\"1\\\",\\\"errmsg\\\":\\\"扫描数量为0不能提交\\\"}\",\"attributes\":[]}";
             }
+            String code="";
+        for (int i = 0; i <otherOutgoingSend.getBody().size() ; i++) {
+            if(code.equals("")){
+                code=otherOutgoingSend.getBody().get(i).getCwarecode();
+            }
+            if(!code.equals(otherOutgoingSend.getBody().get(i).getCwarecode())){
+                return " {\"name\":\"anyType\",\"namespace\":\"http://www.w3.org/2001/XMLSchema\"," +
+                        "\"value\":\"{\\\"errno\\\":\\\"1\\\",\\\"errmsg\\\":\\\"不同仓库的行号不可以同时上传\\\"}\",\"attributes\":[]}";
+            }
+        }
+            otherOutgoingSend.setCwarehousecode(otherOutgoingSend.getBody().get(0).getCwarecode());
             String userSendBean = gson.toJson(otherOutgoingSend);
 
             request.addProperty("string", workcode);
@@ -892,7 +920,7 @@ public class DataHelper {
             e.printStackTrace();
         }
     }
-    private static void saveData(String title, String string) {
+    public static void saveData( String string) {
         String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
         SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
         File file=new File(sdCardDir+"/sunmi/log");

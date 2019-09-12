@@ -492,7 +492,7 @@ public class AllocateTransferDetail extends AppCompatActivity {
             }
         }
         if(isPY || isY){
-            if(isN==false && isY){
+            if(isN==false && isY && isPY==false ){
                 flag="Y";
             }else {
                 flag="PY";
@@ -696,9 +696,10 @@ public class AllocateTransferDetail extends AppCompatActivity {
         while (cursor.moveToNext()){
             otherOutgoingSend.setNum(cursor.getString(cursor.getColumnIndex("num")));
         }
-
+        otherOutgoingSend.setAppuser(current_user);
         otherOutgoingSend.setWlorgcode(wlCode);
        otherOutgoingSend.setWlbillcode(expressCode);
+
       // otherOutgoingSend.setCwarehousecode(wlCode);
        otherOutgoingSend.setCwhsmanagercode(DataHelper.getUser(AllocateTransferDetail.this));
         for (int i = 0; i <otherOutgoingSend.getBody().size() ; i++) {

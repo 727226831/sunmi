@@ -106,7 +106,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         }
         actionBar.setTitle(getIntent().getStringExtra("title")+"明细");
 
-                expressCodeEditText = (EditText) findViewById(R.id.expressCode_edit_text);
+         expressCodeEditText = (EditText) findViewById(R.id.expressCode_edit_text);
         saleDeliveryScanButton = (Button) findViewById(R.id.scan_saleDelivery);
         uploadAll_saleDeliveryButton = (Button) findViewById(R.id.uploadall_saleDelivery);
         uploadSingleButton = (Button) findViewById(R.id.upload_saleDelivery);
@@ -239,6 +239,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
+                zLoadingDialog.dismiss();
                 switch (msg.what) {
 
                     case 0x15:
@@ -278,6 +279,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                     case 0x23:
                         Toast.makeText(SaleDeliveryDetail.this, "该发货单已经全部上传", Toast.LENGTH_LONG).show();
                         break;
+
                     default:
                         break;
                 }
@@ -297,7 +299,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                         //Y代表已经上传过
                         if (iaAlreadyUploadAll()) {
                            saleDeliveryDetailHandler.sendEmptyMessage(0x23);
-                        } else if (isCwarenameSame()) {
+                        } else{
                             String  workcode="";
                             switch (getIntent().getIntExtra("type",-1)){
                                 case 0:
@@ -333,8 +335,6 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                                 msg.what = 0x18;
                                 saleDeliveryDetailHandler.sendMessage(msg);
                             }
-                        } else {
-                            Toast.makeText(SaleDeliveryDetail.this, "不同仓库的行号不可以同时上传", Toast.LENGTH_LONG).show();
                         }
 
                     } catch (Exception e) {
@@ -423,8 +423,9 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                 isN=true;
             }
         }
+
         if(isPY || isY){
-            if(isN==false && isY){
+            if(isN==false && isY && isPY==false ){
                 flag="Y";
             }else {
                 flag="PY";
@@ -434,7 +435,6 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         }
 
 
-        Log.i("flag-->",flag+"/"+new Gson().toJson(listAllBodyPostition));
         db4.execSQL("update SaleDelivery set flag=? where vbillcode=?", new String[]{flag, current_sale_delivery_vbillcodeRecv});
 
     }
@@ -448,13 +448,12 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         adapter = new SaleDeliveryBodyTableAdapter(SaleDeliveryDetail.this, listAllBodyPostition, mListener);
         tableBodyListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
+        Log.i("data-->",new Gson().toJson(listAllBodyPostition));
         select(0);
         tableBodyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 select(position);
-
-
             }
         });
 
@@ -479,26 +478,10 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     }
 
     private boolean isCwarenameSame() {
-        Cursor cursor3 = db4.rawQuery("select cwarename from SaleDeliveryBody where vbillcode=? ",
-                new String[]{current_sale_delivery_vbillcodeRecv});
-        upload_cwarename = new ArrayList<String>();
-        HashSet<String> hashSet = new HashSet<String>();
-        if (cursor3 != null && cursor3.getCount() > 0) {
-            while (cursor3.moveToNext()) {
-                upload_cwarename.add(cursor3.getString(cursor3.getColumnIndex("cwarename")));
-            }
-            cursor3.close();
+        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
+            listAllBodyPostition.get(i).getCwarename();
         }
-        for (int i = 0; i < upload_cwarename.size(); i++) {
-            hashSet.add(upload_cwarename.get(i).toString());
-        }
-        if (upload_cwarename.size() == 1) {
-            return true;
-        } else if (hashSet.size() == upload_cwarename.size()) {
-            return false;
-        } else {
-            return true;
-        }
+        return  false;
     }
 
 

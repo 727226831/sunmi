@@ -1,4 +1,4 @@
-package com.example.shanggmiqr.transaction;
+package com.example.shanggmiqr;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -18,8 +18,13 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.transaction.LogisticsCompanyDBDetail;
+import com.example.shanggmiqr.transaction.MaterialDBDetail;
+import com.example.shanggmiqr.transaction.QrcodeRuleDBDetail;
+import com.example.shanggmiqr.transaction.SupplierDBDetail;
+import com.example.shanggmiqr.transaction.UserDBDetail;
+import com.example.shanggmiqr.transaction.WarhouseDBDetail;
 import com.example.weiytjiang.shangmiqr.R;
-import com.example.shanggmiqr.TopMenu;
 import com.example.shanggmiqr.bean.CommonSendBean;
 import com.example.shanggmiqr.bean.CommonSendLogisticsBean;
 import com.example.shanggmiqr.bean.Customer;
@@ -270,21 +275,21 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
                 downloadWarehouseData();
                 break;
             case R.id.warehouse_check:
-                Intent intentwarehouse=new Intent(DataManage.this,WarhouseDBDetail.class);
+                Intent intentwarehouse=new Intent(DataManage.this, WarhouseDBDetail.class);
                 startActivity(intentwarehouse);
                 break;
             case R.id.material2_download:
                 downloadMaterial2Data();
                 break;
             case R.id.material2_check:
-                Intent intentmaterial2=new Intent(DataManage.this,MaterialDBDetail.class);
+                Intent intentmaterial2=new Intent(DataManage.this, MaterialDBDetail.class);
                 startActivity(intentmaterial2);
                 break;
             case R.id.user2_download:
                 downloadUser2Data();
                 break;
             case R.id.user2_check:
-                Intent intentuser2=new Intent(DataManage.this,UserDBDetail.class);
+                Intent intentuser2=new Intent(DataManage.this, UserDBDetail.class);
                 startActivity(intentuser2);
                 break;
 //            case R.id.customer_download:
@@ -298,21 +303,21 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
                 downloadQrcodeData();
                 break;
             case R.id.qrcode_check:
-                Intent intentqrcode=new Intent(DataManage.this,QrcodeRuleDBDetail.class);
+                Intent intentqrcode=new Intent(DataManage.this, QrcodeRuleDBDetail.class);
                 startActivity(intentqrcode);
                 break;
             case R.id.supplier_download:
                 downloadSupplierData();
                 break;
             case R.id.supplier_check:
-                Intent intentsupplier=new Intent(DataManage.this,SupplierDBDetail.class);
+                Intent intentsupplier=new Intent(DataManage.this, SupplierDBDetail.class);
                 startActivity(intentsupplier);
                 break;
             case R.id.logistics_company_download:
                 downloadLogisticsCompanyData();
                 break;
             case R.id.logistics_company_check:
-                Intent intentLogisticsCompany=new Intent(DataManage.this,LogisticsCompanyDBDetail.class);
+                Intent intentLogisticsCompany=new Intent(DataManage.this, LogisticsCompanyDBDetail.class);
                 startActivity(intentLogisticsCompany);
                 break;
             case R.id.downloadall:
@@ -341,6 +346,13 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
                         if (null == logisticsCompanyData) {
                             return;
                         }
+                        logistics_company_ts_begintime = Utils.getCurrentDateTimeNew() ;
+                        logistics_company_ts_endtime = Utils.getDefaultEndTime();
+                        SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestLogisticsCompanyTSInfo", 0);
+                        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
+                        editor5.putString("latest_logistics_company_ts_begintime",logistics_company_ts_begintime);
+                        editor5.putString("latest_logistics_company_ts_endtime",logistics_company_ts_endtime);
+                        editor5.commit();
                         Gson gsonUser6 =new Gson();
                         LogisticsCompany logisticsCompany = gsonUser6.fromJson(logisticsCompanyData,LogisticsCompany.class);
                         if (Integer.parseInt(logisticsCompany.getTotalpage()) ==1){
@@ -382,14 +394,8 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
                                 });
                             }
                         }
-                        String currentTs = Utils.getCurrentDate();
-                        logistics_company_ts_begintime = Utils.getCurrentDateTimeNew() ;
-                        logistics_company_ts_endtime = Utils.getDefaultEndTime();
-                        SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestLogisticsCompanyTSInfo", 0);
-                        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                        editor5.putString("latest_logistics_company_ts_begintime",logistics_company_ts_begintime);
-                        editor5.putString("latest_logistics_company_ts_endtime",logistics_company_ts_endtime);
-                        editor5.commit();
+
+
                         Message msg = new Message();
                         msg.what = 0x19;
                         dataHandler.sendMessage(msg);
@@ -502,6 +508,13 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
                             if (null == qrcodeData) {
                                 return;
                             }
+                        qrcode_rule_ts_begintime = Utils.getCurrentDateTimeNew() ;
+                        qrcode_rule_ts_endtime = Utils.getDefaultEndTime();
+                        SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestQrcodeRuleTSInfo", 0);
+                        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
+                        editor5.putString("latest_qrcode_rule_ts_begintime",qrcode_rule_ts_begintime);
+                        editor5.putString("latest_qrcode_rule_ts_endtime",qrcode_rule_ts_endtime);
+                        editor5.commit();
                             Gson gsonQrcodeRule =new Gson();
                             QrcodeRule qrcodeRule = gsonQrcodeRule.fromJson(qrcodeData,QrcodeRule.class);
                             if (qrcodeRule.getPagetotal() ==1){
@@ -544,14 +557,8 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
                                     });
                                 }
                             }
-                            String currentTs = Utils.getCurrentDate();
-                            qrcode_rule_ts_begintime = Utils.getCurrentDateTimeNew() ;
-                            qrcode_rule_ts_endtime = Utils.getDefaultEndTime();
-                            SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestQrcodeRuleTSInfo", 0);
-                            SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                            editor5.putString("latest_qrcode_rule_ts_begintime",qrcode_rule_ts_begintime);
-                            editor5.putString("latest_qrcode_rule_ts_endtime",qrcode_rule_ts_endtime);
-                            editor5.commit();
+
+
                         Message msg = new Message();
                         msg.what = 0x15;
                         dataHandler.sendMessage(msg);
@@ -573,85 +580,6 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
         }).start();
     }
 
-//    private void downloadCustomerData() {
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (isNetworkConnected(DataManage.this)) {
-//                    try {
-//                            String customerData = downloadDatabase("R04","1");
-//                            if (null == customerData) {
-//                                return;
-//                            }
-//                            Gson gsonUser2 =new Gson();
-//                            Customer customer = gsonUser2.fromJson(customerData,Customer.class);
-//                            if (customer.getPagetotal() ==1){
-//                                insertCustomerDataToDB(customer);
-//                                runOnUiThread(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        bnp.setReachedBarColor(customer_reached_color);
-//                                        bnp.setProgressTextColor(customer_reached_color);
-//                                        bnp.setProgress(100);
-//                                    }
-//                                });
-//                            }else if(customer.getPagetotal() <1){
-//                                runOnUiThread(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        Toast.makeText(DataManage.this, "当前已经是最新数据", Toast.LENGTH_LONG).show();
-//                                    }
-//                                });
-//                                return;
-//                            }else{
-//                                insertCustomerDataToDB(customer);
-//                            for (int pagenum = 2;pagenum<=customer.getPagetotal();pagenum++){
-//                                String customerData2 = downloadDatabase("R04",String.valueOf(pagenum));
-//                                Customer customer2 = gsonUser2.fromJson(customerData2, Customer.class);
-//                                insertCustomerDataToDB(customer2);
-//                                final int pagenumCustomerPro = pagenum;
-//                                final int pagetotalCustomerPro = customer.getPagetotal();
-//                                runOnUiThread(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        bnp.setReachedBarColor(customer_reached_color);
-//                                        bnp.setProgressTextColor(customer_reached_color);
-//                                        bnp.setProgress(pagenumCustomerPro*100/pagetotalCustomerPro);
-//                                        if (pagenumCustomerPro*100/pagetotalCustomerPro == 100){
-//                                            Toast.makeText(DataManage.this,"客户信息下载完成",Toast.LENGTH_SHORT).show();
-//                                        }
-//                                    }
-//                                });
-//                            }
-//                            }
-//                            String currentTs = Utils.getCurrentDate();
-//                            customer_ts_begintime = Utils.getCurrentDateTimeNew() ;
-//                            customer_ts_endtime = Utils.getDefaultEndTime();
-//                            SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestCustomerTSInfo", 0);
-//                            SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-//                            editor5.putString("latest_customer_ts_begintime",customer_ts_begintime);
-//                            editor5.putString("latest_customer_ts_endtime",customer_ts_endtime);
-//                            editor5.commit();
-//                        Message msg = new Message();
-//                        msg.what = 0x14;
-//                        dataHandler.sendMessage(msg);
-//                    } catch (Exception e) {
-//                        //e.printStackTrace();
-//                        Bundle bundle = new Bundle();
-//                        bundle.putString("Exception", e.toString());
-//                        Message msg = new Message();
-//                        msg.what = 0x18;
-//                        msg.setData(bundle);
-//                        dataHandler.sendMessage(msg);
-//                    }
-//                } else {
-//                    Message msg = new Message();
-//                    msg.what = 0x10;
-//                    dataHandler.sendMessage(msg);
-//                }
-//            }
-//        }).start();
-//    }
 
     private void downloadUser2Data() {
         new Thread(new Runnable() {
@@ -743,6 +671,13 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
                             if (null == materialData) {
                                 return;
                             }
+                        material_ts_begintime = Utils.getCurrentDateTimeNew() ;
+                        material_ts_endtime = Utils.getDefaultEndTime();
+                        SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestMaterialTSInfo", 0);
+                        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
+                        editor5.putString("latest_material_ts_begintime",material_ts_begintime);
+                        editor5.putString("latest_material_ts_endtime",material_ts_endtime);
+                        editor5.commit();
                             Gson gsonUser =new Gson();
                             MaterialBean materialBean = gsonUser.fromJson(materialData, MaterialBean.class);
                             if (materialBean.getPagetotal() ==1){
@@ -785,14 +720,8 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
                                 });
                             }
                             }
-                            String currentTs = Utils.getCurrentDate();
-                            material_ts_begintime = Utils.getCurrentDateTimeNew() ;
-                            material_ts_endtime = Utils.getDefaultEndTime();
-                            SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestMaterialTSInfo", 0);
-                            SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                            editor5.putString("latest_material_ts_begintime",material_ts_begintime);
-                            editor5.putString("latest_material_ts_endtime",material_ts_endtime);
-                            editor5.commit();
+
+
                         Message msg = new Message();
                         msg.what = 0x12;
                         dataHandler.sendMessage(msg);
@@ -824,6 +753,13 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
                             if (null == warhouseData) {
                                 return;
                             }
+                        warhouse_ts_begintime = Utils.getCurrentDateTimeNew() ;
+                        warhouse_ts_endtime = Utils.getDefaultEndTime();
+                        SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestWarhouseTSInfo", 0);
+                        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
+                        editor5.putString("latest_warhouse_ts_begintime",warhouse_ts_begintime);
+                        editor5.putString("latest_warhouse_ts_endtime",warhouse_ts_endtime);
+                        editor5.commit();
                             Gson gsonUser =new Gson();
                             Warhouse warhouse = gsonUser.fromJson(warhouseData, Warhouse.class);
                             if (warhouse.getPagetotal() ==1){
@@ -865,14 +801,7 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
                                 });
                             }
                             }
-                            String currentTs = Utils.getCurrentDate();
-                            warhouse_ts_begintime = Utils.getCurrentDateTimeNew() ;
-                            warhouse_ts_endtime = Utils.getDefaultEndTime();
-                            SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestWarhouseTSInfo", 0);
-                            SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                            editor5.putString("latest_warhouse_ts_begintime",warhouse_ts_begintime);
-                            editor5.putString("latest_warhouse_ts_endtime",warhouse_ts_endtime);
-                            editor5.commit();
+
                         Message msg = new Message();
                         msg.what = 0x11;
                         dataHandler.sendMessage(msg);
@@ -1090,6 +1019,7 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
         SoapObject object = (SoapObject) envelope.bodyIn;
         // 获取返回的结果
         dataResp = object.getProperty(0).toString();
+
         return dataResp;
     }
 

@@ -26,6 +26,16 @@ public class AllocateTransferSendBean {
     public String num;
     public List<BodyBean> body;
 
+    public String getAppuser() {
+        return appuser;
+    }
+
+    public void setAppuser(String appuser) {
+        this.appuser = appuser;
+    }
+
+    private String appuser;
+
     public String getWlbillcode() {
         return wlbillcode;
     }

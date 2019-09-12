@@ -81,10 +81,9 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     private  String begintime;
     SharedPreferences latestDBTimeInfo;
     SaleDeliveryAdapter adapter;
-    List<SaleDeliveryBean> saleDeliveryBeanList;
+    List<SaleDeliveryBean> saleDeliveryBeanList=new ArrayList<>();
 
     int type;
-    String title;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -141,11 +140,13 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                         break;
                     case 0x11:
                         //插入UI表格数据
-
-                       saleDeliveryBeanList = querySaleDelivery();
-
+                        Date curDate =  new Date(System.currentTimeMillis());
+                        SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
+                        DataHelper.saveData("APP处理完成时间"+formatter.format(curDate));
+                        saleDeliveryBeanList = querySaleDelivery();
                         adapter = new SaleDeliveryAdapter(SaleDelivery.this,saleDeliveryBeanList, mListener);
                         tableListView.setAdapter(adapter);
+                        adapter.notifyDataSetChanged();
                         Toast.makeText(SaleDelivery.this, "单据下载完成", Toast.LENGTH_LONG).show();
                         break;
                     case 0x19:
@@ -153,6 +154,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                         String exception = msg.getData().getString("Exception");
                         Toast.makeText(SaleDelivery.this, "单据下载异常，错误："+exception, Toast.LENGTH_LONG).show();
                         break;
+
                 }
             }
         };
@@ -168,10 +170,12 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     protected void onStart() {
         super.onStart();
 
-        saleDeliveryBeanList = querySaleDelivery();
-        adapter = new SaleDeliveryAdapter(SaleDelivery.this,saleDeliveryBeanList, mListener);
-        tableListView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
+        if(saleDeliveryBeanList.size()==0) {
+            saleDeliveryBeanList = querySaleDelivery();
+            adapter = new SaleDeliveryAdapter(SaleDelivery.this, saleDeliveryBeanList, mListener);
+            tableListView.setAdapter(adapter);
+            adapter.notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -192,6 +196,9 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                                     });
                                     //R07发货单
                                     String saleDeliveryData =DataHelper.downloadDatabase("1",SaleDelivery.this,type);
+                                    Date curDate =  new Date(System.currentTimeMillis());
+                                    SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
+                                    DataHelper.saveData("APP处理开始时间"+formatter.format(curDate));
                                     if (null == saleDeliveryData) {
                                         dialog.dismiss();
                                         return;
@@ -199,7 +206,6 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
                                     Gson gson7 = new Gson();
                                     final SaleDeliveryQuery saleDeliveryQuery = gson7.fromJson(saleDeliveryData, SaleDeliveryQuery.class);
-
                                     if (saleDeliveryQuery.getPagetotal() == 1) {
                                         insertDownloadDataToDB(saleDeliveryQuery);
                                         Message msg = new Message();
@@ -330,16 +336,17 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
     private void insertDownloadDataToDB(SaleDeliveryQuery saleDeliveryQuery) {
 
-        List<SaleDeliveryQuery.DataBean> saleDeliveryBeanList = saleDeliveryQuery.getData();
+        List<SaleDeliveryQuery.DataBean> dataBeans = saleDeliveryQuery.getData();
 
         try {
 
-            for (SaleDeliveryQuery.DataBean ob : saleDeliveryBeanList) {
-
+            for (SaleDeliveryQuery.DataBean ob : dataBeans) {
+                SaleDeliveryBean bean = new SaleDeliveryBean();
 
                 //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
                 switch (ob.getDr()){
                     case 0:
+
                         setSaleDeliveryData(ob);
                         setSaleDeliverybodyData(ob);
                         break;
@@ -354,11 +361,13 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                         db3.delete("SaleDeliveryScanResult", "vbillcode=?", new String[]{ob.getVbillcode()});
                         setSaleDeliveryData(ob);
                         setSaleDeliverybodyData(ob);
+
                         break;
 
                 }
 
             }
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -371,7 +380,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
     private void setSaleDeliverybodyData(SaleDeliveryQuery.DataBean ob) {
         List<SaleDeliveryQuery.DataBean.BodysBean> saleDeliveryDatabodysList = ob.getBody();
-
+        Log.i("body",new Gson().toJson(ob));
         for (SaleDeliveryQuery.DataBean.BodysBean obb : saleDeliveryDatabodysList) {
             String cwarename = getCwarename(obb.getCwarehousecode());
             String orginal_cwarename = existOriginalCwarename(obb.getCwarehousecode());
@@ -623,7 +632,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 SharedPreferences currentTimePeriod= getSharedPreferences("query_saledelivery", 0);
                 SharedPreferences.Editor editor1 = currentTimePeriod.edit();
                 editor1.putString("current_account",st+" 至 "+et);
-                editor1.putString("starttime",st+ " "+"00:00:01");
+                editor1.putString("starttime",st+ " "+"00:00:00");
                 editor1.putString("endtime",et+ " "+"23:59:59");
                 editor1.commit();
                 time.setText(st+" 至 "+et);

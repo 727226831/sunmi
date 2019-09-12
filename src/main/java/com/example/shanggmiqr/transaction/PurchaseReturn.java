@@ -617,7 +617,7 @@ public class PurchaseReturn extends AppCompatActivity implements OnClickListener
                 SharedPreferences currentTimePeriod= getSharedPreferences("query_purchasereturn", 0);
                 SharedPreferences.Editor editor1 = currentTimePeriod.edit();
                 editor1.putString("current_account",st+" 至 "+et);
-                editor1.putString("starttime",st+ " "+"00:00:01");
+                editor1.putString("starttime",st+ " "+"00:00:00");
                 editor1.putString("endtime",et+ " "+"23:59:59");
                 editor1.commit();
                 time.setText(st+" 至 "+et);

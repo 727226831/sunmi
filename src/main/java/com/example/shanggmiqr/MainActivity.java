@@ -146,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
                                    SharedPreferences currentAccount= getSharedPreferences("current_account", 0);
                                    SharedPreferences.Editor editor1 = currentAccount.edit();
                                    editor1.putString("user",accountEdittext.getText().toString());
+                                   editor1.putString("current_account",accountEdittext.getText().toString());
                                    editor1.putString("password",pwdEdittext.getText().toString());
                                    editor1.putString("menubean",new Gson().toJson(menuBean));
                                    editor1.commit();

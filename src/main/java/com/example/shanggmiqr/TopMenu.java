@@ -28,7 +28,6 @@ import com.example.shanggmiqr.bean.QrcodeRule;
 import com.example.shanggmiqr.bean.Supplier;
 import com.example.shanggmiqr.bean.User;
 import com.example.shanggmiqr.bean.Warhouse;
-import com.example.shanggmiqr.transaction.DataManage;
 import com.example.shanggmiqr.util.BaseConfig;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.MyImageView;
@@ -91,6 +90,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
     private ZLoadingDialog dialog;
     //用临时变量count计数下载成功的基础数据个数，满6 dialog消失
     private int count = 0;
+    private int total=4;
     @Override
     protected void onCreate( Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,16 +116,15 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                 .setCanceledOnTouchOutside(false)
                 .setHintTextSize(16) // 设置字体大小 dp
                 .setHintTextColor(Color.GRAY)  // 设置字体颜色
-                .setDurationTime(0.5) // 设置动画时间百分比 - 0.5倍
+                .setDurationTime(0.5) .show();// 设置动画时间百分比 - 0.5倍
                 //     .setDialogBackgroundColor(Color.parseColor("#CC111111")) // 设置背景色，默认白色
-                .show();
+
         downloadWarehouseData();
+           downloadLogisticsCompanyData();
+            downloadQrcodeData();
         downloadMaterial2Data();
-        downloadUser2Data();
-        downloadQrcodeData();
-    //    downloadCustomerData();
-        downloadSupplierData();
-        downloadLogisticsCompanyData();
+
+
         }
         //基础信息离线下载暂时屏蔽掉-E  20181102
         dataHandler = new Handler() {
@@ -138,7 +137,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         break;
                     case 0x11:
                         count++;
-                        if (count ==6){
+                        if (count ==total){
                             dialog.dismiss();
                         }
                         String latest_warhouse_ts = getCurrentDataTime();
@@ -150,7 +149,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         break;
                     case 0x12:
                         count++;
-                        if (count ==6){
+                        if (count ==total){
                             dialog.dismiss();
                         }
                         String latest_material_ts = getCurrentDataTime();
@@ -162,7 +161,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         break;
                     case 0x13:
                         count++;
-                        if (count ==6){
+                        if (count ==total){
                             dialog.dismiss();
                         }
                         String latest_user_ts = getCurrentDataTime();
@@ -174,7 +173,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         break;
                     case 0x14:
                         count++;
-                        if (count ==6){
+                        if (count ==total){
                             dialog.dismiss();
                         }
                         String latest_customer_ts = getCurrentDataTime();
@@ -186,7 +185,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         break;
                     case 0x15:
                         count++;
-                        if (count ==6){
+                        if (count ==total){
                             dialog.dismiss();
                         }
                         String latest_qr_ts = getCurrentDataTime();
@@ -198,7 +197,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         break;
                     case 0x16:
                         count++;
-                        if (count ==6){
+                        if (count ==total){
                             dialog.dismiss();
                         }
                         String latest_supplier_ts = getCurrentDataTime();
@@ -251,7 +250,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         break;
                     case 0x26:
                         count++;
-                        if (count ==6){
+                        if (count ==total){
                             dialog.dismiss();
                         }
                         String latest_logistics_company_ts = getCurrentDataTime();
@@ -332,6 +331,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         if (null == logisticsCompanyData) {
                             return;
                         }
+
                         Gson gsonUser6 =new Gson();
                         LogisticsCompany logisticsCompany = gsonUser6.fromJson(logisticsCompanyData,LogisticsCompany.class);
                         if (Integer.parseInt(logisticsCompany.getTotalpage()) ==1){
@@ -342,12 +342,12 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                                 public void run() {
 
                                     count++;
-                                    if (count ==6){
+                                    if (count ==total){
                                         dialog.dismiss();
                                     }
                                 }
                             });
-                            return;
+
                         }else {
                             insertLogisticsCompanyDataToDB(logisticsCompany);
                             for (int pagenum = 2; pagenum <= Integer.parseInt(logisticsCompany.getTotalpage()); pagenum++) {
@@ -356,7 +356,6 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                                 insertLogisticsCompanyDataToDB(logisticsCompany2);
                             }
                         }
-                        String currentTs = Utils.getCurrentDate();
                         logistics_company_ts_begintime = Utils.getCurrentDateTimeNew() ;
                         logistics_company_ts_endtime = Utils.getDefaultEndTime();
                         SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestLogisticsCompanyTSInfo", 0);
@@ -364,6 +363,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         editor5.putString("latest_logistics_company_ts_begintime",logistics_company_ts_begintime);
                         editor5.putString("latest_logistics_company_ts_endtime",logistics_company_ts_endtime);
                         editor5.commit();
+
                         Message msg = new Message();
                         msg.what = 0x26;
                         dataHandler.sendMessage(msg);
@@ -385,69 +385,6 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
         }).start();
     }
 
-    private void downloadSupplierData() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (isNetworkConnected(TopMenu.this)) {
-                    try {
-                        String supplierData = downloadDatabase("R06","1");
-                        if (null == supplierData) {
-                            return;
-                        }
-                        Gson gsonUser6 =new Gson();
-                        Supplier supplier = gsonUser6.fromJson(supplierData,Supplier.class);
-                        if (supplier.getPagetotal() ==1){
-                            insertSupplierDataToDB(supplier);
-                        }else if(supplier.getPagetotal() <1){
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                    count++;
-                                    if (count ==6){
-                                        dialog.dismiss();
-                                    }
-                                }
-                            });
-                            return;
-                        }else {
-                            insertSupplierDataToDB(supplier);
-                            for (int pagenum = 2; pagenum <= supplier.getPagetotal(); pagenum++) {
-                                String supplierData2 = downloadDatabase("R06", String.valueOf(pagenum));
-                                Supplier supplier2 = gsonUser6.fromJson(supplierData2, Supplier.class);
-                                Log.i("R06",supplierData2);
-                                insertSupplierDataToDB(supplier2);
-                            }
-                        }
-                        String currentTs = Utils.getCurrentDate();
-                        supplier_ts_begintime = Utils.getCurrentDateTimeNew() ;
-                        supplier_ts_endtime = Utils.getDefaultEndTime();
-                        SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestSupplierTSInfo", 0);
-                        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                        editor5.putString("latest_supplier_ts_begintime",supplier_ts_begintime);
-                        editor5.putString("latest_supplier_ts_endtime",supplier_ts_endtime);
-                        editor5.commit();
-                        Message msg = new Message();
-                        msg.what = 0x16;
-                        dataHandler.sendMessage(msg);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("Exception24", e.toString());
-                        Message msg = new Message();
-                        msg.what = 0x24;
-                        msg.setData(bundle);
-                        dataHandler.sendMessage(msg);
-                    }
-                } else {
-                    Message msg = new Message();
-                    msg.what = 0x10;
-                    dataHandler.sendMessage(msg);
-                }
-            }
-        }).start();
-    }
 
     private void downloadQrcodeData() {
         new Thread(new Runnable() {
@@ -459,6 +396,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         if (null == qrcodeData) {
                             return;
                         }
+
                         Gson gsonQrcodeRule =new Gson();
                         QrcodeRule qrcodeRule = gsonQrcodeRule.fromJson(qrcodeData,QrcodeRule.class);
                         if (qrcodeRule.getPagetotal() ==1){
@@ -470,12 +408,12 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                                 public void run() {
 
                                     count++;
-                                    if (count ==6){
+                                    if (count ==total){
                                         dialog.dismiss();
                                     }
                                 }
                             });
-                            return;
+
                         }else {
                             insertQrcodeRuledDataToDB(qrcodeRule);
                             for (int pagenum = 2; pagenum <= qrcodeRule.getPagetotal(); pagenum++) {
@@ -484,7 +422,6 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                                 insertQrcodeRuledDataToDB(qrcodeRule2);
                             }
                         }
-                        String currentTs = Utils.getCurrentDate();
                         qrcode_rule_ts_begintime =Utils.getCurrentDateTimeNew() ;
                         qrcode_rule_ts_endtime = Utils.getDefaultEndTime();
                         SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestQrcodeRuleTSInfo", 0);
@@ -492,6 +429,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         editor5.putString("latest_qrcode_rule_ts_begintime",qrcode_rule_ts_begintime);
                         editor5.putString("latest_qrcode_rule_ts_endtime",qrcode_rule_ts_endtime);
                         editor5.commit();
+
                         Message msg = new Message();
                         msg.what = 0x15;
                         dataHandler.sendMessage(msg);
@@ -513,131 +451,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
         }).start();
     }
 
-    private void downloadCustomerData() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (isNetworkConnected(TopMenu.this)) {
-                    try {
-                        String customerData = downloadDatabase("R04","1");
-                        if (null == customerData) {
-                            return;
-                        }
-                        Gson gsonUser2 =new Gson();
-                        Customer customer = gsonUser2.fromJson(customerData,Customer.class);
-                        if (customer.getPagetotal() ==1){
-                            insertCustomerDataToDB(customer);
-                        }else if(customer.getPagetotal() <1){
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
 
-                                    count++;
-                                    if (count ==6){
-                                        dialog.dismiss();
-                                    }
-                                }
-                            });
-                            return;
-                        }else{
-                            insertCustomerDataToDB(customer);
-                            for (int pagenum = 2;pagenum<=customer.getPagetotal();pagenum++){
-                                String customerData2 = downloadDatabase("R04",String.valueOf(pagenum));
-                                Customer customer2 = gsonUser2.fromJson(customerData2, Customer.class);
-                                insertCustomerDataToDB(customer2);
-                            }
-                        }
-                        String currentTs = Utils.getCurrentDate();
-                        customer_ts_begintime = Utils.getCurrentDateTimeNew() ;
-                        customer_ts_endtime = Utils.getDefaultEndTime();
-                        SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestCustomerTSInfo", 0);
-                        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                        editor5.putString("latest_customer_ts_begintime",customer_ts_begintime);
-                        editor5.putString("latest_customer_ts_endtime",customer_ts_endtime);
-                        editor5.commit();
-                        Message msg = new Message();
-                        msg.what = 0x14;
-                        dataHandler.sendMessage(msg);
-                    } catch (Exception e) {
-                        Bundle bundle = new Bundle();
-                        bundle.putString("Exception23", e.toString());
-                        Message msg = new Message();
-                        msg.what = 0x23;
-                        msg.setData(bundle);
-                        dataHandler.sendMessage(msg);
-                        e.printStackTrace();
-                    }
-                } else {
-                    Message msg = new Message();
-                    msg.what = 0x10;
-                    dataHandler.sendMessage(msg);
-                }
-            }
-        }).start();
-    }
-
-    private void downloadUser2Data() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (isNetworkConnected(TopMenu.this)) {
-                    try {
-                        String userData = downloadDatabase("R03","1");
-                        if (null == userData) {
-                            return;
-                        }
-                        Gson gsonUser2 =new Gson();
-                        User user2 = gsonUser2.fromJson(userData,User.class);
-                        if (user2.getPagetotal() ==1){
-                            insertUserDataToDB(user2);
-                        }else if(user2.getPagetotal() <1){
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                    count++;
-                                    if (count ==6){
-                                        dialog.dismiss();
-                                    }
-                                }
-                            });
-                            return;
-                        }else{
-                            insertUserDataToDB(user2);
-                            for (int pagenum = 2;pagenum<=user2.getPagetotal();pagenum++){
-                                String userData2 = downloadDatabase("R03",String.valueOf(pagenum));
-                                User userBean2 = gsonUser2.fromJson(userData2, User.class);
-                                insertUserDataToDB(userBean2);
-                            }
-                        }
-                        String currentTs = Utils.getCurrentDate();
-                        user_ts_begintime = Utils.getCurrentDateTimeNew() ;
-                        user_ts_endtime = Utils.getDefaultEndTime();
-                        SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestUserTSInfo", 0);
-                        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                        editor5.putString("latest_user_ts_begintime",user_ts_begintime);
-                        editor5.putString("latest_user_ts_endtime",user_ts_endtime);
-                        editor5.commit();
-                        Message msg = new Message();
-                        msg.what = 0x13;
-                        dataHandler.sendMessage(msg);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("Exception21", e.toString());
-                        Message msg = new Message();
-                        msg.what = 0x21;
-                        msg.setData(bundle);
-                        dataHandler.sendMessage(msg);
-                    }
-                } else {
-                    Message msg = new Message();
-                    msg.what = 0x10;
-                    dataHandler.sendMessage(msg);
-                }
-            }
-        }).start();
-    }
 
     private void downloadMaterial2Data() {
         new Thread(new Runnable() {
@@ -649,6 +463,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         if (null == materialData) {
                             return;
                         }
+
                         Gson gsonUser =new Gson();
                         MaterialBean materialBean = gsonUser.fromJson(materialData, MaterialBean.class);
 
@@ -660,12 +475,12 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                                 public void run() {
 
                                     count++;
-                                    if (count ==6){
+                                    if (count ==total){
                                         dialog.dismiss();
                                     }
                                 }
                             });
-                            return;
+
                         }else{
 
                             insertMaterialdDataToDB(materialBean);
@@ -678,7 +493,6 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
 
 
                         }
-                        String currentTs = Utils.getCurrentDate();
                         material_ts_begintime = Utils.getCurrentDateTimeNew() ;
                         material_ts_endtime = Utils.getDefaultEndTime();
                         SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestMaterialTSInfo", 0);
@@ -686,6 +500,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         editor5.putString("latest_material_ts_begintime",material_ts_begintime);
                         editor5.putString("latest_material_ts_endtime",material_ts_endtime);
                         editor5.commit();
+
                         Message msg = new Message();
                         msg.what = 0x12;
                         dataHandler.sendMessage(msg);
@@ -717,6 +532,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         if (null == warhouseData) {
                             return;
                         }
+
                         Gson gsonUser =new Gson();
                         Warhouse warhouse = gsonUser.fromJson(warhouseData, Warhouse.class);
                         if (warhouse.getPagetotal() ==1){
@@ -727,12 +543,12 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                                 public void run() {
 
                                     count++;
-                                    if (count ==6){
+                                    if (count ==total){
                                         dialog.dismiss();
                                     }
                                 }
                             });
-                            return;
+
                         }else{
                             insertWarhousedDataToDB(warhouse);
                             for (int pagenum = 2;pagenum<=warhouse.getPagetotal();pagenum++){
@@ -741,7 +557,6 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                                 insertWarhousedDataToDB(warhouseBean2);
                             }
                         }
-                        String currentTs = Utils.getCurrentDate();
                         warhouse_ts_begintime = Utils.getCurrentDateTimeNew() ;
                         warhouse_ts_endtime = Utils.getDefaultEndTime();
                         SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestWarhouseTSInfo", 0);
@@ -749,6 +564,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         editor5.putString("latest_warhouse_ts_begintime",warhouse_ts_begintime);
                         editor5.putString("latest_warhouse_ts_endtime",warhouse_ts_endtime);
                         editor5.commit();
+
                         Message msg = new Message();
                         msg.what = 0x11;
                         dataHandler.sendMessage(msg);
@@ -792,83 +608,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
             values.clear();
         }
     }
-    private void insertSupplierDataToDB(Supplier supplier) {
-        List<Supplier.DataBean> supplierBeanList = supplier.getData();
-        if(supplierBeanList==null){
-            return;
-        }
-        for (Supplier.DataBean cb:supplierBeanList){
-            String Pk_supplie = cb.getPk_supplie();
-            String name = cb.getName();
-            String cgorgcode = cb.getCgorgcode();
-            String code = cb.getCode();
-            String corpaddress = cb.getCorpaddress();
-            String orgcode = cb.getOrgcode();
-            int supprop = cb.getSupprop();
-            String ts = cb.getTs();
-            List<Supplier.DataBean.SupplierbankBean> supplierbankBeenList = cb.getSupplierbank();
-            //使用 ContentValues 来对要添加的数据进行组装
-            ContentValues values = new ContentValues();
-            for (Supplier.DataBean.SupplierbankBean sbb:supplierbankBeenList){
-                ContentValues valuesInner = new ContentValues();
-                String bankname = sbb.getBankname();
-                String accname = sbb.getAccname();
-                String accnum = sbb.getAccnum();
-                valuesInner.put("Pk_supplier",Pk_supplie);
-                valuesInner.put("bankname",bankname);
-                valuesInner.put("accname",accname);
-                valuesInner.put("accnum",accnum);
-                db2.insert("SupplierBankBody", null, valuesInner);
-                valuesInner.clear();
-            }
-            // List<Supplier.SupplierDataBean.SupplierbankBean> supplierbankBeenList = supplierBeanList;
-            values.put("Pk_supplier",Pk_supplie);
-            values.put("name",name);
-            values.put("cgorgcode",cgorgcode);
-            values.put("code",code);
-            values.put("corpaddress",corpaddress);
-            values.put("orgcode",orgcode);
-            values.put("supprop",supprop);
-            values.put("ts",ts);
-            // 插入第一条数据
-            db2.insert("Supplier",null,values);
-            values.clear();
-        }
-    }
 
-    private void insertCustomerDataToDB(Customer customer) {
-
-        //对象中拿到集合
-        List<Customer.CustomerDataBean> customerBeanList = customer.getData();
-        for (Customer.CustomerDataBean cb:customerBeanList){
-            String pk_customer = cb.getPk_customer();
-            String code = cb.getCode();
-            String name = cb.getName();
-            int custstate = cb.getCuststate();
-            int enablestate = cb.getEnablestate();
-            int custprop = cb.getCustprop();
-            String custclassid = cb.getCustclassid();
-            String groupcode = cb.getGroupcode();
-            String orgcode = cb.getOrgcode();
-            String ts = cb.getTs();
-            //使用 ContentValues 来对要添加的数据进行组装
-            ContentValues values = new ContentValues();
-            // 开始组装第一条数据
-            values.put("pk_customer",pk_customer);
-            values.put("code",code);
-            values.put("name",name);
-            values.put("custstate",custstate);
-            values.put("enablestate",enablestate);
-            values.put("custprop",custprop);
-            values.put("custclassid",custclassid);
-            values.put("groupcode",groupcode);
-            values.put("orgcode",orgcode);
-            values.put("ts",ts);
-            // 插入第一条数据
-            db2.insert("Customer",null,values);
-            values.clear();
-        }
-    }
 
     private void insertWarhousedDataToDB(Warhouse warhouse) {
         //对象中拿到集合
@@ -954,6 +694,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
         }
         request.addProperty("string", workCode);
         request.addProperty("string1", userSendBean);
+        Log.i("request-->",request.toString());
         //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
         //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
@@ -969,6 +710,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
         SoapObject object = (SoapObject) envelope.bodyIn;
         // 获取返回的结果
         dataResp = object.getProperty(0).toString();
+        Log.i("response-->",dataResp);
         return dataResp;
     }
 

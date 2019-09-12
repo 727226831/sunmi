@@ -309,6 +309,7 @@ public class OtherEntryDetail extends AppCompatActivity {
 
 
 
+
             switch (type) {
                 case 1:
                     db4.execSQL("update  OtherEntry set flag=? where pobillcode=?", new String[]{flag, current_pobillcodeRecv});

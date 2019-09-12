@@ -373,7 +373,7 @@ public class PurchaseReturnDetail extends AppCompatActivity {
             }
         }
         if(isPY || isY){
-            if(isN==false && isY){
+            if(isN==false && isY && isPY==false ){
                 flag="Y";
             }else {
                 flag="PY";

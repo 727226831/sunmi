@@ -505,7 +505,7 @@ public class LoanDetail extends AppCompatActivity {
             }
         }
         if(isPY || isY){
-            if(isN==false && isY){
+            if(isN==false && isY && isPY==false ){
                 flag="Y";
             }else {
                 flag="PY";
@@ -546,48 +546,8 @@ public class LoanDetail extends AppCompatActivity {
         }
     }
 
-    private void updateItemUploadFlag(List<String> listitem) {
-        for (String send : listitem) {
-            db4.execSQL("update LoanScanResult set itemuploadflag=? where pobillcode=? and itempk=? and materialcode=? and prodcutcode=?", new String[]{"Y", current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, chosen_line_matrcode, send});
-        }
-    }
 
-    //扫描上传的prodcutcode更新状态
-    private void updateAllItemUploadFlag() {
 
-        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
-
-        }
-    }
-
-    private boolean iaAlreadyUploadSingle(String chosen_line_vcooporderbcode_b) {
-        Cursor cursor3 = db4.rawQuery("select itempk from LoanBody where pobillcode=? and itempk=? and uploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, "Y"});
-        lisitemtall = new ArrayList<SaleDeliveryUploadFlagBean>();
-        // Cursor cursor3 = db3.rawQuery(sql3, null);
-        if (cursor3 != null && cursor3.getCount() > 0) {
-            return true;
-        } else {
-            //判断cursor中是否存在数据
-            //     while (cursor3.moveToNext()) {
-            list = new ArrayList<String>();
-            list.add(chosen_line_vcooporderbcode_b);
-            Cursor cursor4 = db4.rawQuery("select prodcutcode,itemuploadflag from LoanScanResult where pobillcode=? and itempk=? and itemuploadflag=?",
-                    new String[]{current_sale_delivery_vbillcodeRecv, chosen_line_vcooporderbcode_b, "N"});
-            listitem = new ArrayList<String>();
-            if (cursor4 != null && cursor4.getCount() > 0) {
-                //判断cursor中是否存在数据
-                while (cursor4.moveToNext()) {
-                    listitem.add(cursor4.getString(cursor4.getColumnIndex("prodcutcode")));
-
-                }
-                cursor4.close();
-            }
-            //      }
-            cursor3.close();
-            return false;//false代表有未上传的
-        }
-    }
 
     private boolean iaAlreadyUploadAll() {
         for (int i = 0; i <listAllBodyPostition.size() ; i++) {
