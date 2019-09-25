@@ -134,14 +134,10 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                 .setDurationTime(0.5) .show();// 设置动画时间百分比 - 0.5倍
                 //     .setDialogBackgroundColor(Color.parseColor("#CC111111")) // 设置背景色，默认白色
 
-//        downloadWarehouseData();
-//           downloadLogisticsCompanyData();
-//            downloadQrcodeData();
-//        downloadMaterial2Data();
+
             dialog.show();
             getR01Data("1");
             getR02Data("1");
-
             getR13Data("1");
             getR50Data("1");
 
@@ -351,8 +347,6 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
         MediaType mediaType = MediaType.parse("text/x-markdown; charset=utf-8");
         String requestBody="";
         requestBody=DataHelper.getRequestbody("R50", downloadDatabase("R50",pagenum) );
-
-         Log.i("R50-->",downloadDatabase("R50",pagenum));
         final Request request = new Request.Builder()
                 .url( BaseConfig.getNcUrl())
                 .post(RequestBody.create(mediaType, requestBody))
@@ -404,7 +398,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
         MediaType mediaType = MediaType.parse("text/x-markdown; charset=utf-8");
         String requestBody="";
         requestBody=DataHelper.getRequestbody("R02", downloadDatabase("R02",pagenum) );
-        Log.i("R02-->",downloadDatabase("R02",pagenum));
+
 
         final Request request = new Request.Builder()
                 .url( BaseConfig.getNcUrl())
@@ -459,7 +453,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
         String requestBody="";
         requestBody=DataHelper.getRequestbody("R13", downloadDatabase("R13",pagenum) );
 
-        Log.i("R13-->",downloadDatabase("R13",pagenum));
+
         final Request request = new Request.Builder()
                 .url( BaseConfig.getNcUrl())
                 .post(RequestBody.create(mediaType, requestBody))
@@ -512,7 +506,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
         String requestBody="";
         requestBody=DataHelper.getRequestbody("R01", downloadDatabase("R01",pagenum) );
 
-        Log.i("R01-->",downloadDatabase("R01",pagenum));
+
         final Request request = new Request.Builder()
                 .url( BaseConfig.getNcUrl())
                 .post(RequestBody.create(mediaType, requestBody))
@@ -560,205 +554,6 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
 
 
 
-    private void downloadQrcodeData() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (isNetworkConnected(TopMenu.this)) {
-                    try {
-                        String qrcodeData = downloadDatabase("R13","1");
-                        if (null == qrcodeData) {
-                            return;
-                        }
-
-                        Gson gsonQrcodeRule =new Gson();
-                        QrcodeRule qrcodeRule = gsonQrcodeRule.fromJson(qrcodeData,QrcodeRule.class);
-                        if (qrcodeRule.getPagetotal() ==1){
-                            insertQrcodeRuledDataToDB(qrcodeRule);
-
-                        }else if(qrcodeRule.getPagetotal() <1){
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                    count++;
-                                    if (count ==total){
-                                        dialog.dismiss();
-                                    }
-                                }
-                            });
-
-                        }else {
-                            insertQrcodeRuledDataToDB(qrcodeRule);
-                            for (int pagenum = 2; pagenum <= qrcodeRule.getPagetotal(); pagenum++) {
-                                String qrcodeRuleData2 = downloadDatabase("R13", String.valueOf(pagenum));
-                                QrcodeRule qrcodeRule2 = gsonQrcodeRule.fromJson(qrcodeRuleData2, QrcodeRule.class);
-                                insertQrcodeRuledDataToDB(qrcodeRule2);
-                            }
-                        }
-                        qrcode_rule_ts_begintime =Utils.getCurrentDateTimeNew() ;
-                        qrcode_rule_ts_endtime = Utils.getDefaultEndTime();
-                        SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestQrcodeRuleTSInfo", 0);
-                        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                        editor5.putString("latest_qrcode_rule_ts_begintime",qrcode_rule_ts_begintime);
-                        editor5.putString("latest_qrcode_rule_ts_endtime",qrcode_rule_ts_endtime);
-                        editor5.commit();
-
-                        Message msg = new Message();
-                        msg.what = 0x15;
-                        dataHandler.sendMessage(msg);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("Exception22", e.toString());
-                        Message msg = new Message();
-                        msg.what = 0x22;
-                        msg.setData(bundle);
-                        dataHandler.sendMessage(msg);
-                    }
-                } else {
-                    Message msg = new Message();
-                    msg.what = 0x10;
-                    dataHandler.sendMessage(msg);
-                }
-            }
-        }).start();
-    }
-
-
-
-    private void downloadMaterial2Data() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (isNetworkConnected(TopMenu.this)) {
-                    try {
-                        String materialData = downloadDatabase("R02","1");
-                        if (null == materialData) {
-                            return;
-                        }
-
-                        Gson gsonUser =new Gson();
-                        MaterialBean materialBean = gsonUser.fromJson(materialData, MaterialBean.class);
-
-                        if (materialBean.getPagetotal() ==1){
-                            insertMaterialdDataToDB(materialBean);
-                        }else if(materialBean.getPagetotal() <1){
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                    count++;
-                                    if (count ==total){
-                                        dialog.dismiss();
-                                    }
-                                }
-                            });
-
-                        }else{
-
-                            insertMaterialdDataToDB(materialBean);
-                            for (int pagenum = 2;pagenum<=materialBean.getPagetotal();pagenum++){
-                                String materialData2 = downloadDatabase("R02",String.valueOf(pagenum));
-
-                                MaterialBean materialBean2 = gsonUser.fromJson(materialData2, MaterialBean.class);
-                                insertMaterialdDataToDB(materialBean2);
-                            }
-
-
-                        }
-                        material_ts_begintime = Utils.getCurrentDateTimeNew() ;
-                        material_ts_endtime = Utils.getDefaultEndTime();
-                        SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestMaterialTSInfo", 0);
-                        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                        editor5.putString("latest_material_ts_begintime",material_ts_begintime);
-                        editor5.putString("latest_material_ts_endtime",material_ts_endtime);
-                        editor5.commit();
-
-                        Message msg = new Message();
-                        msg.what = 0x12;
-                        dataHandler.sendMessage(msg);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("Exception20", e.toString());
-                        Message msg = new Message();
-                        msg.what = 0x20;
-                        msg.setData(bundle);
-                        dataHandler.sendMessage(msg);
-                    }
-                } else {
-                    Message msg = new Message();
-                    msg.what = 0x10;
-                    dataHandler.sendMessage(msg);
-                }
-            }
-        }).start();
-    }
-
-    private void downloadWarehouseData() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (isNetworkConnected(TopMenu.this)) {
-                    try {
-                        String warhouseData = downloadDatabase("R01","1");
-                        if (null == warhouseData) {
-                            return;
-                        }
-
-                        Gson gsonUser =new Gson();
-                        Warhouse warhouse = gsonUser.fromJson(warhouseData, Warhouse.class);
-                        if (warhouse.getPagetotal() ==1){
-                            insertWarhousedDataToDB(warhouse);
-                        }else if(warhouse.getPagetotal() <1){
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                    count++;
-                                    if (count ==total){
-                                        dialog.dismiss();
-                                    }
-                                }
-                            });
-
-                        }else{
-                            insertWarhousedDataToDB(warhouse);
-                            for (int pagenum = 2;pagenum<=warhouse.getPagetotal();pagenum++){
-                                String materialData2 = downloadDatabase("R01",String.valueOf(pagenum));
-                                Warhouse warhouseBean2 = gsonUser.fromJson(materialData2, Warhouse.class);
-                                insertWarhousedDataToDB(warhouseBean2);
-                            }
-                        }
-                        warhouse_ts_begintime = Utils.getCurrentDateTimeNew() ;
-                        warhouse_ts_endtime = Utils.getDefaultEndTime();
-                        SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestWarhouseTSInfo", 0);
-                        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                        editor5.putString("latest_warhouse_ts_begintime",warhouse_ts_begintime);
-                        editor5.putString("latest_warhouse_ts_endtime",warhouse_ts_endtime);
-                        editor5.commit();
-
-                        Message msg = new Message();
-                        msg.what = 0x11;
-                        dataHandler.sendMessage(msg);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("Exception19", e.toString());
-                        Message msg = new Message();
-                        msg.what = 0x19;
-                        msg.setData(bundle);
-                        dataHandler.sendMessage(msg);
-                    }
-                } else {
-                    Message msg = new Message();
-                    msg.what = 0x10;
-                    dataHandler.sendMessage(msg);
-                }
-            }
-        }).start();
-    }
     private void insertLogisticsCompanyDataToDB(LogisticsCompany logisticsCompany) {
 
         //对象中拿到集合
