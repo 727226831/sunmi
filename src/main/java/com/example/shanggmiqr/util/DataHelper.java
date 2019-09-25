@@ -18,6 +18,7 @@ import com.example.shanggmiqr.bean.LogisticsBean;
 import com.example.shanggmiqr.bean.OtherQueryBean;
 import com.example.shanggmiqr.bean.QrcodeRule;
 import com.example.shanggmiqr.bean.SaleDeliverySendBean;
+import com.example.shanggmiqr.transaction.SaleDeliveryDetail;
 import com.google.gson.Gson;
 import com.zyao89.view.zloading.ZLoadingDialog;
 import com.zyao89.view.zloading.Z_TYPE;
@@ -34,6 +35,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 import static com.example.shanggmiqr.util.Utils.getDefaultEndTime;
 
@@ -175,6 +184,47 @@ public class DataHelper {
 
         cursor.close();
         return false;
+    }
+    public static void updateLogistics(SQLiteDatabase db, String vbillcode,String logistics,String logisticscode, int type) {
+        ContentValues contentValues=new ContentValues();
+        contentValues.put("logistics",logistics);
+        contentValues.put("logisticscode",logisticscode);
+
+        switch (type){
+            case 0:
+                db.update("SaleDelivery",contentValues,"vbillcode=? ",
+                        new String[]{ vbillcode});
+
+                break;
+            case 1:
+                db.update("OtherEntry",contentValues,"pobillcode=?",
+                        new String[]{ vbillcode});
+                break;
+            case 2:
+                db.update("OtherOutgoing",contentValues,"pobillcode=?",
+                        new String[]{ vbillcode});
+                break;
+            case 4:
+                db.update("Loan",contentValues,"pobillcode=?",
+                        new String[]{ vbillcode});
+                break;
+            case 6:
+                db.update("PurchaseArrival",contentValues,"vbillcode=? ",
+                        new String[]{ vbillcode});
+                break;
+            case 7:
+                db.update("PurchaseReturn",contentValues,"vbillcode=? ",
+                        new String[]{ vbillcode});
+                break;
+            case 8:
+                db.update("SaleDelivery",contentValues,"vbillcode=? ",
+                        new String[]{ vbillcode});
+                break;
+
+
+
+        }
+
     }
     public static void updateScannum(SQLiteDatabase db, int scannum, String vbillcode, String itempk, int type) {
         ContentValues contentValues=new ContentValues();
@@ -509,6 +559,9 @@ public class DataHelper {
             case 7:
                 name="LatestPurchaseReturnTSInfo";
                 break;
+            case 8:
+                name="LatestExportTSInfo";
+                break;
 
         }
         SharedPreferences latestDBTimeInfo = context.getSharedPreferences(name, 0);
@@ -552,6 +605,7 @@ public class DataHelper {
 
 
     }
+
     public static boolean isWarehouseDBDownloaed(SQLiteDatabase db) {
         Cursor cursor = db.rawQuery("select name from Warehouse",
                 null);
@@ -604,6 +658,11 @@ public class DataHelper {
                 break;
             case 7:
                 cursor = db.rawQuery("SELECT count(vbillcode) FROM PurchaseReturn WHERE vbillcode=? and "+
+                                "dbilldate>=? and dbilldate<?",
+                        new String[] { code,startTime, endTime});
+                break;
+            case 8:
+                cursor = db.rawQuery("SELECT count(vbillcode) FROM SaleDelivery WHERE vbillcode=? and "+
                                 "dbilldate>=? and dbilldate<?",
                         new String[] { code,startTime, endTime});
                 break;
@@ -664,6 +723,20 @@ public class DataHelper {
         String tempperiod =currentTimePeriod.getString("current_account","2018-09-01 至 2019-08-23");
         return tempperiod;
     }
+    public static String getRequestbody(String workcode,String json) {
+
+        return  "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:inet=\"http://net.sm.itf.nc/INetWebserviceServer\">\n" +
+                "   <soapenv:Header/>\n" +
+                "   <soapenv:Body>\n" +
+                "      <inet:sendToWISE>\n" +
+                "         <!--Optional:-->\n" +
+                "         <string>"+workcode+"</string>\n" +
+                "         <!--Optional:-->\n" +
+                "         <string1>\n" + json+ "</string1>\n" +
+                "      </inet:sendToWISE>\n" +
+                "   </soapenv:Body>\n" +
+                "</soapenv:Envelope>";
+    }
     public static void insertLogistics(SQLiteDatabase db, LogisticsBean logisticsBean) {
         ContentValues contentValues = new ContentValues();
         contentValues.put("billcode",logisticsBean.getBillcode());
@@ -676,16 +749,12 @@ public class DataHelper {
         return  logisticsBean;
     }
 
-    public static String uploadSaleDeliveryVBill(String workcode, SQLiteDatabase db,String vbillcode,Context context,String company,
-    String expresscode,int type) {
-        String WSDL_URI = BaseConfig.getNcUrl();//wsdl 的uri
-        String namespace = "http://schemas.xmlsoap.org/soap/envelope/";//namespace
-        String methodName = "sendToWISE";//要调用的方法名称
+    public static String getRequestJson(SQLiteDatabase db, String vbillcode, Context context, String company,
+                                        String expresscode, int type) {
+
+
         String warehousecode=null;
         String current_bisreturn="N";
-
-        SoapObject request = new SoapObject(namespace, methodName);
-
         String shunm="0";
         // 设置需调用WebService接口需要传入的两个参数string、string1
 
@@ -841,6 +910,9 @@ public class DataHelper {
                 }else if(otherOutgoingSend.getBody().get(i).getUploadflag().equals("Y")){
                     otherOutgoingSend.getBody().remove(i);
                     i--;
+                }else if(otherOutgoingSend.getBody().get(i).getSn().isEmpty()){
+                    otherOutgoingSend.getBody().remove(i);
+                    i--;
                 }
 
            }
@@ -849,51 +921,56 @@ public class DataHelper {
             Gson gson = new Gson();
 
             if(otherOutgoingSend.getBody().isEmpty()){
-                return " {\"name\":\"anyType\",\"namespace\":\"http://www.w3.org/2001/XMLSchema\"," +
-                        "\"value\":\"{\\\"errno\\\":\\\"1\\\",\\\"errmsg\\\":\\\"扫描数量为0不能提交\\\"}\",\"attributes\":[]}";
+                return "{\"errno\": \"1\",\"errmsg\": \"扫描数量为0不能提交\"}";
             }
             String code="";
         for (int i = 0; i <otherOutgoingSend.getBody().size() ; i++) {
             if(code.equals("")){
                 code=otherOutgoingSend.getBody().get(i).getCwarecode();
             }
+
             if(!code.equals(otherOutgoingSend.getBody().get(i).getCwarecode())){
-                return " {\"name\":\"anyType\",\"namespace\":\"http://www.w3.org/2001/XMLSchema\"," +
-                        "\"value\":\"{\\\"errno\\\":\\\"1\\\",\\\"errmsg\\\":\\\"不同仓库的行号不可以同时上传\\\"}\",\"attributes\":[]}";
+                return "{\"errno\": \"1\",\"errmsg\": \"不同仓库的行号不可以同时上传\"}";
             }
         }
             otherOutgoingSend.setCwarehousecode(otherOutgoingSend.getBody().get(0).getCwarecode());
             String userSendBean = gson.toJson(otherOutgoingSend);
 
-            request.addProperty("string", workcode);
-            request.addProperty("string1", userSendBean);
 
-
-        Log.i("request-->",request.toString());
-
-        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
-
-        envelope.bodyOut = request;
-        envelope.dotNet = false;
-        String saleDeliveryUploadDataResp = null;
-        Log.i("uri-->",WSDL_URI);
-            HttpTransportSE se = new HttpTransportSE(WSDL_URI, 300000);
-            //  se.call(null, envelope);//调用 version1.2
-            //version1.1 需要如下soapaction
-        try {
-
-            se.call(namespace + "sendToWISE", envelope);
-            Object object = envelope.getResponse();
-            saleDeliveryUploadDataResp = new Gson().toJson(object);
-            Log.i("response-->",saleDeliveryUploadDataResp);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-        }
-
-        return saleDeliveryUploadDataResp;
+        return userSendBean;
     }
+    public  static void getData(String r,String data){
+        MediaType mediaType = MediaType.parse("text/x-markdown; charset=utf-8");
+        String requestBody = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:inet=\"http://net.sm.itf.nc/INetWebserviceServer\">\n" +
+                "   <soapenv:Header/>\n" +
+                "   <soapenv:Body>\n" +
+                "      <inet:sendToWISE>\n" +
+                "         <!--Optional:-->\n" +
+                "         <string>"+r+"</string>\n" +
+                "         <!--Optional:-->\n" +
+                "         <string1>\n" + data+ "</string1>\n" +
+                "      </inet:sendToWISE>\n" +
+                "   </soapenv:Body>\n" +
+                "</soapenv:Envelope>";
+        Request request = new Request.Builder()
+                .url(iUrl.WSDL_URI)
+                .post(RequestBody.create(mediaType, requestBody))
+                .build();
+        OkHttpClient okHttpClient = new OkHttpClient();
+        okHttpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+              Log.i("okhttp",response.body().string());
+
+            }
+        });
+
+    };
     public static void   setLog(Context context,String log){
         String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
 

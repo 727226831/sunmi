@@ -27,6 +27,25 @@ public class SaleDeliveryBean {
     public int dr;
     String matrcode;
 
+    public String getLogistics() {
+        return logistics;
+    }
+
+    public void setLogistics(String logistics) {
+        this.logistics = logistics;
+    }
+
+    public String getLogisticscode() {
+        return logisticscode;
+    }
+
+    public void setLogisticscode(String logisticscode) {
+        this.logisticscode = logisticscode;
+    }
+
+    private String logistics;
+    private String logisticscode;
+
     public String getCwarename() {
         return cwarename;
     }

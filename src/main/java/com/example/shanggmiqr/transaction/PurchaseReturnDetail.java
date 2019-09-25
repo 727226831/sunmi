@@ -22,23 +22,30 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.Url.iUrl;
 import com.example.shanggmiqr.util.DataHelper;
+import com.example.shanggmiqr.util.ToastShow;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.PurchaseReturnBodyTableAdapter;
 import com.example.shanggmiqr.bean.PurchaseReturnBodyBean;
 import com.example.shanggmiqr.bean.SaleDeliveryUploadFlagBean;
-import com.example.shanggmiqr.bean.SalesRespBean;
 import com.example.shanggmiqr.bean.SalesRespBeanValue;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
-import com.example.shanggmiqr.util.Utils;
 import com.google.gson.Gson;
 import com.zyao89.view.zloading.ZLoadingDialog;
 import com.zyao89.view.zloading.Z_TYPE;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-;
+;import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Created by weiyt.jiang on 2018/8/14.
@@ -168,14 +175,14 @@ public class PurchaseReturnDetail extends AppCompatActivity {
         uploadAll_saleDeliveryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pushData(null);
+                pushData();
 
             }
         });
         uploadSingleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pushData(itempk);
+                pushData();
 
             }
         });
@@ -243,58 +250,71 @@ public class PurchaseReturnDetail extends AppCompatActivity {
         };
     }
 
-    private void pushData(final String itempk) {
+    private void pushData() {
         zLoadingDialog.show();
-        new Thread(new Runnable() {
+        MediaType mediaType = MediaType.parse("text/x-markdown; charset=utf-8");
+
+        String requestBody= DataHelper.getRequestJson(db4, current_sale_delivery_vbillcodeRecv,
+                PurchaseReturnDetail.this,"",expressCode,getIntent().getIntExtra("type",-1));
+        Log.i("request-->",requestBody);
+        if(requestBody.contains("errno")){
+            SalesRespBeanValue respBeanValue =new Gson().fromJson(requestBody, SalesRespBeanValue.class);
+            ToastShow.show(PurchaseReturnDetail.this,respBeanValue.getErrmsg(),Toast.LENGTH_LONG);
+            zLoadingDialog.dismiss();
+            return;
+        }
+        requestBody=DataHelper.getRequestbody("R41", DataHelper.getRequestJson(db4, current_sale_delivery_vbillcodeRecv,
+                PurchaseReturnDetail.this,"",expressCode,getIntent().getIntExtra("type",-1)));
+
+        if(requestBody.contains("errno")){
+            SalesRespBeanValue respBeanValue =new Gson().fromJson(requestBody, SalesRespBeanValue.class);
+            ToastShow.show(PurchaseReturnDetail.this,respBeanValue.getErrmsg(),Toast.LENGTH_LONG);
+            return;
+        }
+        Request request = new Request.Builder()
+                .url(iUrl.WSDL_URI)
+                .post(RequestBody.create(mediaType, requestBody))
+                .build();
+        OkHttpClient okHttpClient = new OkHttpClient();
+        okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
-            public void run() {
-                if (Utils.isNetworkConnected(PurchaseReturnDetail.this)) {
-                    try {
+            public void onFailure(Call call, IOException e) {
 
-                            String uploadResp = DataHelper.uploadSaleDeliveryVBill("R41",db4, current_sale_delivery_vbillcodeRecv,
-                                    PurchaseReturnDetail.this,"",expressCode,getIntent().getIntExtra("type",-1));
-                            if (!(null == uploadResp)) {
-
-
-                                    Gson gson = new Gson();
-                                    SalesRespBean respBean = gson.fromJson(uploadResp, SalesRespBean.class);
-                                    Gson gson2 = new Gson();
-                                    SalesRespBeanValue respBeanValue = gson2.fromJson(respBean.getValue(), SalesRespBeanValue.class);
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                    Message msg = new Message();
-
-                                    if (respBeanValue.getErrno().equals("0")) {
-                                        //19弹出erromsg
-                                        msg.what = 0x11;
-                                        Log.i("0x11","is run");
-                                    } else {
-                                        //19弹出erromsg
-                                        msg.what = 0x19;
-                                    }
-                                    msg.setData(bundle);
-                                    saleDeliveryDetailHandler.sendMessage(msg);
-
-                            } else {
-                                Message msg = new Message();
-                                msg.what = 0x18;
-                                saleDeliveryDetailHandler.sendMessage(msg);
-                            }
-
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("Exception111", e.toString());
-                        Message msg = new Message();
-                        msg.what = 0x17;
-                        msg.setData(bundle);
-                        saleDeliveryDetailHandler.sendMessage(msg);
-                        return;
-                    }
-                }
             }
-        }).start();
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String result=response.body().string();
+
+                result=result.substring(result.indexOf("<return>")+8,result.indexOf("</return>"));
+                if (!(null ==result)) {
+                    Gson gson2 = new Gson();
+                    SalesRespBeanValue respBeanValue = gson2.fromJson(result, SalesRespBeanValue.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("uploadResp", respBeanValue.getErrmsg());
+                    Message msg = new Message();
+
+                    if (respBeanValue.getErrno().equals("0")) {
+                        //19弹出erromsg
+                        msg.what = 0x11;
+
+                    } else {
+                        //19弹出erromsg
+                        msg.what = 0x19;
+                    }
+                    msg.setData(bundle);
+                    saleDeliveryDetailHandler.sendMessage(msg);
+
+                } else {
+                    Message msg = new Message();
+                    msg.what = 0x18;
+                    saleDeliveryDetailHandler.sendMessage(msg);
+                }
+
+
+            }
+        });
+
     }
 
     private void myadapter() {

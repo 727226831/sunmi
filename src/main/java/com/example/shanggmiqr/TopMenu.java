@@ -25,6 +25,8 @@ import com.example.shanggmiqr.bean.Customer;
 import com.example.shanggmiqr.bean.LogisticsCompany;
 import com.example.shanggmiqr.bean.MaterialBean;
 import com.example.shanggmiqr.bean.QrcodeRule;
+import com.example.shanggmiqr.bean.SaleDeliveryBean;
+import com.example.shanggmiqr.bean.SaleDeliveryQuery;
 import com.example.shanggmiqr.bean.Supplier;
 import com.example.shanggmiqr.bean.User;
 import com.example.shanggmiqr.bean.Warhouse;
@@ -589,23 +591,33 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
 
         //对象中拿到集合
         List<LogisticsCompany.DatasBean> customerBeanList = logisticsCompany.getDatas();
-        for (LogisticsCompany.DatasBean cb:customerBeanList){
-            String org = cb.getOrg();
-            String code = cb.getCode();
-            String name = cb.getName();
-            String status = cb.getStatus();
-            String ts = cb.getTs();
-            //使用 ContentValues 来对要添加的数据进行组装
-            ContentValues values = new ContentValues();
-            // 开始组装第一条数据
-            values.put("org",org);
-            values.put("code",code);
-            values.put("name",name);
-            values.put("status",status);
-            values.put("ts",ts);
-            // 插入第一条数据
-            db2.insert("LogisticsCompany",null,values);
-            values.clear();
+
+        try {
+            db2.beginTransaction();
+            for (LogisticsCompany.DatasBean cb:customerBeanList){
+                String org = cb.getOrg();
+                String code = cb.getCode();
+                String name = cb.getName();
+                String status = cb.getStatus();
+                String ts = cb.getTs();
+                //使用 ContentValues 来对要添加的数据进行组装
+                ContentValues values = new ContentValues();
+                // 开始组装第一条数据
+                values.put("org",org);
+                values.put("code",code);
+                values.put("name",name);
+                values.put("status",status);
+                values.put("ts",ts);
+                // 插入第一条数据
+                db2.insert("LogisticsCompany",null,values);
+                values.clear();
+            }
+            db2.setTransactionSuccessful();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            db2.endTransaction();
         }
     }
 
@@ -613,26 +625,36 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
     private void insertWarhousedDataToDB(Warhouse warhouse) {
         //对象中拿到集合
         List<Warhouse.WarhouseDataBean> warhouseDataBeanList = warhouse.getData();
-        for (Warhouse.WarhouseDataBean wb:warhouseDataBeanList){
-            String stordocpk = wb.getStordocpk();
-            String name = wb.getName();
-            String code = wb.getCode();
-            int enablestate = wb.getEnablestate();
-            String orgcode = wb.getOrgcode();
-            String ts = wb.getTs();
-            //使用 ContentValues 来对要添加的数据进行组装
-            ContentValues values = new ContentValues();
-            // 开始组装第一条数据
-            values.put("stordocpk",stordocpk);
-            values.put("name",name);
-            values.put("code",code);
-            values.put("enablestate",enablestate);
-            values.put("orgcode",orgcode);
-            values.put("ts",ts);
-            // 插入第一条数据
-            db2.insert("Warehouse",null,values);
-            values.clear();
+        try {
+            db2.beginTransaction();
+            for (Warhouse.WarhouseDataBean wb:warhouseDataBeanList){
+                String stordocpk = wb.getStordocpk();
+                String name = wb.getName();
+                String code = wb.getCode();
+                int enablestate = wb.getEnablestate();
+                String orgcode = wb.getOrgcode();
+                String ts = wb.getTs();
+                //使用 ContentValues 来对要添加的数据进行组装
+                ContentValues values = new ContentValues();
+                // 开始组装第一条数据
+                values.put("stordocpk",stordocpk);
+                values.put("name",name);
+                values.put("code",code);
+                values.put("enablestate",enablestate);
+                values.put("orgcode",orgcode);
+                values.put("ts",ts);
+                // 插入第一条数据
+                db2.insert("Warehouse",null,values);
+                values.clear();
+            }
+            db2.setTransactionSuccessful();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            db2.endTransaction();
         }
+
     }
 
     /**
@@ -714,116 +736,111 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
         return dataResp;
     }
 
-    private void insertUserDataToDB(User user2) {
-        //对象中拿到集合
-        List<User.UserDataBean> userBeanList2 = user2.getData();
-        for (User.UserDataBean ub:userBeanList2){
-            String userpk = ub.getUserpk();
-            String code = ub.getCode();
-            String name = ub.getName();
-            String org = ub.getOrg();
-            int enablestate = ub.getEnablestate();
-            String ts = ub.getTs();
-            //使用 ContentValues 来对要添加的数据进行组装
-            ContentValues values = new ContentValues();
-            // 开始组装第一条数据
-            values.put("name",name);
-            values.put("code",code);
-            values.put("userpk",userpk);
-            values.put("org",org);
-            values.put("enablestate",enablestate);
-            values.put("ts",ts);
-            // 插入第一条数据
-            db2.insert("User",null,values);
-            values.clear();
-        }
-    }
 
     private void insertQrcodeRuledDataToDB (QrcodeRule qrcodeRule){
         //对象中拿到集合
         List<QrcodeRule.DataBean> qrCodeRuleBeanList = qrcodeRule.getData();
-        for (QrcodeRule.DataBean cb:qrCodeRuleBeanList){
-            String matbasclassname = cb.getMatbasclassname();
-            String Matbasclasscode = cb.getMatbasclasscode();
-            String name = cb.getName();
-            String code = cb.getCode();
-            int length = cb.getLength();
-            String bartype = cb.getBartype();
-            int complement = cb.getComplement();
-            String fillcode = cb.getFillcode();
-            String ts = cb.getTs();
-            List<QrcodeRule.DataBean.ItemBean> qrcodeRuleItemBeanList = cb.getItem();
-            //使用 ContentValues 来对要添加的数据进行组装
-            ContentValues values = new ContentValues();
-            for (QrcodeRule.DataBean.ItemBean sbb:qrcodeRuleItemBeanList){
-                //这里应该执行的是插入第二个表的操作
-                ContentValues valuesInner = new ContentValues();
-                String appobjattr = sbb.getAppobjattr();
-                valuesInner.put("Matbasclasscode",Matbasclasscode);
-                valuesInner.put("appobjattr",appobjattr);
-                valuesInner.put("itemlength",sbb.itemlength);
-                valuesInner.put("startpos",sbb.startpos);
-                db2.insert("QrcodeRuleBody", null, valuesInner);
-                valuesInner.clear();
+        try {
+            db2.beginTransaction();
+            for (QrcodeRule.DataBean cb:qrCodeRuleBeanList){
+                String matbasclassname = cb.getMatbasclassname();
+                String Matbasclasscode = cb.getMatbasclasscode();
+                String name = cb.getName();
+                String code = cb.getCode();
+                int length = cb.getLength();
+                String bartype = cb.getBartype();
+                int complement = cb.getComplement();
+                String fillcode = cb.getFillcode();
+                String ts = cb.getTs();
+                List<QrcodeRule.DataBean.ItemBean> qrcodeRuleItemBeanList = cb.getItem();
+                //使用 ContentValues 来对要添加的数据进行组装
+                ContentValues values = new ContentValues();
+                for (QrcodeRule.DataBean.ItemBean sbb:qrcodeRuleItemBeanList){
+                    //这里应该执行的是插入第二个表的操作
+                    ContentValues valuesInner = new ContentValues();
+                    String appobjattr = sbb.getAppobjattr();
+                    valuesInner.put("Matbasclasscode",Matbasclasscode);
+                    valuesInner.put("appobjattr",appobjattr);
+                    valuesInner.put("itemlength",sbb.itemlength);
+                    valuesInner.put("startpos",sbb.startpos);
+                    db2.insert("QrcodeRuleBody", null, valuesInner);
+                    valuesInner.clear();
+                }
+
+                values.put("matbasclassname",matbasclassname);
+                values.put("Matbasclasscode",Matbasclasscode);
+                values.put("name",name);
+                values.put("code",code);
+                values.put("length",length);
+                values.put("bartype",bartype);
+                values.put("complement",complement);
+                values.put("fillcode",fillcode);
+                values.put("ts",ts);
+                // 插入第一条数据
+                db2.insert("QrcodeRule",null,values);
+                values.clear();
             }
-            // List<Supplier.SupplierDataBean.SupplierbankBean> supplierbankBeenList = supplierBeanList;
-            values.put("matbasclassname",matbasclassname);
-            values.put("Matbasclasscode",Matbasclasscode);
-            values.put("name",name);
-            values.put("code",code);
-            values.put("length",length);
-            values.put("bartype",bartype);
-            values.put("complement",complement);
-            values.put("fillcode",fillcode);
-            values.put("ts",ts);
-            // 插入第一条数据
-            db2.insert("QrcodeRule",null,values);
-            values.clear();
+            db2.setTransactionSuccessful();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            db2.endTransaction();
         }
+
     }
 
     private void insertMaterialdDataToDB (MaterialBean materialBean){
         //对象中拿到集合
         List<MaterialBean.DataBean> materialDataBeanList = materialBean.getData();
+        db2.beginTransaction();
+        try {
+            for (MaterialBean.DataBean mb:materialDataBeanList){
 
-        for (MaterialBean.DataBean mb:materialDataBeanList){
+                //目前是以返回报文为准建立的bean，与文档并不一样
+                String stordocpk = mb.getStordocpk();
+                String name = mb.getName();
+                String code = mb.getCode();
+                String marbasclass = mb.getMarbasclass();
+                String ename = mb.getEname();
+                String materialspec = mb.getMaterialspec();
+                String materialtype = mb.getMaterialtype();
+                String measdoccode = mb.getMeasdoccode();
+                String orgcode = mb.getOrgcode();
+                String brandname = mb.getBrandname();
+                int enablestate = mb.getEnablestate();
+                String materialbarcode = mb.getMaterialbarcode();
+                String ts = mb.getTs();
 
-            //目前是以返回报文为准建立的bean，与文档并不一样
-            String stordocpk = mb.getStordocpk();
-            String name = mb.getName();
-            String code = mb.getCode();
-            String marbasclass = mb.getMarbasclass();
-            String ename = mb.getEname();
-            String materialspec = mb.getMaterialspec();
-            String materialtype = mb.getMaterialtype();
-            String measdoccode = mb.getMeasdoccode();
-            String orgcode = mb.getOrgcode();
-            String brandname = mb.getBrandname();
-            int enablestate = mb.getEnablestate();
-            String materialbarcode = mb.getMaterialbarcode();
-            String ts = mb.getTs();
+                //使用 ContentValues 来对要添加的数据进行组装
+                ContentValues values = new ContentValues();
+                // 开始组装第一条数据
+                values.put("stordocpk",stordocpk);
+                values.put("name",name);
+                values.put("code",code);
+                values.put("marbasclass",marbasclass);
+                values.put("ename",ename);
+                values.put("materialspec",materialspec);
+                values.put("materialtype",materialtype);
+                values.put("measdoccode",measdoccode);
+                values.put("orgcode",orgcode);
+                values.put("brandname",brandname);
+                values.put("enablestate",enablestate);
 
-            //使用 ContentValues 来对要添加的数据进行组装
-            ContentValues values = new ContentValues();
-            // 开始组装第一条数据
-            values.put("stordocpk",stordocpk);
-            values.put("name",name);
-            values.put("code",code);
-            values.put("marbasclass",marbasclass);
-            values.put("ename",ename);
-            values.put("materialspec",materialspec);
-            values.put("materialtype",materialtype);
-            values.put("measdoccode",measdoccode);
-            values.put("orgcode",orgcode);
-            values.put("brandname",brandname);
-            values.put("enablestate",enablestate);
+                values.put("materialbarcode",materialbarcode);
+                values.put("ts",ts);
+                // 插入第一条数据
+                db2.insert("Material",null,values);
+                values.clear();
+            }
+            db2.setTransactionSuccessful();
+        }catch (Exception e){
 
-            values.put("materialbarcode",materialbarcode);
-            values.put("ts",ts);
-            // 插入第一条数据
-            db2.insert("Material",null,values);
-            values.clear();
+        }finally {
+            db2.endTransaction();
         }
+
+
 
 
     }

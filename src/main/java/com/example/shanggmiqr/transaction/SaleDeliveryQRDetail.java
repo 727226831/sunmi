@@ -131,6 +131,11 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
                 numQRText.setText("退货数量:" + current_nnum_qrRecv);
                 vbillcodeText.setText("退货单号:" + current_vbillcode_qrRecv);
                 break;
+            case 8:
+                actionBar.setTitle("发货单条码明细");
+                numQRText.setText("发货数量:" + current_nnum_qrRecv);
+                vbillcodeText.setText("发货单号:" + current_vbillcode_qrRecv);
+                break;
             default:
 
                 break;
@@ -273,6 +278,10 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
             case 7:
                 db5.execSQL("update PurchaseReturnBody set scannum=? where vbillcode=? and itempk=?",
                         new String[]{scannum, current_vbillcode_qrRecv,current_vcooporderbcode_b_qrRecv});
+                break;
+            case 8:
+                db5.execSQL("update SaleDeliveryBody set scannum=? where vbillcode=? and matrcode=? and vcooporderbcode_b=?",
+                        new String[]{scannum, current_vbillcode_qrRecv, current_matrcode_qrRecv,current_vcooporderbcode_b_qrRecv});
                 break;
             default:
 

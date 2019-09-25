@@ -1,24 +1,18 @@
 package com.example.shanggmiqr.transaction;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,15 +28,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.shanggmiqr.BusinessOperation;
 import com.example.shanggmiqr.Url.iUrl;
 import com.example.shanggmiqr.util.DataHelper;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.SaleDeliveryAdapter;
-import com.example.shanggmiqr.bean.CommonSendNoPagetotalBean;
 import com.example.shanggmiqr.bean.SaleDeliveryBean;
 import com.example.shanggmiqr.bean.SaleDeliveryQuery;
-import com.example.shanggmiqr.util.BaseConfig;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
 import com.google.gson.Gson;
@@ -50,11 +41,9 @@ import com.zyao89.view.zloading.ZLoadingDialog;
 
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -100,9 +89,9 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         actionBar.setTitle(getIntent().getStringExtra("title"));
         lst_downLoad_ts = (TextView)findViewById(R.id.last_downLoad_ts);
         //显示最后一次的下载时间
-        latestDBTimeInfo = getSharedPreferences("LatestSaleDeliveryTSInfo", 0);
-        begintime = latestDBTimeInfo.getString("latest_download_ts_begintime","");
-        lst_downLoad_ts.setText("最后一次下载:"+begintime);
+
+        lst_downLoad_ts.setText("最后一次下载:"+DataHelper.getLatestdownloadbegintime(getIntent().getIntExtra("type",-1),
+                SaleDelivery.this));
 
         db3 = helper3.getWritableDatabase();//获取到了 SQLiteDatabase 对象
         dialog = new ZLoadingDialog(SaleDelivery.this);
@@ -196,6 +185,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                                     });
                                     //R07发货单
                                     String saleDeliveryData =DataHelper.downloadDatabase("1",SaleDelivery.this,type);
+
                                     Date curDate =  new Date(System.currentTimeMillis());
                                     SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
                                     DataHelper.saveData("APP处理开始时间"+formatter.format(curDate));
@@ -240,8 +230,8 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                                         @Override
                                         public void run() {
                                             DataHelper.putLatestdownloadbegintime(getIntent().getIntExtra("type",-1),SaleDelivery.this);
-                                            begintime = latestDBTimeInfo.getString("latest_download_ts_begintime", iUrl.begintime);
-                                            lst_downLoad_ts.setText("最后一次下载:"+begintime);
+                                            lst_downLoad_ts.setText("最后一次下载:"+DataHelper.getLatestdownloadbegintime(getIntent().getIntExtra("type",-1),
+                                                    SaleDelivery.this));
                                         }
                                     });
                                 }else {
@@ -286,7 +276,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     }
 
     private void exportData( List<SaleDeliveryBean> exportList) {
-        Log.i("exportList",new Gson().toJson(exportList));
+
         String sdCardDir = Environment.getExternalStorageDirectory().getAbsolutePath();
         SimpleDateFormat   formatter   =   new   SimpleDateFormat   ("yyyy年MM月dd日HH时mm分ss秒");
         File file=new File(sdCardDir+"/sunmi/export");
@@ -300,7 +290,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         try {
             outputStream=new FileOutputStream(file);
             outputStream.write(("发货单号"+"\t"+ "单据日期"+"\t"+"物料编码"+"\t"+"物料名称"+"\t"+
-                    "物料大类"+"\t"+"序列号"+"\t"+"条形码"+"\t").getBytes());
+                    "物料大类"+"\t"+"序列号"+"\t"+"条形码"+"\t"+"仓库"+"\t"+"物流公司"+"\t"+"物流单号"+"\t").getBytes());
             for (int j = 0; j <exportList.size() ; j++) {
                 if(exportList.get(j).getXlh()!=null ) {
                     outputStream.write("\r\n".getBytes());
@@ -310,7 +300,11 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                             +exportList.get(j).getMatrname()+"\t"
                             +exportList.get(j).getMaccode()+"\t"
                             +exportList.get(j).getXlh()+"\t"
-                            +exportList.get(j).getProdcutcode()).getBytes());
+                            +exportList.get(j).getProdcutcode()+"\t"
+                            +exportList.get(j).getCwarename()+"\t"
+                            +exportList.get(j).getLogistics()+"\t"
+                            +exportList.get(j).getLogisticscode()+"\t"
+                    ).getBytes());
                 }
 
             }
@@ -339,9 +333,9 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         List<SaleDeliveryQuery.DataBean> dataBeans = saleDeliveryQuery.getData();
 
         try {
-
+            db3.beginTransaction();
             for (SaleDeliveryQuery.DataBean ob : dataBeans) {
-                SaleDeliveryBean bean = new SaleDeliveryBean();
+
 
                 //0:新增-正常下载保持 1：删除，删除对应单据 2：修改，先删除对应单据再保持
                 switch (ob.getDr()){
@@ -351,27 +345,37 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                         setSaleDeliverybodyData(ob);
                         break;
                     case 1:
-                        db3.delete("SaleDelivery", "vbillcode=?", new String[]{ob.getVbillcode()});
+
+                    if(!isSubmit(ob.getVbillcode())){
+                        db3.delete("SaleDelivery", "vbillcode=? ", new String[]{ob.getVbillcode()});
                         db3.delete("SaleDeliveryBody", "vbillcode=?", new String[]{ob.getVbillcode()});
                         db3.delete("SaleDeliveryScanResult", "vbillcode=?", new String[]{ob.getVbillcode()});
+                    }
+
                         break;
                     case 2:
-                        db3.delete("SaleDelivery", "vbillcode=?", new String[]{ob.getVbillcode()});
-                        db3.delete("SaleDeliveryBody", "vbillcode=?", new String[]{ob.getVbillcode()});
-                        db3.delete("SaleDeliveryScanResult", "vbillcode=?", new String[]{ob.getVbillcode()});
-                        setSaleDeliveryData(ob);
-                        setSaleDeliverybodyData(ob);
+                        if(!isSubmit(ob.getVbillcode())){
+                            db3.delete("SaleDelivery", "vbillcode=?", new String[]{ob.getVbillcode()});
+                            db3.delete("SaleDeliveryBody", "vbillcode=?", new String[]{ob.getVbillcode()});
+                            db3.delete("SaleDeliveryScanResult", "vbillcode=?", new String[]{ob.getVbillcode()});
+                            setSaleDeliveryData(ob);
+                            setSaleDeliverybodyData(ob);
+                        }
+
 
                         break;
 
                 }
 
             }
-
+           db3.setTransactionSuccessful();
 
         } catch (Exception e) {
             e.printStackTrace();
+        }finally {
+            db3.endTransaction();
         }
+
 
 
     }
@@ -380,7 +384,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
     private void setSaleDeliverybodyData(SaleDeliveryQuery.DataBean ob) {
         List<SaleDeliveryQuery.DataBean.BodysBean> saleDeliveryDatabodysList = ob.getBody();
-        Log.i("body",new Gson().toJson(ob));
+
         for (SaleDeliveryQuery.DataBean.BodysBean obb : saleDeliveryDatabodysList) {
             String cwarename = getCwarename(obb.getCwarehousecode());
             String orginal_cwarename = existOriginalCwarename(obb.getCwarehousecode());
@@ -428,8 +432,8 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         values.put("flag", "N");
         values.put("vmemo",ob.getVmemo());
         values.put("type",getIntent().getIntExtra("type",-1));
-
-
+        values.put("logistics","");
+        values.put("logisticscode","");
         // 插入第一条数据
         db3.insert("SaleDelivery", null, values);
         values.clear();
@@ -464,7 +468,19 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         }
         return cwarename;
     }
-
+    private Boolean isSubmit(String vbillcode){
+        String flag="N";
+        Cursor cursor = db3.rawQuery("select flag from SaleDelivery where  vbillcode=?",
+                new String[]{vbillcode});
+        while (cursor.moveToNext()){
+            flag = cursor.getString(cursor.getColumnIndex("flag"));
+        }
+        cursor.close();
+        if(!flag.equals("N")){
+            return  true;
+        }
+        return  false;
+    }
 
 
 
@@ -656,19 +672,19 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         Cursor cursor=null;
          if(query_uploadflag.equals("ALL")){
              cursor = db3.rawQuery("select saledelivery.vbillcode, saledelivery.dbilldate,saledeliverybody.matrcode,saledelivery.dr," +
-                     "saledeliverybody.matrname,saledeliverybody.maccode,saledeliverybody.nnum, saledeliveryscanresult.prodcutcode," +
-                     "saledeliveryscanresult.xlh" + " from saledelivery inner join saledeliverybody on saledelivery.vbillcode=saledeliverybody.vbillcode " +
+                     "saledeliverybody.matrname,saledeliverybody.maccode,saledeliverybody.nnum, saledeliveryscanresult.prodcutcode,saledeliverybody.cwarename," +
+                     "saledeliveryscanresult.xlh,saledelivery.logistics,saledelivery.logisticscode" + " from saledelivery inner join saledeliverybody on saledelivery.vbillcode=saledeliverybody.vbillcode " +
                      "left join saledeliveryscanresult on saledeliverybody.vbillcode=saledeliveryscanresult.vbillcode " +
                      "and saledeliverybody.vcooporderbcode_b=saledeliveryscanresult.vcooporderbcode_b where saledelivery.vbillcode" +
-                     " like '%" + vbillcode + "%' and saledeliverybody.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", null);
+                     " like '%" + vbillcode + "%' and saledeliverybody.cwarename"+ " like '%" + current_cwarename + "%' and saledelivery.type=? order by dbilldate desc", new String[]{getIntent().getIntExtra("type",-1)+""});
 
          }else {
              cursor = db3.rawQuery("select saledelivery.vbillcode, saledelivery.dbilldate,saledeliverybody.matrcode,saledelivery.dr," +
-                     "saledeliverybody.matrname,saledeliverybody.maccode,saledeliverybody.nnum, saledeliveryscanresult.prodcutcode," +
-                     "saledeliveryscanresult.xlh" + " from saledelivery inner join saledeliverybody on saledelivery.vbillcode=saledeliverybody.vbillcode " +
+                     "saledeliverybody.matrname,saledeliverybody.maccode,saledeliverybody.nnum, saledeliveryscanresult.prodcutcode,saledeliverybody.cwarename," +
+                     "saledeliveryscanresult.xlh,saledelivery.logistics,saledelivery.logisticscode" + " from saledelivery inner join saledeliverybody on saledelivery.vbillcode=saledeliverybody.vbillcode " +
                      "left join saledeliveryscanresult on saledeliverybody.vbillcode=saledeliveryscanresult.vbillcode " +
-                     "and saledeliverybody.vcooporderbcode_b=saledeliveryscanresult.vcooporderbcode_b where saledelivery.flag=? and saledelivery.vbillcode" +
-                     " like '%" + vbillcode + "%' and saledeliverybody.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag});
+                     "and saledeliverybody.vcooporderbcode_b=saledeliveryscanresult.vcooporderbcode_b where saledelivery.flag=? and saledelivery.type=?  and saledelivery.vbillcode" +
+                     " like '%" + vbillcode + "%' and saledeliverybody.cwarename"+ " like '%" + current_cwarename + "%' order by dbilldate desc", new String[]{query_uploadflag,getIntent().getIntExtra("type",-1)+""});
 
          }
 
@@ -688,6 +704,10 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
                 bean.setProdcutcode(cursor.getString(cursor.getColumnIndex("prodcutcode")));
                 bean.setXlh(cursor.getString(cursor.getColumnIndex("xlh")));
                 bean.dr= cursor.getInt(cursor.getColumnIndex("dr"));
+                bean.setCwarename(cursor.getString(cursor.getColumnIndex("cwarename")));
+                bean.setLogistics(cursor.getString(cursor.getColumnIndex("logistics")));
+                bean.setLogisticscode(cursor.getString(cursor.getColumnIndex("logisticscode")));
+
 
 
                 if (DataHelper.queryTimePeriod(bean.vbillcode,start_temp,end_temp,type,db3)) {
@@ -729,7 +749,8 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
     }
     public ArrayList<SaleDeliveryBean> displayAllSaleDelivery() {
         ArrayList<SaleDeliveryBean> list = new ArrayList<SaleDeliveryBean>();
-        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr,flag from SaleDelivery order by dbilldate desc", null);
+        Cursor cursor = db3.rawQuery("select vbillcode,dbilldate,dr,flag from SaleDelivery  where  type=? order by dbilldate desc",
+                new String[]{getIntent().getIntExtra("type",-1)+""});
         if (cursor != null && cursor.getCount() > 0) {
             //判断cursor中是否存在数据
             while (cursor.moveToNext()) {
@@ -754,6 +775,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
             Intent intent = new Intent(SaleDelivery.this, SaleDeliveryDetail.class);
             intent.putExtra("current_sale_delivery_vbillcode", saleDeliveryBeanList.get(position).getVbillcode());
+
             intent.putExtra("current_sale_delivery_dbilldate", saleDeliveryBeanList.get(position).getDbilldate());
             intent.putExtra("type",type);
             intent.putExtra("title",getIntent().getStringExtra("title"));

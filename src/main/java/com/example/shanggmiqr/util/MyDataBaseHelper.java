@@ -67,7 +67,8 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
             + "boxcode text,"+ "xlh text," + "num text," + "itemuploadflag text,"+ "prodcutcode text)";
     public static final String SaleDelivery = "create table SaleDelivery ("
             + "id integer primary key autoincrement," + "vtrantypecode text,"+ "dr integer,"+ "unitcode text," + "busitypecode text," + "vbillcode text,"+"type text,"
-            + "dbilldate text," + "deptcode text,"+ "Pupsndoccode text,"+ "Transporttypecode text,"+ "billmakercode text,"+ "vmemo text,"+ "flag text,"+ "country text)";
+            + "dbilldate text," + "deptcode text,"+ "Pupsndoccode text,"+ "Transporttypecode text,"+  "logistics text," + "logisticscode text," +
+            "billmakercode text,"+ "vmemo text,"+ "flag text,"+ "country text)";
     public static final String SaleDeliveryBody = "create table SaleDeliveryBody ("
             + "id integer primary key autoincrement," + "vbillcode text,"+ "vcooporderbcode_b text," + "matrcode text," + "matrname text,"
             + "maccode text," + "nnum text," + "scannum text," + "rackcode text,"+ "customer text,"+ "uploadflag text,"+ "cwarename text,"+"issn text,"+ "orginal_cwarename text,"+ "cwarehousecode text)";
@@ -91,7 +92,7 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
             + "id integer primary key autoincrement,"+ "headpk text," + "vbillcode text,"+ "itempk text,"+ "maccode text," + "materialcode text," + "platecode text,"
             + "boxcode text," + "num text," + "prodcutcode text," + "itemuploadflag text,"+ "xlh text)";
     public static final String Loan = "create table Loan ("
-            + "id integer primary key autoincrement,"+ "dr integer," + "pobillcode text,"
+            + "id integer primary key autoincrement,"+ "dr integer," + "pobillcode text,"+  "logistics text," + "logisticscode text,"
             + "dbilldate text," + "num text,"+ "ts text,"+ "flag text)";
     public static final String LoanBody = "create table LoanBody ("
             + "id integer primary key autoincrement," + "pobillcode text,"+ "itempk text," + "materialcode text,"+"issn text,"
@@ -110,7 +111,7 @@ public class MyDataBaseHelper extends SQLiteOpenHelper {//1.新建类继承SQLit
             + "boxcode text," + "num text," + "prodcutcode text," + "itemuploadflag text,"+ "xlh text)";
     public static final String AllocateTransfer = "create table AllocateTransfer ("
             + "id integer primary key autoincrement," +"headpk text,"+ "cunitcode text," + "runitcode text," + "billno text,"+ "org text,"+ "ts text,"
-            + "dbilldate text,"+ "dr integer," + "num text,"+ "flag text)";
+            + "dbilldate text,"+ "dr integer,"+  "logistics text," + "logisticscode text,"  + "num text,"+ "flag text)";
     public static final String AllocateTransferBody = "create table AllocateTransferBody ("
             + "id integer primary key autoincrement,"+"headpk text," + "billno text,"+ "itempk text,"+ "address text," + "materialcode text,"+ "materialclasscode text," + "nnum text,"
             + "maccode text," + "rwarehousecode text,"+ "cwarehousecode text,"+"issn text,"+ "scannum text,"+ "uploadflag text)";

@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
-import android.support.constraint.solver.GoalRow;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -25,23 +24,31 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.shanggmiqr.util.BaseConfig;
 import com.example.shanggmiqr.util.DataHelper;
+import com.example.shanggmiqr.util.ToastShow;
 import com.example.weiytjiang.shangmiqr.R;
 import com.example.shanggmiqr.adapter.SaleDeliveryBodyTableAdapter;
 import com.example.shanggmiqr.bean.SaleDeliveryBodyBean;
 import com.example.shanggmiqr.bean.SaleDeliveryUploadFlagBean;
-import com.example.shanggmiqr.bean.SalesRespBean;
 import com.example.shanggmiqr.bean.SalesRespBeanValue;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
-import com.example.shanggmiqr.util.Utils;
 import com.google.gson.Gson;
 import com.zyao89.view.zloading.ZLoadingDialog;
 import com.zyao89.view.zloading.Z_TYPE;
 
 ;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Created by weiyt.jiang on 2018/8/14.
@@ -83,10 +90,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     //运单号
     private String expressCode = "";
 
-    //要上传行号的集合
-    private List<String> list;
-    //要上传的产品码的集合
-    private List<String> listAll;
+
 
 
 
@@ -243,21 +247,19 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                 switch (msg.what) {
 
                     case 0x15:
-                        zLoadingDialog.dismiss();
+
                         Toast.makeText(SaleDeliveryDetail.this,msg.getData().getString("uploadResp"), Toast.LENGTH_LONG).show();
                         updateAllUploadFlag();
                         listAllBodyPostition = QuerySaleDeliveryBody(current_sale_delivery_vbillcodeRecv);
                         setAllItemUpload();
+                        DataHelper.updateLogistics(db4,current_sale_delivery_vbillcodeRecv,
+                                chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
                         finish();
                         break;
 
 
-                    case 0x18:
-                        zLoadingDialog.dismiss();
 
-                        break;
                     case 0x19:
-                        zLoadingDialog.dismiss();
                         String s3 = msg.getData().getString("uploadResp");
                         Toast.makeText(SaleDeliveryDetail.this, s3, Toast.LENGTH_LONG).show();
                         break;
@@ -290,61 +292,77 @@ public class SaleDeliveryDetail extends AppCompatActivity {
     private void pushData() {
 
         zLoadingDialog.show();
+        String  workcode="";
+        switch (getIntent().getIntExtra("type",-1)){
+            case 0:
+                workcode="R08";
+                break;
+            case 8:
+                workcode="R15";
+                break;
+        }
+        MediaType mediaType = MediaType.parse("text/x-markdown; charset=utf-8");
+        String requestBody=DataHelper.getRequestJson( db4,current_sale_delivery_vbillcodeRecv,
+                SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
+        Log.i("request-->",requestBody);
+        if(requestBody.contains("errno")){
+            SalesRespBeanValue respBeanValue =new Gson().fromJson(requestBody, SalesRespBeanValue.class);
+            ToastShow.show(SaleDeliveryDetail.this,respBeanValue.getErrmsg(),Toast.LENGTH_LONG);
+            zLoadingDialog.dismiss();
+            return;
+        }
+          requestBody=DataHelper.getRequestbody(workcode, DataHelper.getRequestJson( db4,current_sale_delivery_vbillcodeRecv,
+                SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1)));
 
-        new Thread(new Runnable() {
+
+        final Request request = new Request.Builder()
+                .url( BaseConfig.getNcUrl())
+                .post(RequestBody.create(mediaType, requestBody))
+                .build();
+        OkHttpClient okHttpClient = new OkHttpClient();
+        okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
-            public void run() {
-                if (Utils.isNetworkConnected(SaleDeliveryDetail.this)) {
-                    try {
-                        //Y代表已经上传过
-                        if (iaAlreadyUploadAll()) {
-                           saleDeliveryDetailHandler.sendEmptyMessage(0x23);
-                        } else{
-                            String  workcode="";
-                            switch (getIntent().getIntExtra("type",-1)){
-                                case 0:
-                                    workcode="R08";
-                                    break;
-                                case 8:
-                                    workcode="R15";
-                                    break;
-                            }
-                            String uploadResp = DataHelper.uploadSaleDeliveryVBill(workcode, db4,current_sale_delivery_vbillcodeRecv,
-                                    SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
-                            zLoadingDialog.dismiss();
-                            if (null != uploadResp) {
-
-                                    SalesRespBean respBean = new Gson().fromJson(uploadResp, SalesRespBean.class);
-                                    SalesRespBeanValue respBeanValue =new Gson().fromJson(respBean.getValue(), SalesRespBeanValue.class);
-
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("uploadResp", respBeanValue.getErrmsg());
-                                    Message msg = new Message();
-                                    if (respBeanValue.getErrno().equals("0")) {
-                                        //19弹出erromsg
-                                        msg.what = 0x15;
-                                    } else {
-                                        //19弹出erromsg
-                                        msg.what = 0x19;
-                                    }
-                                    msg.setData(bundle);
-                                    saleDeliveryDetailHandler.sendMessage(msg);
-
-                            } else {
-                                Message msg = new Message();
-                                msg.what = 0x18;
-                                saleDeliveryDetailHandler.sendMessage(msg);
-                            }
-                        }
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-
-
-                    }
-                }
+            public void onFailure(Call call, IOException e) {
+                Toast.makeText(SaleDeliveryDetail.this,e.toString(), Toast.LENGTH_LONG).show();
+                zLoadingDialog.dismiss();
             }
-        }).start();
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                zLoadingDialog.dismiss();
+                String result=response.body().string();
+
+                 result=result.substring(result.indexOf("<return>")+8,result.indexOf("</return>"));
+                Log.i("result",result);
+                if (null != result) {
+
+                    Log.i("response-->",result);
+                    SalesRespBeanValue respBeanValue =new Gson().fromJson(result, SalesRespBeanValue.class);
+
+                    Bundle bundle = new Bundle();
+                    bundle.putString("uploadResp", respBeanValue.getErrmsg());
+                    Message msg = new Message();
+                    if (respBeanValue.getErrno().equals("0")) {
+                        //19弹出erromsg
+                        msg.what = 0x15;
+                    } else {
+                        //19弹出erromsg
+                        msg.what = 0x19;
+                    }
+                    msg.setData(bundle);
+                    saleDeliveryDetailHandler.sendMessage(msg);
+
+                } else {
+                    Message msg = new Message();
+                    msg.what = 0x18;
+                    saleDeliveryDetailHandler.sendMessage(msg);
+                }
+
+            }
+        });
+
+
+
     }
 
     private void myadapter() {
@@ -477,12 +495,6 @@ public class SaleDeliveryDetail extends AppCompatActivity {
 
     }
 
-    private boolean isCwarenameSame() {
-        for (int i = 0; i <listAllBodyPostition.size() ; i++) {
-            listAllBodyPostition.get(i).getCwarename();
-        }
-        return  false;
-    }
 
 
 
@@ -490,62 +502,6 @@ public class SaleDeliveryDetail extends AppCompatActivity {
 
 
 
-    private boolean iaAlreadyUploadAll() {
-        Cursor cursor = db4.rawQuery("select vbillcode from SaleDelivery where vbillcode=? and flag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, "Y"});
-        if (cursor != null && cursor.getCount() > 0) {
-            return true;
-        }
-
-        Cursor cursor3 = db4.rawQuery("select vbillcode,vcooporderbcode_b from SaleDeliveryBody where vbillcode=? and uploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, "N"});
-        Cursor cursorpy = db4.rawQuery("select vbillcode,vcooporderbcode_b from SaleDeliveryBody where vbillcode=? and uploadflag=?",
-                new String[]{current_sale_delivery_vbillcodeRecv, "PY"});
-        list = new ArrayList<String>();
-        if (cursor3 != null && cursor3.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursor3.moveToNext()) {
-                list.add(cursor3.getString(cursor3.getColumnIndex("vcooporderbcode_b")));
-                Cursor cursor4 = db4.rawQuery("select vbillcode,vcooporderbcode_b,prodcutcode,itemuploadflag from SaleDeliveryScanResult where vbillcode=? and vcooporderbcode_b=? and itemuploadflag=?",
-                        new String[]{current_sale_delivery_vbillcodeRecv, cursor3.getString(cursor3.getColumnIndex("vcooporderbcode_b")), "N"});
-                if (cursor4 != null && cursor4.getCount() > 0) {
-                    //判断cursor中是否存在数据
-                    while (cursor4.moveToNext()) {
-                        SaleDeliveryUploadFlagBean itemall = new SaleDeliveryUploadFlagBean();
-                        itemall.vbillcode = cursor4.getString(cursor4.getColumnIndex("vbillcode"));
-                        itemall.vcooporderbcode_b = cursor4.getString(cursor4.getColumnIndex("vcooporderbcode_b"));
-                        itemall.prodcutcode = cursor4.getString(cursor4.getColumnIndex("prodcutcode"));
-
-                    }
-                    cursor4.close();
-                }
-            }
-            cursor3.close();
-        }
-        if (cursorpy != null && cursorpy.getCount() > 0) {
-            //判断cursor中是否存在数据
-            while (cursorpy.moveToNext()) {
-                list.add(cursorpy.getString(cursorpy.getColumnIndex("vcooporderbcode_b")));
-                Cursor cursor5 = db4.rawQuery("select vbillcode,vcooporderbcode_b,prodcutcode,itemuploadflag from SaleDeliveryScanResult where vbillcode=? and vcooporderbcode_b=? and itemuploadflag=?",
-                        new String[]{current_sale_delivery_vbillcodeRecv, cursorpy.getString(cursorpy.getColumnIndex("vcooporderbcode_b")), "N"});
-                if (cursor5 != null && cursor5.getCount() > 0) {
-                    //判断cursor中是否存在数据
-                    while (cursor5.moveToNext()) {
-                        SaleDeliveryUploadFlagBean itemall2 = new SaleDeliveryUploadFlagBean();
-                        itemall2.vbillcode = cursor5.getString(cursor5.getColumnIndex("vbillcode"));
-                        itemall2.vcooporderbcode_b = cursor5.getString(cursor5.getColumnIndex("vcooporderbcode_b"));
-                        itemall2.prodcutcode = cursor5.getString(cursor5.getColumnIndex("prodcutcode"));
-
-
-                    }
-                    cursor5.close();
-                }
-            }
-            cursorpy.close();
-        }
-
-        return false;
-    }
 
 
 
