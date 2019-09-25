@@ -18,8 +18,25 @@ public class LogisticsCompany {
 
     private String errorno;
     private String errmsg;
-    private String totalpage;
-    private String requestpage;
+    private int totalpage;
+
+    public int getTotalpage() {
+        return totalpage;
+    }
+
+    public void setTotalpage(int totalpage) {
+        this.totalpage = totalpage;
+    }
+
+    public int getRequestpage() {
+        return requestpage;
+    }
+
+    public void setRequestpage(int requestpage) {
+        this.requestpage = requestpage;
+    }
+
+    private int requestpage;
     private List<DatasBean> datas;
 
     public void setErrorno(String errorno) {
@@ -30,13 +47,7 @@ public class LogisticsCompany {
         this.errmsg = errmsg;
     }
 
-    public void setTotalpage(String totalpage) {
-        this.totalpage = totalpage;
-    }
 
-    public void setRequestpage(String requestpage) {
-        this.requestpage = requestpage;
-    }
 
     public void setDatas(List<DatasBean> datas) {
         this.datas = datas;
@@ -50,13 +61,7 @@ public class LogisticsCompany {
         return errmsg;
     }
 
-    public String getTotalpage() {
-        return totalpage;
-    }
 
-    public String getRequestpage() {
-        return requestpage;
-    }
 
     public List<DatasBean> getDatas() {
         return datas;

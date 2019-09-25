@@ -355,7 +355,7 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
                         editor5.commit();
                         Gson gsonUser6 =new Gson();
                         LogisticsCompany logisticsCompany = gsonUser6.fromJson(logisticsCompanyData,LogisticsCompany.class);
-                        if (Integer.parseInt(logisticsCompany.getTotalpage()) ==1){
+                        if (logisticsCompany.getTotalpage() ==1){
                             insertLogisticsCompanyDataToDB(logisticsCompany);
                             runOnUiThread(new Runnable() {
                                 @Override
@@ -365,7 +365,7 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
                                     bnp.setProgress(100);
                                 }
                             });
-                        }else if(Integer.parseInt(logisticsCompany.getTotalpage()) <1){
+                        }else if(logisticsCompany.getTotalpage() <1){
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -375,12 +375,12 @@ public class DataManage extends AppCompatActivity implements View.OnClickListene
                             return;
                         }else {
                             insertLogisticsCompanyDataToDB(logisticsCompany);
-                            for (int pagenum = 2; pagenum <= Integer.parseInt(logisticsCompany.getTotalpage()); pagenum++) {
+                            for (int pagenum = 2; pagenum <= logisticsCompany.getTotalpage(); pagenum++) {
                                 String logisticsCompanyData2 = downloadDatabase("R50", String.valueOf(pagenum));
                                 LogisticsCompany logisticsCompany2 = gsonUser6.fromJson(logisticsCompanyData2, LogisticsCompany.class);
                                 insertLogisticsCompanyDataToDB(logisticsCompany2);
                                 final int pagenumSupplierPro = pagenum;
-                                final int pagetotalSupplierPro = Integer.parseInt(logisticsCompany.getTotalpage());
+                                final int pagetotalSupplierPro = logisticsCompany.getTotalpage();
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {

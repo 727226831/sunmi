@@ -27,13 +27,17 @@ import com.example.shanggmiqr.bean.MaterialBean;
 import com.example.shanggmiqr.bean.QrcodeRule;
 import com.example.shanggmiqr.bean.SaleDeliveryBean;
 import com.example.shanggmiqr.bean.SaleDeliveryQuery;
+import com.example.shanggmiqr.bean.SalesRespBeanValue;
 import com.example.shanggmiqr.bean.Supplier;
 import com.example.shanggmiqr.bean.User;
 import com.example.shanggmiqr.bean.Warhouse;
+import com.example.shanggmiqr.transaction.SaleDeliveryDetail;
 import com.example.shanggmiqr.util.BaseConfig;
+import com.example.shanggmiqr.util.DataHelper;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.MyImageView;
 import com.example.shanggmiqr.util.NumberProgressBar;
+import com.example.shanggmiqr.util.ToastShow;
 import com.example.shanggmiqr.util.Utils;
 import com.example.weiytjiang.shangmiqr.R;
 import com.google.gson.Gson;
@@ -44,9 +48,18 @@ import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Created by weiyt.jiang on 2018/8/8.
@@ -59,7 +72,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
     private String dataResp;
     private SQLiteDatabase db2;
     private MyDataBaseHelper helper2;
-    private Handler dataHandler = null;
+
     private String material_ts_begintime;
     private String material_ts_endtime;
     private String qrcode_rule_ts_begintime;
@@ -121,154 +134,161 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                 .setDurationTime(0.5) .show();// 设置动画时间百分比 - 0.5倍
                 //     .setDialogBackgroundColor(Color.parseColor("#CC111111")) // 设置背景色，默认白色
 
-        downloadWarehouseData();
-           downloadLogisticsCompanyData();
-            downloadQrcodeData();
-        downloadMaterial2Data();
+//        downloadWarehouseData();
+//           downloadLogisticsCompanyData();
+//            downloadQrcodeData();
+//        downloadMaterial2Data();
+            dialog.show();
+            getR01Data("1");
+            getR02Data("1");
+
+            getR13Data("1");
+            getR50Data("1");
 
 
         }
         //基础信息离线下载暂时屏蔽掉-E  20181102
-        dataHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what) {
-                    case 0x10:
-                        Toast.makeText(TopMenu.this, "请检查网络连接并到基础信息界面手动更新基础数据", Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x11:
-                        count++;
-                        if (count ==total){
-                            dialog.dismiss();
-                        }
-                        String latest_warhouse_ts = getCurrentDataTime();
-                        SharedPreferences latestDBTimeInfo1= getSharedPreferences("LatestDBTimeInfo", 0);
-                        SharedPreferences.Editor editor1 = latestDBTimeInfo1.edit();
-                        editor1.putString("latest_warhouse_ts",latest_warhouse_ts);
-                        editor1.commit();
 
-                        break;
-                    case 0x12:
-                        count++;
-                        if (count ==total){
-                            dialog.dismiss();
-                        }
-                        String latest_material_ts = getCurrentDataTime();
-                        SharedPreferences latestDBTimeInfo2 = getSharedPreferences("LatestDBTimeInfo", 0);
-                        SharedPreferences.Editor editor2 = latestDBTimeInfo2.edit();
-                        editor2.putString("latest_material_ts",latest_material_ts);
-                        editor2.commit();
-
-                        break;
-                    case 0x13:
-                        count++;
-                        if (count ==total){
-                            dialog.dismiss();
-                        }
-                        String latest_user_ts = getCurrentDataTime();
-                        SharedPreferences latestDBTimeInfo3 = getSharedPreferences("LatestDBTimeInfo", 0);
-                        SharedPreferences.Editor editor3 = latestDBTimeInfo3.edit();
-                        editor3.putString("latest_user_ts",latest_user_ts);
-                        editor3.commit();
-
-                        break;
-                    case 0x14:
-                        count++;
-                        if (count ==total){
-                            dialog.dismiss();
-                        }
-                        String latest_customer_ts = getCurrentDataTime();
-                        SharedPreferences latestDBTimeInfo4 = getSharedPreferences("LatestDBTimeInfo", 0);
-                        SharedPreferences.Editor editor4 = latestDBTimeInfo4.edit();
-                        editor4.putString("latest_customer_ts",latest_customer_ts);
-                        editor4.commit();
-
-                        break;
-                    case 0x15:
-                        count++;
-                        if (count ==total){
-                            dialog.dismiss();
-                        }
-                        String latest_qr_ts = getCurrentDataTime();
-                        SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestDBTimeInfo", 0);
-                        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
-                        editor5.putString("latest_qr_ts",latest_qr_ts);
-                        editor5.commit();
-
-                        break;
-                    case 0x16:
-                        count++;
-                        if (count ==total){
-                            dialog.dismiss();
-                        }
-                        String latest_supplier_ts = getCurrentDataTime();
-                        SharedPreferences latestDBTimeInfo6 = getSharedPreferences("LatestDBTimeInfo", 0);
-                        SharedPreferences.Editor editor6 = latestDBTimeInfo6.edit();
-                        editor6.putString("latest_supplier_ts",latest_supplier_ts);
-                        editor6.commit();
-
-                        break;
-                    case 0x17:
-
-                        break;
-                    case 0x18:
-
-                        break;
-                    case 0x19:
-                        dialog.dismiss();
-                        exceptionString = msg.getData().getString("Exception19");
-                        Toast.makeText(TopMenu.this, "仓库信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x20:
-                        dialog.dismiss();
-                        exceptionString = msg.getData().getString("Exception20");
-                        Toast.makeText(TopMenu.this, "物料信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x21:
-                        dialog.dismiss();
-                        exceptionString = msg.getData().getString("Exception21");
-                        Toast.makeText(TopMenu.this, "用户信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x22:
-                        dialog.dismiss();
-                        exceptionString = msg.getData().getString("Exception22");
-                        Toast.makeText(TopMenu.this, "条码字典信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x23:
-                        dialog.dismiss();
-                        exceptionString = msg.getData().getString("Exception23");
-                        Toast.makeText(TopMenu.this, "客户信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x24:
-                        dialog.dismiss();
-                        exceptionString = msg.getData().getString("Exception24");
-                        Toast.makeText(TopMenu.this, "供应商信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x25:
-                        dialog.dismiss();
-                        exceptionString = msg.getData().getString("Exception25");
-                        Toast.makeText(TopMenu.this, "物流公司信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
-                        break;
-                    case 0x26:
-                        count++;
-                        if (count ==total){
-                            dialog.dismiss();
-                        }
-                        String latest_logistics_company_ts = getCurrentDataTime();
-                        SharedPreferences latestDBTimeInfo26 = getSharedPreferences("LatestDBTimeInfo", 0);
-                        SharedPreferences.Editor editor26 = latestDBTimeInfo26.edit();
-                        editor26.putString("latest_logistics_company_ts",latest_logistics_company_ts);
-                        editor26.commit();
-
-                        break;
-                    default:
-                        break;
-                }
-            }
-        };
 
     }
+    private Handler dataHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 0x10:
+                    Toast.makeText(TopMenu.this, "请检查网络连接并到基础信息界面手动更新基础数据", Toast.LENGTH_LONG).show();
+                    break;
+                case 0x11:
+                    count++;
+                    if (count ==total){
+                        dialog.dismiss();
+                    }
+                    String latest_warhouse_ts = getCurrentDataTime();
+                    SharedPreferences latestDBTimeInfo1= getSharedPreferences("LatestDBTimeInfo", 0);
+                    SharedPreferences.Editor editor1 = latestDBTimeInfo1.edit();
+                    editor1.putString("latest_warhouse_ts",latest_warhouse_ts);
+                    editor1.commit();
+
+                    break;
+                case 0x12:
+                    count++;
+                    if (count ==total){
+                        dialog.dismiss();
+                    }
+                    String latest_material_ts = getCurrentDataTime();
+                    SharedPreferences latestDBTimeInfo2 = getSharedPreferences("LatestDBTimeInfo", 0);
+                    SharedPreferences.Editor editor2 = latestDBTimeInfo2.edit();
+                    editor2.putString("latest_material_ts",latest_material_ts);
+                    editor2.commit();
+
+                    break;
+                case 0x13:
+                    count++;
+                    if (count ==total){
+                        dialog.dismiss();
+                    }
+                    String latest_user_ts = getCurrentDataTime();
+                    SharedPreferences latestDBTimeInfo3 = getSharedPreferences("LatestDBTimeInfo", 0);
+                    SharedPreferences.Editor editor3 = latestDBTimeInfo3.edit();
+                    editor3.putString("latest_user_ts",latest_user_ts);
+                    editor3.commit();
+
+                    break;
+                case 0x14:
+                    count++;
+                    if (count ==total){
+                        dialog.dismiss();
+                    }
+                    String latest_customer_ts = getCurrentDataTime();
+                    SharedPreferences latestDBTimeInfo4 = getSharedPreferences("LatestDBTimeInfo", 0);
+                    SharedPreferences.Editor editor4 = latestDBTimeInfo4.edit();
+                    editor4.putString("latest_customer_ts",latest_customer_ts);
+                    editor4.commit();
+
+                    break;
+                case 0x15:
+                    count++;
+                    if (count ==total){
+                        dialog.dismiss();
+                    }
+                    String latest_qr_ts = getCurrentDataTime();
+                    SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestDBTimeInfo", 0);
+                    SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
+                    editor5.putString("latest_qr_ts",latest_qr_ts);
+                    editor5.commit();
+
+                    break;
+                case 0x16:
+                    count++;
+                    if (count ==total){
+                        dialog.dismiss();
+                    }
+                    String latest_supplier_ts = getCurrentDataTime();
+                    SharedPreferences latestDBTimeInfo6 = getSharedPreferences("LatestDBTimeInfo", 0);
+                    SharedPreferences.Editor editor6 = latestDBTimeInfo6.edit();
+                    editor6.putString("latest_supplier_ts",latest_supplier_ts);
+                    editor6.commit();
+
+                    break;
+                case 0x17:
+
+                    break;
+                case 0x18:
+
+                    break;
+                case 0x19:
+                    dialog.dismiss();
+                    exceptionString = msg.getData().getString("Exception19");
+                    Toast.makeText(TopMenu.this, "仓库信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
+                    break;
+                case 0x20:
+                    dialog.dismiss();
+                    exceptionString = msg.getData().getString("Exception20");
+                    Toast.makeText(TopMenu.this, "物料信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
+                    break;
+                case 0x21:
+                    dialog.dismiss();
+                    exceptionString = msg.getData().getString("Exception21");
+                    Toast.makeText(TopMenu.this, "用户信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
+                    break;
+                case 0x22:
+                    dialog.dismiss();
+                    exceptionString = msg.getData().getString("Exception22");
+                    Toast.makeText(TopMenu.this, "条码字典信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
+                    break;
+                case 0x23:
+                    dialog.dismiss();
+                    exceptionString = msg.getData().getString("Exception23");
+                    Toast.makeText(TopMenu.this, "客户信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
+                    break;
+                case 0x24:
+                    dialog.dismiss();
+                    exceptionString = msg.getData().getString("Exception24");
+                    Toast.makeText(TopMenu.this, "供应商信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
+                    break;
+                case 0x25:
+                    dialog.dismiss();
+                    exceptionString = msg.getData().getString("Exception25");
+                    Toast.makeText(TopMenu.this, "物流公司信息下载异常，请到基础数据管理界面手动下载, 错误："+exceptionString, Toast.LENGTH_LONG).show();
+                    break;
+                case 0x26:
+                    count++;
+                    if (count ==total){
+                        dialog.dismiss();
+                    }
+                    String latest_logistics_company_ts = getCurrentDataTime();
+                    SharedPreferences latestDBTimeInfo26 = getSharedPreferences("LatestDBTimeInfo", 0);
+                    SharedPreferences.Editor editor26 = latestDBTimeInfo26.edit();
+                    editor26.putString("latest_logistics_company_ts",latest_logistics_company_ts);
+                    editor26.commit();
+
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // TODO Auto-generated method stub
@@ -323,41 +343,43 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
         Date date = new Date(System.currentTimeMillis());
         return simpleDateFormat.format(date);
     }
-    private void downloadLogisticsCompanyData() {
-        new Thread(new Runnable() {
+
+    private void getR50Data(final String pagenum) {
+
+
+
+        MediaType mediaType = MediaType.parse("text/x-markdown; charset=utf-8");
+        String requestBody="";
+        requestBody=DataHelper.getRequestbody("R50", downloadDatabase("R50",pagenum) );
+
+         Log.i("R50-->",downloadDatabase("R50",pagenum));
+        final Request request = new Request.Builder()
+                .url( BaseConfig.getNcUrl())
+                .post(RequestBody.create(mediaType, requestBody))
+                .build();
+        OkHttpClient okHttpClient = new OkHttpClient();
+        okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
-            public void run() {
-                if (isNetworkConnected(TopMenu.this)) {
-                    try {
-                        String logisticsCompanyData = downloadDatabase("R50","1");
-                        if (null == logisticsCompanyData) {
-                            return;
-                        }
+            public void onFailure(Call call, IOException e) {
+                Toast.makeText(TopMenu.this,e.toString(), Toast.LENGTH_LONG).show();
+                dialog.dismiss();
+            }
 
-                        Gson gsonUser6 =new Gson();
-                        LogisticsCompany logisticsCompany = gsonUser6.fromJson(logisticsCompanyData,LogisticsCompany.class);
-                        if (Integer.parseInt(logisticsCompany.getTotalpage()) ==1){
-                            insertLogisticsCompanyDataToDB(logisticsCompany);
-                        }else if(Integer.parseInt(logisticsCompany.getTotalpage()) <1){
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
 
-                                    count++;
-                                    if (count ==total){
-                                        dialog.dismiss();
-                                    }
-                                }
-                            });
+                String result=response.body().string();
 
-                        }else {
-                            insertLogisticsCompanyDataToDB(logisticsCompany);
-                            for (int pagenum = 2; pagenum <= Integer.parseInt(logisticsCompany.getTotalpage()); pagenum++) {
-                                String logisticsCompanyData2 = downloadDatabase("R50", String.valueOf(pagenum));
-                                LogisticsCompany logisticsCompany2 = gsonUser6.fromJson(logisticsCompanyData2, LogisticsCompany.class);
-                                insertLogisticsCompanyDataToDB(logisticsCompany2);
-                            }
-                        }
+                result=result.substring(result.indexOf("<return>")+8,result.indexOf("</return>"));
+
+                if (null != result) {
+
+                    LogisticsCompany logisticsCompany = new Gson().fromJson(result, LogisticsCompany.class);
+                    insertLogisticsCompanyDataToDB(logisticsCompany);
+
+                    if(logisticsCompany.getRequestpage()<logisticsCompany.getTotalpage()){
+                        getR50Data(logisticsCompany.getRequestpage()+"");
+                    }else {
                         logistics_company_ts_begintime = Utils.getCurrentDateTimeNew() ;
                         logistics_company_ts_endtime = Utils.getDefaultEndTime();
                         SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestLogisticsCompanyTSInfo", 0);
@@ -365,27 +387,177 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
                         editor5.putString("latest_logistics_company_ts_begintime",logistics_company_ts_begintime);
                         editor5.putString("latest_logistics_company_ts_endtime",logistics_company_ts_endtime);
                         editor5.commit();
-
-                        Message msg = new Message();
-                        msg.what = 0x26;
-                        dataHandler.sendMessage(msg);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("Exception25", e.toString());
-                        Message msg = new Message();
-                        msg.what = 0x25;
-                        msg.setData(bundle);
-                        dataHandler.sendMessage(msg);
+                        dataHandler.sendEmptyMessage(0x26);
                     }
-                } else {
-                    Message msg = new Message();
-                    msg.what = 0x10;
-                    dataHandler.sendMessage(msg);
                 }
+
             }
-        }).start();
+        });
+
+
+
     }
+    private void getR02Data(final String pagenum) {
+
+
+
+        MediaType mediaType = MediaType.parse("text/x-markdown; charset=utf-8");
+        String requestBody="";
+        requestBody=DataHelper.getRequestbody("R02", downloadDatabase("R02",pagenum) );
+        Log.i("R02-->",downloadDatabase("R02",pagenum));
+
+        final Request request = new Request.Builder()
+                .url( BaseConfig.getNcUrl())
+                .post(RequestBody.create(mediaType, requestBody))
+                .build();
+        OkHttpClient okHttpClient = new OkHttpClient();
+        okHttpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Toast.makeText(TopMenu.this,e.toString(), Toast.LENGTH_LONG).show();
+               dialog.dismiss();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+
+                String result=response.body().string();
+
+                result=result.substring(result.indexOf("<return>")+8,result.indexOf("</return>"));
+
+                if (null != result) {
+
+                    MaterialBean materialBean2 = new Gson().fromJson(result, MaterialBean.class);
+                    insertMaterialdDataToDB(materialBean2);
+
+                    if(materialBean2.getPagenum()<=materialBean2.getPagetotal()){
+                          getR02Data(materialBean2.getPagenum()+"");
+                    }else {
+
+                        material_ts_begintime = Utils.getCurrentDateTimeNew() ;
+                        material_ts_endtime = Utils.getDefaultEndTime();
+                        SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestMaterialTSInfo", 0);
+                        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
+                        editor5.putString("latest_material_ts_begintime",material_ts_begintime);
+                        editor5.putString("latest_material_ts_endtime",material_ts_endtime);
+                        editor5.commit();
+                        dataHandler.sendEmptyMessage(0x12);
+                    }
+                }
+
+            }
+        });
+
+
+
+    }
+    private void getR13Data(final String pagenum) {
+
+
+
+        MediaType mediaType = MediaType.parse("text/x-markdown; charset=utf-8");
+        String requestBody="";
+        requestBody=DataHelper.getRequestbody("R13", downloadDatabase("R13",pagenum) );
+
+        Log.i("R13-->",downloadDatabase("R13",pagenum));
+        final Request request = new Request.Builder()
+                .url( BaseConfig.getNcUrl())
+                .post(RequestBody.create(mediaType, requestBody))
+                .build();
+        OkHttpClient okHttpClient = new OkHttpClient();
+        okHttpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Toast.makeText(TopMenu.this,e.toString(), Toast.LENGTH_LONG).show();
+                dialog.dismiss();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+
+                String result=response.body().string();
+
+                result=result.substring(result.indexOf("<return>")+8,result.indexOf("</return>"));
+
+                if (null != result) {
+
+                    QrcodeRule qrcodeRule = new Gson().fromJson(result, QrcodeRule.class);
+                    insertQrcodeRuledDataToDB(qrcodeRule);
+                    if(qrcodeRule.getPagenum()<=qrcodeRule.getPagetotal()){
+                        getR13Data(qrcodeRule.getPagenum()+"");
+                    }else {
+
+                        qrcode_rule_ts_begintime =Utils.getCurrentDateTimeNew() ;
+                        qrcode_rule_ts_endtime = Utils.getDefaultEndTime();
+                        SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestQrcodeRuleTSInfo", 0);
+                        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
+                        editor5.putString("latest_qrcode_rule_ts_begintime",qrcode_rule_ts_begintime);
+                        editor5.putString("latest_qrcode_rule_ts_endtime",qrcode_rule_ts_endtime);
+                        editor5.commit();
+                        dataHandler.sendEmptyMessage(0x15);
+                    }
+                }
+
+            }
+        });
+
+
+
+    }
+    private void getR01Data(final String pagenum) {
+
+
+
+        MediaType mediaType = MediaType.parse("text/x-markdown; charset=utf-8");
+        String requestBody="";
+        requestBody=DataHelper.getRequestbody("R01", downloadDatabase("R01",pagenum) );
+
+        Log.i("R01-->",downloadDatabase("R01",pagenum));
+        final Request request = new Request.Builder()
+                .url( BaseConfig.getNcUrl())
+                .post(RequestBody.create(mediaType, requestBody))
+                .build();
+        OkHttpClient okHttpClient = new OkHttpClient();
+        okHttpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Toast.makeText(TopMenu.this,e.toString(), Toast.LENGTH_LONG).show();
+                dialog.dismiss();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+
+                String result=response.body().string();
+
+                result=result.substring(result.indexOf("<return>")+8,result.indexOf("</return>"));
+
+                if (null != result) {
+
+                    Warhouse warhouseBean = new Gson().fromJson(result, Warhouse.class);
+                    insertWarhousedDataToDB( warhouseBean);
+                    if( warhouseBean.getPagenum()<= warhouseBean.getPagetotal()){
+                        getR01Data( warhouseBean.getPagenum()+"");
+                    }else {
+
+                        warhouse_ts_begintime = Utils.getCurrentDateTimeNew() ;
+                        warhouse_ts_endtime = Utils.getDefaultEndTime();
+                        SharedPreferences latestDBTimeInfo5 = getSharedPreferences("LatestWarhouseTSInfo", 0);
+                        SharedPreferences.Editor editor5 = latestDBTimeInfo5.edit();
+                        editor5.putString("latest_warhouse_ts_begintime",warhouse_ts_begintime);
+                        editor5.putString("latest_warhouse_ts_endtime",warhouse_ts_endtime);
+                        editor5.commit();
+                        dataHandler.sendEmptyMessage(0x11);
+                    }
+                }
+
+            }
+        });
+
+
+
+    }
+
 
 
     private void downloadQrcodeData() {
@@ -660,7 +832,7 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
     /**
      * webservice查询下载
      */
-    public String downloadDatabase(String workCode,String pageNum) throws Exception {
+    public String downloadDatabase(String workCode,String pageNum){
         String WSDL_URI;
         String namespace;
         String begintime= "2001-01-01 00:00:00";
@@ -714,26 +886,8 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
             CommonSendLogisticsBean userSend2 = new CommonSendLogisticsBean(begintime, endtime, pageNum);
             userSendBean = gson.toJson(userSend2);
         }
-        request.addProperty("string", workCode);
-        request.addProperty("string1", userSendBean);
-        Log.i("request-->",request.toString());
-        //request.addProperty("string1", "{\"begintime\":\"1900-01-20 00:00:00\",\"endtime\":\"2018-08-21 00:00:00\", \"pagenum\":\"1\",\"pagetotal\":\"66\"}");
-        //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
-        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
 
-        envelope.bodyOut = request;
-        envelope.dotNet = false;
-
-        HttpTransportSE se = new HttpTransportSE(WSDL_URI);
-        //  se.call(null, envelope);//调用 version1.2
-        //version1.1 需要如下soapaction
-        se.call(namespace + "sendToWISE", envelope);
-        // 获取返回的数据
-        SoapObject object = (SoapObject) envelope.bodyIn;
-        // 获取返回的结果
-        dataResp = object.getProperty(0).toString();
-        Log.i("response-->",dataResp);
-        return dataResp;
+        return userSendBean;
     }
 
 
