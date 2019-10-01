@@ -37,11 +37,13 @@ import com.example.shanggmiqr.bean.SaleDeliveryQuery;
 import com.example.shanggmiqr.util.MyDataBaseHelper;
 import com.example.shanggmiqr.util.Utils;
 import com.google.gson.Gson;
+import com.google.gson.annotations.Until;
 import com.zyao89.view.zloading.ZLoadingDialog;
 
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -609,6 +611,7 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
 
 
     private void showDialogTwo() {
+
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_date, null);
         final DatePicker startTime = (DatePicker) view.findViewById(R.id.st);
         final DatePicker endTime = (DatePicker) view.findViewById(R.id.et);
@@ -619,32 +622,11 @@ public class SaleDelivery extends AppCompatActivity implements OnClickListener {
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String day_startTime,month_startTime,year_startTime;
-                String day_endTime,month_endTime,year_endTime;
-                year_startTime = String.valueOf(startTime.getYear());
-                year_endTime = String.valueOf(endTime.getYear());
-                if(startTime.getDayOfMonth()<10){
-                    day_startTime = "0"+String.valueOf(startTime.getDayOfMonth());
-                }else{
-                    day_startTime = String.valueOf(startTime.getDayOfMonth());
-                }
-                if((startTime.getMonth())<10){
-                    month_startTime = "0"+String.valueOf(startTime.getMonth() + 1);
-                }else{
-                    month_startTime = String.valueOf(startTime.getMonth() + 1);
-                }
-                if(endTime.getDayOfMonth()<10){
-                    day_endTime = "0"+String.valueOf(endTime.getDayOfMonth());
-                }else{
-                    day_endTime = String.valueOf(endTime.getDayOfMonth());
-                }
-                if((endTime.getMonth())<10){
-                    month_endTime = "0"+String.valueOf(endTime.getMonth() + 1);
-                }else{
-                    month_endTime = String.valueOf(endTime.getMonth() + 1);
-                }
-                String st = year_startTime+"-" + month_startTime+"-" + day_startTime;
-                String et = year_endTime+"-" + month_endTime+"-" + day_endTime;
+
+
+
+                String st=Utils.parseDate(startTime.getYear()+"-"+(startTime.getMonth()+1)+"-"+startTime.getDayOfMonth());
+                String et =  Utils.parseDate(endTime.getYear()+"-"+(endTime.getMonth()+1)+"-"+endTime.getDayOfMonth());
                 SharedPreferences currentTimePeriod= getSharedPreferences("query_saledelivery", 0);
                 SharedPreferences.Editor editor1 = currentTimePeriod.edit();
                 editor1.putString("current_account",st+" 至 "+et);

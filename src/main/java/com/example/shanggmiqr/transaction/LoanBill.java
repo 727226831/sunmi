@@ -431,32 +431,8 @@ public class LoanBill extends AppCompatActivity implements OnClickListener {
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String day_startTime,month_startTime,year_startTime;
-                String day_endTime,month_endTime,year_endTime;
-                year_startTime = String.valueOf(startTime.getYear());
-                year_endTime = String.valueOf(endTime.getYear());
-                if(startTime.getDayOfMonth()<10){
-                    day_startTime = "0"+String.valueOf(startTime.getDayOfMonth());
-                }else{
-                    day_startTime = String.valueOf(startTime.getDayOfMonth());
-                }
-                if((startTime.getMonth())<10){
-                    month_startTime = "0"+String.valueOf(startTime.getMonth() + 1);
-                }else{
-                    month_startTime = String.valueOf(startTime.getMonth() + 1);
-                }
-                if(endTime.getDayOfMonth()<10){
-                    day_endTime = "0"+String.valueOf(endTime.getDayOfMonth());
-                }else{
-                    day_endTime = String.valueOf(endTime.getDayOfMonth());
-                }
-                if((endTime.getMonth())<10){
-                    month_endTime = "0"+String.valueOf(endTime.getMonth() + 1);
-                }else{
-                    month_endTime = String.valueOf(endTime.getMonth() + 1);
-                }
-                String st = year_startTime+"-" + month_startTime+"-" + day_startTime;
-                String et = year_endTime+"-" + month_endTime+"-" + day_endTime;
+                String st=Utils.parseDate(startTime.getYear()+"-"+(startTime.getMonth()+1)+"-"+startTime.getDayOfMonth());
+                String et =  Utils.parseDate(endTime.getYear()+"-"+(endTime.getMonth()+1)+"-"+endTime.getDayOfMonth());
                 SharedPreferences currentTimePeriod= getSharedPreferences("query_loanbill", 0);
                 SharedPreferences.Editor editor1 = currentTimePeriod.edit();
                 editor1.putString("current_account",st+" 至 "+et);

@@ -333,20 +333,21 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                 String result=response.body().string();
 
                  result=result.substring(result.indexOf("<return>")+8,result.indexOf("</return>"));
-                Log.i("result",result);
+
                 if (null != result) {
 
                     Log.i("response-->",result);
+
                     SalesRespBeanValue respBeanValue =new Gson().fromJson(result, SalesRespBeanValue.class);
 
                     Bundle bundle = new Bundle();
                     bundle.putString("uploadResp", respBeanValue.getErrmsg());
                     Message msg = new Message();
                     if (respBeanValue.getErrno().equals("0")) {
-                        //19弹出erromsg
+
                         msg.what = 0x15;
                     } else {
-                        //19弹出erromsg
+
                         msg.what = 0x19;
                     }
                     msg.setData(bundle);
