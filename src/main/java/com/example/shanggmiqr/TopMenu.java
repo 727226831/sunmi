@@ -355,8 +355,8 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Toast.makeText(TopMenu.this,e.toString(), Toast.LENGTH_LONG).show();
                 dialog.dismiss();
+                Toast.makeText(TopMenu.this,e.toString(), Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -408,8 +408,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Toast.makeText(TopMenu.this,e.toString(), Toast.LENGTH_LONG).show();
+
                dialog.dismiss();
+               Toast.makeText(TopMenu.this,e.toString(), Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -462,8 +463,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Toast.makeText(TopMenu.this,e.toString(), Toast.LENGTH_LONG).show();
+
                 dialog.dismiss();
+                Toast.makeText(TopMenu.this,e.toString(), Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -515,8 +517,9 @@ public class TopMenu extends AppCompatActivity implements MyImageView.OnClickLis
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Toast.makeText(TopMenu.this,e.toString(), Toast.LENGTH_LONG).show();
+
                 dialog.dismiss();
+                Toast.makeText(TopMenu.this,e.toString(), Toast.LENGTH_LONG).show();
             }
 
             @Override

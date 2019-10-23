@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
          updateConfig = getSharedPreferences("configInfo", 0);
          editor = updateConfig.edit();
         String URL = updateConfig.getString("WSDL_URI", iUrl.WSDL_URI);
+
         BaseConfig.setNcUrl(URL);
 
         mdownloadUserInfo = (Button) findViewById(R.id.downloaduserinfo);
@@ -136,8 +137,6 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         if (isNetworkConnected(MainActivity.this)) {
                             try {
-
-
 
                                 menuBean=new Gson().fromJson(login(),MenuBean.class);
 
@@ -206,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
                         editor.putString("WSDL_URI", editTextName.getText().toString());
                         editor.putString("namespace", editTextNumEditText.getText().toString());
                         editor.commit();
+                        BaseConfig.setNcUrl(editTextName.getText().toString());
                     }
                 });
                 ad1.setNegativeButton("取消", new DialogInterface.OnClickListener() {

@@ -54,6 +54,7 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
     private Myadapter myadapter;
     private List<String> cars;
     private String temp_code;
+    private Button buttonDelete;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +116,16 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
         vcooporderbcode_bText.setText("行号  :" + current_vcooporderbcode_b_qrRecv);
         matrnameText.setText("物料名称:" + current_matrname_qrRecv);
         matrcodeText.setText("物料编码:" + current_matrcode_qrRecv);
+        buttonDelete=findViewById(R.id.b_delete);
+        buttonDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                db5.execSQL("delete from SaleDeliveryScanResult where vbillcode=?" +
+                        " and vcooporderbcode_b=? and itemuploadflag=?", new Object[]{current_vbillcode_qrRecv,
+                        current_vcooporderbcode_b_qrRecv,"N"});
+                updateData();
+            }
+        });
         switch (getIntent().getIntExtra("type",-1)){
             case 0:
                 actionBar.setTitle("发货单条码明细");
@@ -306,18 +317,24 @@ public class SaleDeliveryQRDetail extends AppCompatActivity {
         @Override
         public void myOnClick(int position, View v) {
             if (!isAlreadyUpload(listAllBodyPostition.get(position).getProdcutcode())) {
-                db5.execSQL("delete from SaleDeliveryScanResult where prodcutcode=?", new Object[]{listAllBodyPostition.get(position).getProdcutcode()});
+                db5.execSQL("delete from SaleDeliveryScanResult where vbillcode=? and prodcutcode=?" +
+                        " and vcooporderbcode_b=? and itemuploadflag=?", new Object[]{current_vbillcode_qrRecv, listAllBodyPostition.get(position).getProdcutcode(),
+                        current_vcooporderbcode_b_qrRecv,"N"});
+                updateData();
 
-                String current_scanSum = countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv);
-                insertCountOfScannedQRCode(current_scanSum);
-                listAllBodyPostition = QuerySaleDeliveryBody(current_matrcode_qrRecv);
-                SaleDeliveryTableQrDetailAdapter adapter = new SaleDeliveryTableQrDetailAdapter(SaleDeliveryQRDetail.this, listAllBodyPostition, mListener);
-                tableBodyListView.setAdapter(adapter);
             } else {
                 Toast.makeText(SaleDeliveryQRDetail.this, "已经执行发货操作的行号不允许再进行操作", Toast.LENGTH_LONG).show();
             }
         }
     };
+
+    private void updateData() {
+        String current_scanSum = countScannedQRCode(current_vbillcode_qrRecv, current_matrcode_qrRecv);
+        insertCountOfScannedQRCode(current_scanSum);
+        listAllBodyPostition = QuerySaleDeliveryBody(current_matrcode_qrRecv);
+        SaleDeliveryTableQrDetailAdapter adapter = new SaleDeliveryTableQrDetailAdapter(SaleDeliveryQRDetail.this, listAllBodyPostition, mListener);
+        tableBodyListView.setAdapter(adapter);
+    }
 
     //判断单个item是否上传过，上传过的不允许再次操作
     private boolean isAlreadyUpload(String prodcutcode) {

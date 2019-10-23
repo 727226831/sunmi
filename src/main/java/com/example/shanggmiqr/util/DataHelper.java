@@ -415,6 +415,7 @@ public class DataHelper {
             WSDL_URI = proxySp.getString("WSDL_URI", WSDL_URI_current);
             namespace = proxySp.getString("namespace", namespace_current);
         }
+
         SoapObject request = new SoapObject(namespace, methodName);
         // 设置需调用WebService接口需要传入的两个参数string、string1
         String name="";
@@ -467,13 +468,16 @@ public class DataHelper {
         String userSendBean = gson.toJson(userSend);
         request.addProperty("string", workCode);
         request.addProperty("string1", userSendBean);
+        Log.i("request code-->",workCode);
         Log.i("request-->",request.toString());
+        Log.i("url-->",WSDL_URI+"?");
         //创建SoapSerializationEnvelope 对象，同时指定soap版本号(之前在wsdl中看到的)
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapSerializationEnvelope.VER11);
 
         envelope.bodyOut = request;
         envelope.dotNet = false;
         Log.i("url-->",WSDL_URI);
+
         HttpTransportSE se = new HttpTransportSE(WSDL_URI);
         //version1.1 需要如下soapaction
         se.call(namespace + "sendToWISE", envelope);

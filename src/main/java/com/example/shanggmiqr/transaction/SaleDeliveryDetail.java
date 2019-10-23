@@ -305,6 +305,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         String requestBody=DataHelper.getRequestJson( db4,current_sale_delivery_vbillcodeRecv,
                 SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
         Log.i("request-->",requestBody);
+        Log.i("request-->",workcode);
         if(requestBody.contains("errno")){
             SalesRespBeanValue respBeanValue =new Gson().fromJson(requestBody, SalesRespBeanValue.class);
             ToastShow.show(SaleDeliveryDetail.this,respBeanValue.getErrmsg(),Toast.LENGTH_LONG);
@@ -315,6 +316,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
                 SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1)));
 
 
+        Log.i("request-->",BaseConfig.getNcUrl());
         final Request request = new Request.Builder()
                 .url( BaseConfig.getNcUrl())
                 .post(RequestBody.create(mediaType, requestBody))
@@ -323,8 +325,8 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Toast.makeText(SaleDeliveryDetail.this,e.toString(), Toast.LENGTH_LONG).show();
                 zLoadingDialog.dismiss();
+                Toast.makeText(SaleDeliveryDetail.this,e.toString(), Toast.LENGTH_LONG).show();
             }
 
             @Override
