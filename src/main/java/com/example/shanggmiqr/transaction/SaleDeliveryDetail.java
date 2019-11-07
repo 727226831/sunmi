@@ -304,8 +304,7 @@ public class SaleDeliveryDetail extends AppCompatActivity {
         MediaType mediaType = MediaType.parse("text/x-markdown; charset=utf-8");
         String requestBody=DataHelper.getRequestJson( db4,current_sale_delivery_vbillcodeRecv,
                 SaleDeliveryDetail.this,chooseLogisticscompany,expressCode,getIntent().getIntExtra("type",-1));
-        Log.i("request-->",requestBody);
-        Log.i("request-->",workcode);
+
         if(requestBody.contains("errno")){
             SalesRespBeanValue respBeanValue =new Gson().fromJson(requestBody, SalesRespBeanValue.class);
             ToastShow.show(SaleDeliveryDetail.this,respBeanValue.getErrmsg(),Toast.LENGTH_LONG);
